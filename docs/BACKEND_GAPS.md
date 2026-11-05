@@ -4,6 +4,14 @@ Registro para encaminhamento à equipe de backend. Registro inicial em 05/11/202
 
 IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de correção, teste e evidência; o resultado de cada correção e sua evidência ficam na própria entrada. Dependências continuam fora do escopo.
 
+## Contexto atual de publicação
+
+Frontend atual: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend), branch `main`. O original permanece como `upstream`; links históricos de CI continuam apontando para suas execuções originais. O backend de referência é `Zayma1/erp-produtos-naturais-backend`, branch `novaVersao`, commit `f335d525ea6ed107cd00824031ded904020967fe`; `stage7-receiving` já foi incorporada e removida.
+
+O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais-frontend.vercel.app) via dashboard/integração Git nativa. Em 05/11/2026, uma consulta HTTP sem credenciais/cookies retornou 200 em `/visao-geral` e em `/api/categorias` (JSON array). Não foram feitas mutações no ambiente publicado. Isso confirma acesso público de leitura e atualiza o impacto de BG-011; não comprova qual commit do backend está em execução nem revalida recebimento em produção.
+
+**Situação das lacunas:** BG-003/BG-004 resolvidas no commit de referência, com [CI frontend original](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779) e [CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351) aprovadas. As demais entradas permanecem abertas; avanços parciais de identidade, concorrência e idempotência continuam restritos ao recebimento. Fork e hospedagem não corrigem essas lacunas.
+
 ## Índice
 
 | ID | Tipo | Assunto |
@@ -72,7 +80,7 @@ IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de corr
 - **Aceite testável:** Receber parte e depois o restante incrementa estoque e quantidade recebida, progride a compra e não duplica efeitos em repetição/rollback.
 - **Commit de correção:** pendente.
 
-- **Atualização da etapa 7:** Etapa 7: correção implementada no backend `f335d525ea6ed107cd00824031ded904020967fe`. Confirmação explícita transacional, parcial/final, lock de compra/recebimento, incremento atômico de estoque e movimento único por item. Rascunhos sem efeitos, confirmação repetível e recebimento concluído imutável. Testes PostgreSQL cobrem concorrência e rollback. **Resolvida na etapa 7.** Evidência: 16 testes PostgreSQL verdes na [CI do backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351), integração local descartável com 12 cenários reais desktop/mobile (incluindo recebimento parcial/final, edição, exclusão, saldo e link de movimento) e comparação integral após reiniciar o backend. `scripts/integration.mjs` fixa o commit de correção; evidências remotas frontend no [workflow da branch](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/workflows/ci.yml?query=branch%3Afeat%2Fcatalog).
+- **Atualização da etapa 7:** Etapa 7: correção implementada no backend `f335d525ea6ed107cd00824031ded904020967fe`. Confirmação explícita transacional, parcial/final, lock de compra/recebimento, incremento atômico de estoque e movimento único por item. Rascunhos sem efeitos, confirmação repetível e recebimento concluído imutável. Testes PostgreSQL cobrem concorrência e rollback. **Resolvida na etapa 7.** Evidência: 16 testes PostgreSQL verdes na [CI do backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351), integração local descartável com 12 cenários reais desktop/mobile (incluindo recebimento parcial/final, edição, exclusão, saldo e link de movimento) e comparação integral após reiniciar o backend. `scripts/integration.mjs` fixa o commit de correção; evidências remotas frontend no [CI frontend de `f77fa68`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779).
 
 <a id="bg-004"></a>
 ## BG-004 — Edição de recebimento acrescenta itens
@@ -87,7 +95,7 @@ IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de corr
 - **Aceite testável:** PUT duas vezes com um item mantém exatamente um item com a quantidade informada, sem duplicatas.
 - **Commit de correção:** pendente.
 
-- **Atualização da etapa 7:** Etapa 7: correção implementada no mesmo commit. PUT substitui a coleção, preserva IDs mantidos (inclusive sem ID enviado), rejeita ID externo, exige versão e exclui itens removidos em transação. `ReceivingTests.draftReplacementPreservesIdentityAndHasNoStockEffects` faz dois PUTs e verifica uma linha/mesmo ID. **Resolvida na etapa 7.** Evidência: 16 testes PostgreSQL verdes na [CI do backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351), integração local descartável com 12 cenários reais desktop/mobile (incluindo recebimento parcial/final, edição, exclusão, saldo e link de movimento) e comparação integral após reiniciar o backend. `scripts/integration.mjs` fixa o commit de correção; evidências remotas frontend no [workflow da branch](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/workflows/ci.yml?query=branch%3Afeat%2Fcatalog).
+- **Atualização da etapa 7:** Etapa 7: correção implementada no mesmo commit. PUT substitui a coleção, preserva IDs mantidos (inclusive sem ID enviado), rejeita ID externo, exige versão e exclui itens removidos em transação. `ReceivingTests.draftReplacementPreservesIdentityAndHasNoStockEffects` faz dois PUTs e verifica uma linha/mesmo ID. **Resolvida na etapa 7.** Evidência: 16 testes PostgreSQL verdes na [CI do backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351), integração local descartável com 12 cenários reais desktop/mobile (incluindo recebimento parcial/final, edição, exclusão, saldo e link de movimento) e comparação integral após reiniciar o backend. `scripts/integration.mjs` fixa o commit de correção; evidências remotas frontend no [CI frontend de `f77fa68`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779).
 
 <a id="bg-005"></a>
 ## BG-005 — Exclusão de compra com itens viola FK
@@ -177,7 +185,7 @@ IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de corr
 - **Situação:** Confirmado por inspeção.
 - **Fonte:** [SecurityConfig.securityFilterChain](https://github.com/Zayma1/erp-produtos-naturais-backend/blob/e0f312e611d56ab73a4a8e3d5832f8b8874ff362/src/main/java/com/vilaverde/erp/config/SecurityConfig.java).
 - **Comportamento observado:** Todas as requisições são permitAll; não há isolamento/autorização por usuário/loja.
-- **Impacto/contorno no frontend:** Demonstração interna, sem seleção de usuário em criação e sem implantação pública nesta etapa.
+- **Impacto/contorno no frontend:** O frontend agora tem implantação pública na Vercel; leitura de categorias pelo proxy retornou 200 sem credenciais/cookies em 05/11/2026. A seleção explícita de operador em vendas/recebimentos identifica o registro internamente e não autentica nem autoriza a pessoa. Não foram testadas escritas no ambiente publicado.
 - **Correção solicitada:** Definir autenticação, autorização por operação/loja e identidade auditável no servidor.
 - **Aceite testável:** Sem credencial válida retorna 401; sem permissão retorna 403; cliente não consegue escolher identidade ou acessar loja indevida.
 - **Commit de correção:** pendente.

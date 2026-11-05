@@ -36,14 +36,14 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`stage7-receiving`**, commit **`f335d525ea6ed107cd00824031ded904020967fe`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, commit **`f335d525ea6ed107cd00824031ded904020967fe`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
 O SDK completo foi regenerado a partir do contrato local do backend de recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
-O commit de integração está fixado no runner; a branch de implementação pode receber novos commits. Para conferir a referência:
+O commit de integração está fixado no runner e foi incorporado à `novaVersao`; a branch temporária `stage7-receiving` foi removida. Para conferir a referência:
 
 ```bash
-git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage7-receiving
+git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/novaVersao
 ```
 
 ## Integração descartável
@@ -113,7 +113,9 @@ O script chama o proxy, cria e relê categoria, unidade, loja, produto, SKU, ví
 
 ## Repositório de destino
 
-Destino solicitado: [`BrunoCGhisi/erp-produtos-naturais-frontend`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend). A branch de entrega é `feat/catalog`, preparada pelo usuário a partir do estado de `master`; a base local inspecionada é `657257d` (`Initial commit`). A implementação inicial foi enviada no commit `1a4f0d2`. O refactor Tailwind e este handoff são a continuação dessa entrega. A instalação reproduzível e o ambiente descartável estão automatizados; consulte o handoff para os resultados de execução. Não use force push.
+O repositório de trabalho é o [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend), branch `main`. `origin` aponta para o fork e `upstream` preserva o original [BrunoCGhisi/erp-produtos-naturais-frontend](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend). A antiga `feat/catalog` foi incorporada à `main` e removida. As evidências históricas do original permanecem vinculadas às suas execuções. Não use force push.
+
+Publicado em [https://erp-produtos-naturais-frontend.vercel.app](https://erp-produtos-naturais-frontend.vercel.app) pelo dashboard/integração Git da Vercel. A configuração de deploy por GitHub Actions/CLI foi cancelada; o workflow versionado continua somente com `validate` e `integration`. `BACKEND_API_URL` é configurada no ambiente da Vercel e permanece no servidor. Consulta HTTP sem credenciais confirmou `/visao-geral` e `/api/categorias` com status 200; não houve testes de escrita na implantação publicada. Estado atual, CI e limites estão no [handoff](docs/PLANNER_HANDOFF.md).
 
 ## Fornecedores e rascunhos de compras (etapa 3)
 
@@ -189,4 +191,4 @@ Antes de criar, o navegador guarda uma chave UUID e o payload exato. Após resul
 
 O frontend invalida todas as queries de API relacionadas após sucesso. O backend impede edição de compra com qualquer recebimento; excluir todos os rascunhos libera uma compra ainda editável. Autenticação, reversão, devoluções, checkout, aprovação e valoração permanecem fora da etapa.
 
-Validação da etapa 7: 16 testes PostgreSQL, 156 testes frontend, regressão desktop/mobile, 12 cenários reais e persistência após reinício passaram localmente. CI backend: [execução final](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351). A entrega frontend exige os jobs validate/integration no [workflow da branch](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/workflows/ci.yml?query=branch%3Afeat%2Fcatalog). BG-003/BG-004 foram encerradas; demais avanços são restritos ao recebimento e estão detalhados no handoff.
+Validação da etapa 7: 16 testes PostgreSQL, 156 testes frontend, regressão desktop/mobile, 12 cenários reais e persistência após reinício passaram localmente. CI backend: [execução final](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351). A entrega frontend passou nos jobs validate/integration da [CI original de `f77fa68`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779). BG-003/BG-004 foram encerradas; demais avanços são restritos ao recebimento e estão detalhados no handoff.

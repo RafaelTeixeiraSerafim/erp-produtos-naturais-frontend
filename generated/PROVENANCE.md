@@ -1,7 +1,7 @@
 # SDK do backend
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch: `stage7-receiving`.
+- Branch atual: `novaVersao`; a origem de geração foi `stage7-receiving`, incorporada e removida após a entrega.
 - Commit: `f335d525ea6ed107cd00824031ded904020967fe`.
 - Contrato: `openapi-stage7.json` obtido de `/v3/api-docs` do backend local com PostgreSQL descartável e migrações V1/V2.
 - Geração: Kubb 5.15.3, lockfile do backend, `OPENAPI_FILE=./openapi-stage7.json npm run sdk:generate`.
