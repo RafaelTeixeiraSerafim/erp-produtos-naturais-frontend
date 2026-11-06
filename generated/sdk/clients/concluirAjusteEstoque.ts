@@ -13,5 +13,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function concluirAjusteEstoque<ThrowOnError extends boolean = true>(options: Options<ConcluirAjusteEstoqueOptions, ThrowOnError>): Unwrappable<RequestResult<ConcluirAjusteEstoqueResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/api/ajustes-estoque/{id}/concluir', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ConcluirAjusteEstoqueResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/api/ajustes-estoque/{id}/concluir', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ConcluirAjusteEstoqueResponses, ThrowOnError>>)
 }

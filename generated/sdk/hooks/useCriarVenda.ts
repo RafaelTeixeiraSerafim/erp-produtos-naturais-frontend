@@ -15,8 +15,8 @@ export function criarVendaMutationOptions<TContext = unknown>(config: Partial<Om
   const mutationKey = criarVendaMutationKey()
   return mutationOptions<CriarVendaStatus200, ResponseErrorConfig<Error>, CriarVendaOptions, TContext>({
     mutationKey,
-    mutationFn: async({ body }) => {
-      return criarVenda({ ...config, body, throwOnError: true }).unwrap()
+    mutationFn: async({ body, headers }) => {
+      return criarVenda({ ...config, body, headers, throwOnError: true }).unwrap()
     },
   })
 }

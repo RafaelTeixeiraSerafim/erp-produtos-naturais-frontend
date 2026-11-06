@@ -1,7 +1,7 @@
 // Fixture backend for browser tests only. The application retains its real server guards.
 import http from "node:http";
 const permissions = ["catalog.read","customers.read","customers.write","sales.read","sales.create","inventory.read","overview.read"];
-const identity = (role, id = "11111111-1111-4111-8111-111111111111", temporary = false) => ({ id, nome: "Operador", email: `${role.toLowerCase()}@example.test`, cargo: role, lojas: role === "ADMIN" ? [] : ["00000000-0000-4000-8000-000000000001"], alterarSenha: temporary, permissions: [...permissions, ...(role !== "FUNC" ? ["catalog.write","suppliers.read","suppliers.write","purchases.read","purchases.write"] : []), ...(role === "ADMIN" ? ["users.manage","stores.manage"] : [])] });
+const identity = (role, id = "11111111-1111-4111-8111-111111111111", temporary = false) => ({ id, nome: "Operador", email: `${role.toLowerCase()}@example.test`, cargo: role, lojas: role === "ADMIN" ? [] : ["00000000-0000-4000-8000-000000000001"], alterarSenha: temporary, permissions: [...permissions, ...(role !== "FUNC" ? ["catalog.write","suppliers.read","suppliers.write","purchases.read","purchases.write","transfers.read","transfers.write"] : []), ...(role === "ADMIN" ? ["users.manage","stores.manage"] : [])] });
 const seeds = new Map([["fixture-admin",identity("ADMIN")],["fixture-manager",identity("GER")],["fixture-func",identity("FUNC")],["fixture-temporary",identity("ADMIN",undefined,true)],["fixture-other",identity("ADMIN","22222222-2222-4222-8222-222222222222")]]);
 const sessions = new Map(seeds);
 let accounts = [{...identity("FUNC"), status:"ATIVO", revisado:true}];

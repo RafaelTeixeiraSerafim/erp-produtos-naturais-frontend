@@ -5,12 +5,21 @@
 
 import type { DevolucaoFornecedorResponseDTO } from './DevolucaoFornecedorResponseDTO'
 
+export type ListarDevolucoesFornecedoresQuery = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idCompra?: string;
+};
+
 export type ListarDevolucoesFornecedoresStatus200 = DevolucaoFornecedorResponseDTO[];
 
 export type ListarDevolucoesFornecedoresOptions = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: ListarDevolucoesFornecedoresQuery;
   headers?: never;
 };
 

@@ -2,12 +2,19 @@ import { test, expect } from "./auth-fixture";
 test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, request }) => {
   if (process.env.CATALOG_DISPOSABLE !== "1" || !process.env.INVENTORY_FIXTURE) throw new Error("Execute npm run test:integration com fixture descartável.");
   const fixture = JSON.parse(process.env.INVENTORY_FIXTURE) as { product: string; otherProduct: string; store: string; otherStore: string };
-  // Desktop receiving legitimately changes this persistent fixture before mobile runs.
-  // Keep the original known balance and account only for linked purchase entries.
+  // Desktop receiving and selling change this persistent fixture before mobile runs.
+  // Reconcile the original known balance with both linked entries and sale exits.
   const movements = await (await request.get("/api/movimentacoes-estoque")).json();
   const entries = movements.filter((m: { idProduto:string; tipo:string; idRecebimentoCompra?:string }) => m.idProduto === fixture.product && m.tipo === "ENTRADA_COMPRA" && m.idRecebimentoCompra);
   const received = entries.filter((m: { idLoja:string }) => m.idLoja === fixture.store).reduce((sum:number,m:{quantidade:number}) => sum + m.quantidade,0);
-  const expected = (1234.567 + received).toLocaleString("pt-BR",{maximumFractionDigits:3});
+  const exits=movements.filter((m:{idProduto:string;tipo:string;idVenda?:string})=>m.idProduto===fixture.product && m.tipo==="SAIDA_VENDA" && m.idVenda);
+  const sold=exits.filter((m:{idLoja:string})=>m.idLoja===fixture.store).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
+  const transfers=movements.filter((m:{idProduto:string;tipo:string;idTransferencia?:string})=>m.idProduto===fixture.product && m.idTransferencia && ["TRANSFERENCIA_ENTRADA","TRANSFERENCIA_SAIDA"].includes(m.tipo));
+  const transferDelta=(store:string)=>transfers.filter((m:{idLoja:string})=>m.idLoja===store).reduce((sum:number,m:{tipo:string;quantidade:number})=>sum+(m.tipo==="TRANSFERENCIA_ENTRADA"?1:-1)*m.quantidade,0);
+  const otherReceived=entries.filter((m:{idLoja:string})=>m.idLoja===fixture.otherStore).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
+  const otherSold=exits.filter((m:{idLoja:string})=>m.idLoja===fixture.otherStore).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
+  const expectedOther=(otherReceived-otherSold+transferDelta(fixture.otherStore)).toLocaleString("pt-BR",{maximumFractionDigits:3});
+  const expected = (1234.567 + received - sold + transferDelta(fixture.store)).toLocaleString("pt-BR",{maximumFractionDigits:3});
   await page.goto("/estoque");
   await expect(page.getByRole("cell", { name: expected, exact: true })).toBeVisible();
   await expect(page.getByRole("cell", { name: "-0,125", exact: true })).toBeVisible();
@@ -19,13 +26,13 @@ test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, r
   await expect(page.getByLabel("Produto", { exact: true })).toHaveValue(fixture.product);
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await page.getByLabel("Loja", { exact: true }).selectOption(fixture.otherStore);
-  await expect(page.getByLabel("Saldo exato")).toContainText("0 kg");
+  await expect(page.getByLabel("Saldo exato")).toContainText(`${expectedOther} kg`);
   await expect(page.getByText("Sem registro de estoque")).toHaveCount(0);
   await page.getByLabel("Produto", { exact: true }).selectOption(fixture.otherProduct);
   await expect(page.getByText("Sem registro de estoque")).toBeVisible();
   await expect(page.getByLabel("Saldo exato")).toContainText("0 kg");
   await page.goto(`/estoque/movimentacoes?idProduto=${fixture.product}`);
-  await expect(page.locator("tbody tr")).toHaveCount(4 + entries.length);
+  await expect(page.locator("tbody tr")).toHaveCount(4 + entries.length + exits.length + transfers.length);
   await page.getByLabel("Data inicial").fill("2026-11-04");
   await page.getByLabel("Data final").fill("2026-11-04");
   await expect(page.locator("tbody tr")).toHaveCount(2);

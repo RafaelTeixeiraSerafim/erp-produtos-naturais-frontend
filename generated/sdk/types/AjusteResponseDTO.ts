@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { Item } from './Item'
+
 export const ajusteResponseDTOStatusEnum = {
   RASCUNHO: 'RASCUNHO',
   CONCLUIDO: 'CONCLUIDO',
@@ -26,14 +28,23 @@ export type AjusteResponseDTO = {
    * @type string | undefined
    */
   idLoja?: string;
+  lojaNome?: string;
   /**
    * @description
    * Format: `uuid`
    * @type string | undefined
    */
   idUsuario?: string;
+  usuarioNome?: string;
   justificativa?: string;
   status?: AjusteResponseDTOStatusEnumKey;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  legado?: boolean;
   /**
    * @description
    * Format: `date-time`
@@ -45,5 +56,37 @@ export type AjusteResponseDTO = {
    * Format: `date-time`
    * @type string | undefined
    */
+  atualizadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
   concluidoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  canceladoEm?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idConfirmador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idCancelador?: string;
+  motivoCancelamento?: string;
+  itens?: Item[];
 };

@@ -5,12 +5,38 @@
 
 import type { TransferenciaResponseDTO } from './TransferenciaResponseDTO'
 
+export const listarTransferenciasEstoqueStatus = {
+  RASCUNHO: 'RASCUNHO',
+  CONCLUIDO: 'CONCLUIDO',
+  CONCLUIDA: 'CONCLUIDA',
+  CANCELADO: 'CANCELADO',
+  CANCELADA: 'CANCELADA',
+} as const;
+
+export type ListarTransferenciasEstoqueStatusKey = (typeof listarTransferenciasEstoqueStatus)[keyof typeof listarTransferenciasEstoqueStatus];
+
+export type ListarTransferenciasEstoqueQuery = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idLojaOrigem?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idLojaDestino?: string;
+  status?: ListarTransferenciasEstoqueStatusKey;
+};
+
 export type ListarTransferenciasEstoqueStatus200 = TransferenciaResponseDTO[];
 
 export type ListarTransferenciasEstoqueOptions = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: ListarTransferenciasEstoqueQuery;
   headers?: never;
 };
 

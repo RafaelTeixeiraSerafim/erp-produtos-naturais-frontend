@@ -32,15 +32,19 @@ const links = [
   { href: "/lojas", label: "Lojas", icon: Store },
 ];
 const salesLinks = [
+  { href: "/vendas/devolucoes", label: "Devoluções", icon: Package },
   { href: "/vendas", label: "Registros", icon: Package },
   { href: "/clientes", label: "Clientes", icon: Store },
 ];
 const purchaseLinks = [
+  { href: "/compras/devolucoes", label: "Devoluções", icon: Package },
   { href: "/recebimentos", label: "Recebimentos", icon: Package },
   { href: "/compras", label: "Pedidos", icon: Package },
   { href: "/fornecedores", label: "Fornecedores", icon: Store },
 ];
 const inventoryLinks = [
+  { href: "/estoque/ajustes", label: "Ajustes", icon: Store },
+  { href: "/estoque/transferencias", label: "Transferências", icon: Store },
   { href: "/estoque", label: "Saldos", icon: Package },
   { href: "/estoque/movimentacoes", label: "Movimentações", icon: Store },
 ];
@@ -100,7 +104,7 @@ function Navigation({
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         VENDAS
       </p>
-      {salesLinks.map(({ href, label, icon: Icon }) => (
+      {salesLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
@@ -130,7 +134,7 @@ function Navigation({
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         ESTOQUE
       </p>
-      {inventoryLinks.map(({ href, label, icon: Icon }) => (
+      {inventoryLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
@@ -164,7 +168,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   if (path === "/login" || path === "/alterar-senha") return <main id="conteudo">{children}</main>;
   const current =
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
-    [...inventoryLinks].reverse().find((x) => path === x.href) ||
+    [...inventoryLinks].reverse().find((x) => path === x.href || (["/estoque/transferencias","/estoque/ajustes"].includes(x.href) && path.startsWith(x.href+"/"))) ||
     salesLinks.find((x) => path.startsWith(x.href)) ||
     purchaseLinks.find((x) => path.startsWith(x.href)) ||
     links.find((x) => path.startsWith(x.href)) ||
@@ -231,7 +235,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <ChevronRight size={14} />
             <span className="text-[#3b5142]">
               {current?.label || "Página"}
-              {path.endsWith("/nova")
+              {path.startsWith("/estoque/transferencias/") ? (path.endsWith("/nova") ? " / Nova transferência" : path.endsWith("/editar") ? " / Editar rascunho" : " / Detalhes") : path.endsWith("/nova")
                 ? path.startsWith("/vendas")
                   ? " / Nova venda"
                   : " / Nova compra"

@@ -19,9 +19,9 @@ export type DevolucaoClienteRequestDTO = {
   /**
    * @description
    * Format: `uuid`
-   * @type string
+   * @type string | undefined
    */
-  idVenda: string;
+  idVenda?: string;
   /**
    * @description
    * Format: `uuid`
@@ -37,5 +37,11 @@ export type DevolucaoClienteRequestDTO = {
   status?: DevolucaoClienteRequestDTOStatusEnumKey;
   motivo?: string;
   observacao?: string;
-  itens: ItemDevolucaoClienteRequestDTO[];
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  itens?: ItemDevolucaoClienteRequestDTO[];
 };

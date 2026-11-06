@@ -7,19 +7,21 @@ export type ItemDevolucaoFornecedorRequestDTO = {
   /**
    * @description
    * Format: `uuid`
-   * @type string
+   * @type string | undefined
    */
-  idItemCompra: string;
+  id?: string;
   /**
    * @description
    * Format: `uuid`
-   * @type string
+   * @type string | undefined
    */
-  idProduto: string;
+  idItemCompra?: string;
   /**
-   * @minimum 0.001
-   * @type number
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
    */
-  quantidade: number;
+  idProduto?: string;
+  quantidade?: number;
   observacao?: string;
 };

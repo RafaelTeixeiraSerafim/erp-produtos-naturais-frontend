@@ -15,8 +15,8 @@ export function criarDevolucaoFornecedorMutationOptions<TContext = unknown>(conf
   const mutationKey = criarDevolucaoFornecedorMutationKey()
   return mutationOptions<CriarDevolucaoFornecedorStatus200, ResponseErrorConfig<Error>, CriarDevolucaoFornecedorOptions, TContext>({
     mutationKey,
-    mutationFn: async({ body }) => {
-      return criarDevolucaoFornecedor({ ...config, body, throwOnError: true }).unwrap()
+    mutationFn: async({ body, headers }) => {
+      return criarDevolucaoFornecedor({ ...config, body, headers, throwOnError: true }).unwrap()
     },
   })
 }

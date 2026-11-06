@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { ItemDevolucaoClienteResponseDTO } from './ItemDevolucaoClienteResponseDTO'
+
 export const devolucaoClienteResponseDTOStatusEnum = {
   RASCUNHO: 'RASCUNHO',
   CONCLUIDO: 'CONCLUIDO',
@@ -31,14 +33,76 @@ export type DevolucaoClienteResponseDTO = {
    * Format: `uuid`
    * @type string | undefined
    */
+  idLoja?: string;
+  lojaNome?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
   idUsuario?: string;
+  usuarioNome?: string;
   status?: DevolucaoClienteResponseDTOStatusEnumKey;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  legado?: boolean;
+  motivo?: string;
+  observacao?: string;
   /**
    * @description
    * Format: `date-time`
    * @type string | undefined
    */
   dataDevolucao?: string;
-  motivo?: string;
-  observacao?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  criadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  atualizadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  concluidoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  canceladoEm?: string;
+  motivoCancelamento?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  nomeModificador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idConfirmador?: string;
+  nomeConfirmador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idCancelador?: string;
+  nomeCancelador?: string;
+  itens?: ItemDevolucaoClienteResponseDTO[];
 };

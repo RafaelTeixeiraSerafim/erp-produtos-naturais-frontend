@@ -1,4 +1,5 @@
 "use client";
+import { SourceReturns } from "./returns";
 import Link from "next/link";
 import { useDocumentRecovery, MissingSelection, selectedExists } from "./document-recovery";
 import { saleDraftSchema, ambiguousSave } from "@/lib/recovery";
@@ -12,10 +13,16 @@ import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidades
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
 import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import type { VendaResponseDTO } from "@/generated/sdk/types/VendaResponseDTO";
+import { atualizarVenda } from "@/generated/sdk/clients/atualizarVenda";
+import { concluirVenda } from "@/generated/sdk/clients/concluirVenda";
+import { cancelarVenda } from "@/generated/sdk/clients/cancelarVenda";
+import { useListarEstoques } from "@/generated/sdk/hooks/useListarEstoques";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { criarVenda } from "@/generated/sdk/clients/criarVenda";
 import { Heading, Loading, Empty, ErrorNotice } from "./feedback";
 import { Button } from "./ui/button";
-import { Input, Select } from "./ui/input";
+import { Input, Select, Textarea } from "./ui/input";
 import { Panel } from "./ui/panel";
 import { Table, TableRow, TableHead, TableCell } from "./ui/table";
 import { refreshCatalog } from "@/lib/queries";
@@ -25,6 +32,7 @@ import {
   quantity,
 } from "@/lib/inventory";
 import {
+  savedSaleValues,
   blankItem,
   draftValues,
   itemCalculation,
@@ -37,7 +45,7 @@ import { selectDocuments } from "@/lib/report-selectors";
 import { ExportCsv } from "./export-csv";
 import { csvNumber, isoTimestamp } from "@/lib/reports";
 const inventoryHint =
-  "Registrar uma venda aberta não conclui o checkout nem baixa o estoque. Vendas salvas são somente leitura.";
+  "Uma venda aberta não reserva estoque. A conclusão baixa o estoque e preserva os valores salvos; não registra pagamento.";
 function useLookups(fresh = false) {
   const options = fresh ? { query: { refetchOnMount: "always" as const, staleTime: 0 } } : {};
   const users = useOperator(),
@@ -305,6 +313,7 @@ export function SaleRecord({ id }: { id: string }) {
       />
       {refreshError}
       <LookupErrors lookups={lookups} />
+      <SourceReturns kind="clientes" id={id} />
       <Panel className="space-y-4 p-5">
         <p>
           Cliente:{" "}
@@ -321,6 +330,11 @@ export function SaleRecord({ id }: { id: string }) {
         </p>
         <p>Data: {timestamp(row.dataVenda)}</p>
         <p>Status: {saleStatus(row.status)}</p>
+        <p>Observação: {row.observacao || "—"}</p>
+        <p>Última alteração: {row.nomeModificador || "—"}</p>
+        {row.concluidoEm && <p>Concluída por {row.nomeConfirmador || row.idConfirmador} em {timestamp(row.concluidoEm)}</p>}
+        {row.canceladoEm && <p>Cancelada por {row.nomeCancelador || row.idCancelador} em {timestamp(row.canceladoEm)}. Motivo: {row.motivoCancelamento}</p>}
+        {row.legado && <p>Registro histórico somente para consulta. Efeitos de estoque exigem reconciliação; não serão repetidos.</p>}
         <p>
           Operador:{" "}
           {row.nomeUsuario ||
@@ -334,10 +348,8 @@ export function SaleRecord({ id }: { id: string }) {
           Total salvo: <strong>{currency(row.valorTotal)}</strong>
         </p>
       </Panel>
-      <p className="my-4">
-        A API não retorna o total persistido de cada item nem a unidade
-        histórica. A unidade abaixo é a atual do catálogo.
-      </p>
+      <p className="my-4">Totais e unidades históricas são os valores persistidos. Quando a unidade histórica não está disponível, o catálogo atual é identificado apenas como referência.</p>
+      <SaleActions row={row} reload={async () => { await query.refetch(); }} unavailable={query.isError || query.isFetching} />
       <Table>
         <thead>
           <TableRow>
@@ -346,7 +358,8 @@ export function SaleRecord({ id }: { id: string }) {
               "QUANTIDADE",
               "PREÇO UNITÁRIO",
               "DESCONTO",
-              "UNIDADE ATUAL (CATÁLOGO)",
+              "TOTAL SALVO",
+              "UNIDADE HISTÓRICA",
             ].map((t) => (
               <TableHead key={t}>{t}</TableHead>
             ))}
@@ -364,13 +377,14 @@ export function SaleRecord({ id }: { id: string }) {
               <TableCell>{quantity(i.quantidade)}</TableCell>
               <TableCell>{currency(i.precoUnitario)}</TableCell>
               <TableCell>{currency(i.desconto)}</TableCell>
+              <TableCell>{currency(i.totalItem)}</TableCell>
               <TableCell>
-                {lookups.units.data?.find(
+                {i.unidadeSiglaSnapshot || `Histórico indisponível; catálogo atual: ${lookups.units.data?.find(
                   (u) =>
                     u.id ===
                     lookups.products.data?.find((p) => p.id === i.idProduto)
                       ?.idUnidadeMedida,
-                )?.sigla || "—"}
+                )?.sigla || "—"}`}
               </TableCell>
             </TableRow>
           ))}
@@ -380,15 +394,25 @@ export function SaleRecord({ id }: { id: string }) {
     </>
   );
 }
-export function SaleEditor() {
+export function SaleEditRecord({ id }: { id:string }) {
+  const query=useBuscarVendaPorId({path:{id}}, {query:{refetchOnMount:"always",staleTime:0}});
+  if(query.isPending) return <Loading />;
+  if(!query.data) return <ErrorNotice error={query.error} retry={() => void query.refetch()} />;
+  return <SaleEditor key={id} row={query.data} unavailable={query.isError || query.isFetching} reload={async () => { await query.refetch(); }} />;
+}
+export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { row?:VendaResponseDTO; unavailable?:boolean; reload?:()=>Promise<void> } = {}) {
   const lookups = useLookups(true),
     client = useQueryClient(),
     router = useRouter();
   const user = useIdentity();
   const canManageStores = useCan("stores.manage"), canWriteCatalog = useCan("catalog.write");
-  const initial = { ...draftValues(), idUsuario: user?.id || "" };
+  const initial = { ...(row ? savedSaleValues(row) : draftValues()), idUsuario: user?.id || "" };
   const [draft, setDraft] = useState(initial);
-  const recovery = useDocumentRecovery({ context: "sale:new", initial, values: draft, setValues: setDraft, schema: saleDraftSchema });
+  const recovery = useDocumentRecovery({ context: row ? `sale:${row.id}` : "sale:new", initial, values: draft, setValues: setDraft, schema: saleDraftSchema, baseline:row ? String(row.versao) : "", applicable: !unavailable && (!row || row.status === "ABERTA") });
+  const [conflicted,setConflicted] = useState(false);
+  const changed=!!row && row.versao!==draft.baseVersion;
+  const immutable=!!row && (row.status!=="ABERTA" || row.legado);
+  const blocked=unavailable || changed || conflicted || immutable;
   const [savedLink, setSavedLink] = useState("");
   const [postSaveError, setPostSaveError] = useState(false);
   const [uncertain, setUncertain] = useState(false);
@@ -410,11 +434,11 @@ export function SaleEditor() {
   } catch {}
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (busy || recovery.blocked || savedLink || !prerequisites || !selectionsValid) return;
+    if (blocked || busy || recovery.blocked || savedLink || !prerequisites || !selectionsValid) return;
     setError(undefined);
     let body;
     try {
-      body = salePayload(draft);
+      body = draft.pending?.body || salePayload(draft);
     } catch (err) {
       setError({
         status: 400,
@@ -424,9 +448,15 @@ export function SaleEditor() {
       });
       return;
     }
+    let operation=draft.pending;
+    if(!row) {
+      operation ||= { key:crypto.randomUUID(), body };
+      const next={...draft,pending:operation}; setDraft(next);
+      if(!recovery.persist(next)) { setError({status:400,data:{message:"Não foi possível guardar a solicitação para repetição segura. Libere o armazenamento antes de enviar."}}); return; }
+    }
     setBusy(true);
     try {
-      const saved = await criarVenda({ body }).unwrap();
+      const saved = row ? await atualizarVenda({path:{id:row.id!},body}).unwrap() : await criarVenda({ headers:{"Idempotency-Key":operation!.key}, body:operation!.body }).unwrap();
       recovery.commit();
       const link = `/vendas/${saved.id}`;
       setSavedLink(link);
@@ -437,6 +467,11 @@ export function SaleEditor() {
     } catch (err) {
       setError(err);
       setUncertain(ambiguousSave(err));
+      if(row && ambiguousSave(err)) { setConflicted(true); await reload(); }
+      if(!ambiguousSave(err)) {
+        setDraft(current=>({...current,pending:undefined}));
+        if(row && ((err as {status?:number})?.status===409 || (err as {response?:{status:number}})?.response?.status===409)) {setConflicted(true); await reload();}
+      }
     } finally {
       setBusy(false);
     }
@@ -445,14 +480,17 @@ export function SaleEditor() {
     <>
       <Heading
         eyebrow="VENDAS"
-        title="Nova venda"
+        title={row ? "Editar venda" : "Nova venda"}
         description={inventoryHint}
       />
       <LookupErrors lookups={lookups} />
       {recovery.ui}
+      {(changed || conflicted) && <Panel className="space-y-3 p-4"><p role="alert">A venda salva mudou. Os valores digitados foram preservados. Compare os dados atuais antes de reenviar.</p><p>Salvo no servidor: cliente {row?.nomeCliente || row?.idCliente}, loja {row?.nomeLoja || row?.idLoja}. Total: {currency(row?.valorTotal)}.</p><p>Observação salva: {row?.observacao || "—"}</p><ul>{row?.itens?.map(i=><li key={i.id}>{i.nomeProduto || i.idProduto}: {quantity(i.quantidade)} × {currency(i.precoUnitario)}, desconto {currency(i.desconto)}.</li>)}</ul><Button disabled={unavailable || immutable} onClick={() => { recovery.rebase(String(row?.versao)); setDraft({...draft,baseVersion:row?.versao});setConflicted(false); }}>Usar versão atual e revisar valores</Button></Panel>}
+      {immutable && <p role="alert">Esta venda é somente leitura. <Link href={`/vendas/${row?.id}`}>Ver venda</Link></p>}
+      {draft.pending && !savedLink && <p role="status">Solicitação guardada para repetição segura com a mesma chave e os mesmos dados.</p>}
       {!selectionsValid && <p role="alert">Há seleções indisponíveis. Selecione novamente os cadastros indicados antes de salvar.</p>}
       {savedLink && <p role="status">Documento salvo. {postSaveError && "Não foi possível atualizar a tela."} <Link href={savedLink}>Ver registro salvo</Link></p>}
-      {uncertain && <p role="alert">Não foi possível confirmar a gravação. Confira a <Link href="/vendas">lista de registros</Link> antes de tentar novamente. A solicitação não será reenviada automaticamente.</p>}
+      {uncertain && <p role="alert">{row ? "Não foi possível confirmar a edição. Confira a versão salva e revise os valores preservados antes de reenviar." : "Não foi possível confirmar a gravação. Use Repetir envio salvo para consultar ou concluir a mesma solicitação com segurança."}</p>}
 
       <div className="mb-5 flex flex-wrap gap-4">
         <Link href="/clientes">Cadastrar cliente</Link>
@@ -468,7 +506,7 @@ export function SaleEditor() {
       )}
       {!!error && <ErrorNotice error={error} />}
       <form onSubmit={submit} noValidate aria-busy={busy}>
-        <fieldset disabled={busy || recovery.blocked || !!savedLink} className="space-y-5">
+        <fieldset disabled={blocked || busy || recovery.blocked || !!savedLink || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             <label>
               Cliente *
@@ -521,6 +559,7 @@ export function SaleEditor() {
               </small>
             </label>
             <p>Operador: {user?.nome}</p>
+            <label>Observação<Textarea maxLength={255} value={draft.observacao || ""} onChange={e=>setDraft({...draft,observacao:e.target.value})} /></label>
           </Panel>
           {draft.itens.map((item, index) => {
             function change(key: keyof typeof item, value: string) {
@@ -616,16 +655,49 @@ export function SaleEditor() {
           <p className="text-lg">
             Prévia total: <strong>{currency(total)}</strong>
           </p>
+        </fieldset>
           <div className="flex flex-wrap gap-4">
-            <Button type="submit" disabled={busy || recovery.blocked || !!savedLink || !prerequisites || !selectionsValid}>
-              {busy ? "Salvando…" : "Salvar venda aberta"}
+            <Button type="submit" disabled={blocked || busy || recovery.blocked || !!savedLink || !prerequisites || !selectionsValid}>
+              {busy ? "Salvando…" : draft.pending && !savedLink ? "Repetir envio salvo" : "Salvar venda aberta"}
             </Button>
             <Button asChild variant="outline">
               <Link href="/vendas">Voltar</Link>
             </Button>
           </div>
-        </fieldset>
       </form>
     </>
   );
+}
+function SaleActions({ row, reload, unavailable }: {row:VendaResponseDTO;reload:()=>Promise<void>;unavailable:boolean}) {
+  const client=useQueryClient();
+  const stock=useListarEstoques({query:{idLoja:row.idLoja}});
+  const [review,setReview]=useState<"concluir"|"cancelar"|null>(null), [reason,setReason]=useState("");
+  const [busy,setBusy]=useState(false), [error,setError]=useState<unknown>(), [saved,setSaved]=useState<VendaResponseDTO>();
+  const [refreshFailed,setRefreshFailed]=useState(false);
+  async function perform() {
+    if(busy || unavailable || saved || row.versao===undefined || !review) return;
+    setBusy(true);setError(undefined);
+    try {
+      const args={path:{id:row.id!},body:{versao:row.versao,motivo:reason}};
+      const result=review==="concluir" ? await concluirVenda(args).unwrap() : await cancelarVenda(args).unwrap();
+      setSaved(result);setReview(null);
+      try {await refreshCatalog(client,true);await reload();} catch {setRefreshFailed(true);}
+    } catch(e) {setError(e);setReview(null);await reload();}
+    finally {setBusy(false);}
+  }
+  const current=saved || row;
+  return <div className="my-5 space-y-4">
+    {!!error && <ErrorNotice error={error} />}
+    {saved && <p role="status">Operação concluída: {saleStatus(saved.status)}. {refreshFailed && "Não foi possível atualizar a tela; recarregue para consultar o registro salvo."}</p>}
+    {current.status==="ABERTA" && !row.legado ? <>
+      <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href={`/vendas/${row.id}/editar`}>Editar venda</Link></Button><Button disabled={busy || unavailable || !!saved} onClick={()=>setReview("concluir")}>Concluir venda</Button><Button variant="outline" disabled={busy || unavailable || !!saved} onClick={()=>setReview("cancelar")}>Cancelar venda</Button></div>
+      <p>Estoque atual por produto nesta loja (consulta informativa, sem reserva; a disponibilidade será validada na confirmação):</p>
+      {stock.isPending ? <Loading /> : stock.isError ? <ErrorNotice error={stock.error} retry={()=>void stock.refetch()} /> : <ul>{[...new Set(row.itens?.map(i=>i.idProduto))].map(id=><li key={id}>{row.itens?.find(i=>i.idProduto===id)?.nomeProduto || id}: {quantity(stock.data?.find(s=>s.idProduto===id && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0)}</li>)}</ul>}
+    </> : <p>Venda {saleStatus(current.status).toLocaleLowerCase()}: somente leitura.</p>}
+    <Dialog open={!!review} onOpenChange={open=>{if(!open && !busy)setReview(null);}}><DialogContent><DialogTitle>{review==="concluir" ? "Revisar e concluir venda" : "Cancelar venda aberta"}</DialogTitle><DialogDescription>{review==="concluir" ? "A confirmação registra a venda e a saída do estoque. Nenhum pagamento está sendo registrado. Após concluir, a venda será somente leitura." : "O cancelamento preserva o histórico e não movimenta o estoque."}</DialogDescription>
+      <p>Loja: {row.nomeLoja || row.idLoja}</p>
+      {review==="concluir" ? <><ul>{row.itens?.map(i=><li key={i.id}>{i.nomeProduto || i.idProduto}: {quantity(i.quantidade)} {i.unidadeSiglaSnapshot || "(unidade histórica indisponível)"} · {currency(i.totalItem)}</li>)}</ul><p>Subtotal salvo: {currency(row.subtotal)} · Descontos: {currency(row.descontoTotal)}</p><p>Total salvo: {currency(row.valorTotal)}</p></> : <label>Motivo do cancelamento<Textarea value={reason} onChange={e=>setReason(e.target.value)} /></label>}
+      <div className="flex gap-3"><Button disabled={busy || unavailable || (review==="cancelar" && !reason.trim())} onClick={()=>void perform()}>{review==="concluir" ? "Confirmar saída de estoque" : "Confirmar cancelamento"}</Button><Button variant="outline" disabled={busy} onClick={()=>setReview(null)}>Voltar</Button></div>
+    </DialogContent></Dialog>
+  </div>;
 }

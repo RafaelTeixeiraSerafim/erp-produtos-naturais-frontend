@@ -6,6 +6,15 @@
 import type { AjusteRequestDTO } from './AjusteRequestDTO'
 import type { AjusteResponseDTO } from './AjusteResponseDTO'
 
+export type CriarAjusteEstoqueHeaders = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  'Idempotency-Key': string;
+};
+
 export type CriarAjusteEstoqueStatus200 = AjusteResponseDTO;
 
 export type CriarAjusteEstoqueBody = AjusteRequestDTO;
@@ -14,7 +23,7 @@ export type CriarAjusteEstoqueOptions = {
   body: CriarAjusteEstoqueBody;
   path?: never;
   query?: never;
-  headers?: never;
+  headers: CriarAjusteEstoqueHeaders;
 };
 
 export type CriarAjusteEstoqueResponses = {

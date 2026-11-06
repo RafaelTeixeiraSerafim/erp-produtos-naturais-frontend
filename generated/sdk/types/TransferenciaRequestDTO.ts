@@ -42,5 +42,11 @@ export type TransferenciaRequestDTO = {
   dataTransferencia?: string;
   status?: TransferenciaRequestDTOStatusEnumKey;
   observacao?: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
   itens: ItemTransferenciaRequestDTO[];
 };

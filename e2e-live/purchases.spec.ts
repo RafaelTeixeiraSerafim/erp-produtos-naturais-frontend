@@ -74,7 +74,7 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
   await expect(page.getByText("Total salvo:", { exact: false })).toContainText(
     "4,88",
   );
-  await expect(page.getByRole("row")).toHaveCount(2);
+  await expect(page.getByRole("table").filter({has:page.getByRole("columnheader",{name:"CUSTO UNITÁRIO",exact:true})}).getByRole("row")).toHaveCount(2);
   expect(await (await request.get("/api/estoques")).json()).toEqual(stock);
   // Simulate a separate editor updating the saved draft through the real API.
   await page.goto(`${url}/editar`);

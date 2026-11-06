@@ -4,21 +4,21 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { ListarAjustesEstoqueStatus200 } from '../types/ListarAjustesEstoque'
+import type { ListarAjustesEstoqueOptions, ListarAjustesEstoqueStatus200 } from '../types/ListarAjustesEstoque'
 import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from '@tanstack/react-query'
 import { listarAjustesEstoque } from '../clients/listarAjustesEstoque'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const listarAjustesEstoqueQueryKey = () => [{ url: '/api/ajustes-estoque' }] as const
+export const listarAjustesEstoqueQueryKey = ({ query }: Omit<ListarAjustesEstoqueOptions, 'headers'> = {}) => [{ url: '/api/ajustes-estoque' }, ...(query ? [query] : [])] as const
 
 type ListarAjustesEstoqueQueryKey = ReturnType<typeof listarAjustesEstoqueQueryKey>
 
-export function listarAjustesEstoqueQueryOptions(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
-  const queryKey = listarAjustesEstoqueQueryKey()
+export function listarAjustesEstoqueQueryOptions({ query }: ListarAjustesEstoqueOptions = {}, config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
+  const queryKey = listarAjustesEstoqueQueryKey({ query })
   return queryOptions<ListarAjustesEstoqueStatus200, ResponseErrorConfig<Error>, ListarAjustesEstoqueStatus200, typeof queryKey>({
    queryKey,
    queryFn: async ({ signal }) => {
-      return listarAjustesEstoque({ ...config, signal: config.signal ?? signal, throwOnError: true }).unwrap()
+      return listarAjustesEstoque({ ...config, query, signal: config.signal ?? signal, throwOnError: true }).unwrap()
    },
   })
 }
@@ -26,16 +26,17 @@ export function listarAjustesEstoqueQueryOptions(config: Partial<Omit<RequestCon
 /**
  * {@link /api/ajustes-estoque}
  */
-export function useListarAjustesEstoque<TData = ListarAjustesEstoqueStatus200, TQueryData = ListarAjustesEstoqueStatus200, TQueryKey extends QueryKey = ListarAjustesEstoqueQueryKey>(options: {
+export function useListarAjustesEstoque<TData = ListarAjustesEstoqueStatus200, TQueryData = ListarAjustesEstoqueStatus200, TQueryKey extends QueryKey = ListarAjustesEstoqueQueryKey>({ query }: { query?: ListarAjustesEstoqueOptions['query'] | (() => ListarAjustesEstoqueOptions['query']) } = {}, options: {
   query?: Partial<QueryObserverOptions<ListarAjustesEstoqueStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>
 } = {}) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...resolvedOptions } = queryConfig
-  const queryKey = resolvedOptions?.queryKey ?? listarAjustesEstoqueQueryKey()
+  const resolvedParams = { query: typeof query === 'function' ? query() : query }
+  const queryKey = resolvedOptions?.queryKey ?? listarAjustesEstoqueQueryKey(resolvedParams)
 
   const queryResult = useQuery({
-   ...listarAjustesEstoqueQueryOptions(config),
+   ...listarAjustesEstoqueQueryOptions(resolvedParams, config),
    ...resolvedOptions,
    queryKey,
   } as unknown as QueryObserverOptions, queryClient) as UseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

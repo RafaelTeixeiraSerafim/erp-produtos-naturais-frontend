@@ -5,12 +5,32 @@
 
 import type { AjusteResponseDTO } from './AjusteResponseDTO'
 
+export const listarAjustesEstoqueStatus = {
+  RASCUNHO: 'RASCUNHO',
+  CONCLUIDO: 'CONCLUIDO',
+  CONCLUIDA: 'CONCLUIDA',
+  CANCELADO: 'CANCELADO',
+  CANCELADA: 'CANCELADA',
+} as const;
+
+export type ListarAjustesEstoqueStatusKey = (typeof listarAjustesEstoqueStatus)[keyof typeof listarAjustesEstoqueStatus];
+
+export type ListarAjustesEstoqueQuery = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idLoja?: string;
+  status?: ListarAjustesEstoqueStatusKey;
+};
+
 export type ListarAjustesEstoqueStatus200 = AjusteResponseDTO[];
 
 export type ListarAjustesEstoqueOptions = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: ListarAjustesEstoqueQuery;
   headers?: never;
 };
 

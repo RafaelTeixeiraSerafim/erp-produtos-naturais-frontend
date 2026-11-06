@@ -2,6 +2,7 @@ import { sessionHeader, sessionCookie } from "./auth";
 const resources = new Set([
   "clientes",
   "vendas",
+  "transferencias-estoque","ajustes-estoque","devolucoes-clientes","devolucoes-fornecedores",
   "usuarios",
   "fornecedores",
   "compras",
@@ -28,11 +29,12 @@ export async function forwardCatalog(request: Request, path: string[]) {
   const inventory =
     resource === "estoques" || resource === "movimentacoes-estoque";
   const receipt = resource === "recebimentos-compras";
+  const saleAction = ["vendas","transferencias-estoque","ajustes-estoque","devolucoes-clientes","devolucoes-fornecedores"].includes(resource) && path.length === 3 && ["concluir", "cancelar"].includes(path[2]);
   const conclude = receipt && path.length === 3 && path[2] === "concluir";
   const balance = resource === "estoques" && id === "saldo";
   if (
     (!auth && !resources.has(resource)) ||
-    (path.length > 2 && !conclude && !reset) ||
+    (path.length > 2 && !conclude && !reset && !saleAction) ||
     (id && !auth && !balance && !uuid.test(id))
   )
     return Response.json(
@@ -44,9 +46,9 @@ export async function forwardCatalog(request: Request, path: string[]) {
       ? conclude ? ["POST"] : id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
       : resource === "usuarios"
       ? id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
-      : resource === "vendas"
-        ? id
-          ? ["GET"]
+      : ["vendas","transferencias-estoque","ajustes-estoque","devolucoes-clientes","devolucoes-fornecedores"].includes(resource)
+        ? saleAction ? ["POST"] : id
+          ? ["GET", "PUT"]
           : ["GET", "POST"]
         : inventory
           ? ["GET"]
@@ -65,6 +67,8 @@ export async function forwardCatalog(request: Request, path: string[]) {
         headers: { Allow: allowed.join(", "), "Cache-Control": "no-store" },
       },
     );
+  if (["vendas","transferencias-estoque","ajustes-estoque","devolucoes-clientes","devolucoes-fornecedores"].includes(resource) && !id && request.method === "POST" && !uuid.test(request.headers.get("Idempotency-Key") || ""))
+    return Response.json({ message:"Informe Idempotency-Key UUID." }, { status:400 });
   if (receipt) {
     const params = new URL(request.url).searchParams;
     const valid = [...params.keys()].every(k => k === "idCompra" || k === "versao") &&
@@ -101,7 +105,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
         Accept: "application/json",
         ...(sessionHeader(request.headers.get("cookie")) ? { Cookie: sessionHeader(request.headers.get("cookie")) } : {}),
         ...(request.headers.get("x-csrf-token") ? { "X-CSRF-TOKEN": request.headers.get("x-csrf-token")! } : {}),
-        ...(receipt && !id && request.method === "POST" ? { "Idempotency-Key": request.headers.get("Idempotency-Key")! } : {}),
+        ...((receipt || ["vendas","transferencias-estoque","ajustes-estoque","devolucoes-clientes","devolucoes-fornecedores"].includes(resource)) && !id && request.method === "POST" ? { "Idempotency-Key": request.headers.get("Idempotency-Key")! } : {}),
         ...(request.method === "POST" || request.method === "PUT"
           ? { "Content-Type": "application/json" }
           : {}),

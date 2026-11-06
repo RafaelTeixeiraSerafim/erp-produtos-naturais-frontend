@@ -4,6 +4,9 @@
 */
 
 export type ProdutoVendaResponseDTO = {
+  quantidadeDevolvida?: number;
+  quantidadeDevolvivel?: number;
+  devolucaoLegadaPendente?: boolean;
   /**
    * @description
    * Format: `uuid`
@@ -20,4 +23,6 @@ export type ProdutoVendaResponseDTO = {
   quantidade?: number;
   precoUnitario?: number;
   desconto?: number;
+  totalItem?: number;
+  unidadeSiglaSnapshot?: string;
 };

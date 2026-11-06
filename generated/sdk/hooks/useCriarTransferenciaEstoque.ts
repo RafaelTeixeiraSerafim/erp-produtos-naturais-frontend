@@ -15,8 +15,8 @@ export function criarTransferenciaEstoqueMutationOptions<TContext = unknown>(con
   const mutationKey = criarTransferenciaEstoqueMutationKey()
   return mutationOptions<CriarTransferenciaEstoqueStatus200, ResponseErrorConfig<Error>, CriarTransferenciaEstoqueOptions, TContext>({
     mutationKey,
-    mutationFn: async({ body }) => {
-      return criarTransferenciaEstoque({ ...config, body, throwOnError: true }).unwrap()
+    mutationFn: async({ body, headers }) => {
+      return criarTransferenciaEstoque({ ...config, body, headers, throwOnError: true }).unwrap()
     },
   })
 }

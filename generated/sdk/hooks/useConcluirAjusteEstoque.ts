@@ -15,8 +15,8 @@ export function concluirAjusteEstoqueMutationOptions<TContext = unknown>(config:
   const mutationKey = concluirAjusteEstoqueMutationKey()
   return mutationOptions<ConcluirAjusteEstoqueStatus200, ResponseErrorConfig<Error>, ConcluirAjusteEstoqueOptions, TContext>({
     mutationKey,
-    mutationFn: async({ path }) => {
-      return concluirAjusteEstoque({ ...config, path, throwOnError: true }).unwrap()
+    mutationFn: async({ path, body }) => {
+      return concluirAjusteEstoque({ ...config, path, body, throwOnError: true }).unwrap()
     },
   })
 }

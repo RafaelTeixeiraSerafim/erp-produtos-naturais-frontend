@@ -4,21 +4,21 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { ListarDevolucoesFornecedoresStatus200 } from '../types/ListarDevolucoesFornecedores'
+import type { ListarDevolucoesFornecedoresOptions, ListarDevolucoesFornecedoresStatus200 } from '../types/ListarDevolucoesFornecedores'
 import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from '@tanstack/react-query'
 import { listarDevolucoesFornecedores } from '../clients/listarDevolucoesFornecedores'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const listarDevolucoesFornecedoresQueryKey = () => [{ url: '/api/devolucoes-fornecedores' }] as const
+export const listarDevolucoesFornecedoresQueryKey = ({ query }: Omit<ListarDevolucoesFornecedoresOptions, 'headers'> = {}) => [{ url: '/api/devolucoes-fornecedores' }, ...(query ? [query] : [])] as const
 
 type ListarDevolucoesFornecedoresQueryKey = ReturnType<typeof listarDevolucoesFornecedoresQueryKey>
 
-export function listarDevolucoesFornecedoresQueryOptions(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
-  const queryKey = listarDevolucoesFornecedoresQueryKey()
+export function listarDevolucoesFornecedoresQueryOptions({ query }: ListarDevolucoesFornecedoresOptions = {}, config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
+  const queryKey = listarDevolucoesFornecedoresQueryKey({ query })
   return queryOptions<ListarDevolucoesFornecedoresStatus200, ResponseErrorConfig<Error>, ListarDevolucoesFornecedoresStatus200, typeof queryKey>({
    queryKey,
    queryFn: async ({ signal }) => {
-      return listarDevolucoesFornecedores({ ...config, signal: config.signal ?? signal, throwOnError: true }).unwrap()
+      return listarDevolucoesFornecedores({ ...config, query, signal: config.signal ?? signal, throwOnError: true }).unwrap()
    },
   })
 }
@@ -26,16 +26,17 @@ export function listarDevolucoesFornecedoresQueryOptions(config: Partial<Omit<Re
 /**
  * {@link /api/devolucoes-fornecedores}
  */
-export function useListarDevolucoesFornecedores<TData = ListarDevolucoesFornecedoresStatus200, TQueryData = ListarDevolucoesFornecedoresStatus200, TQueryKey extends QueryKey = ListarDevolucoesFornecedoresQueryKey>(options: {
+export function useListarDevolucoesFornecedores<TData = ListarDevolucoesFornecedoresStatus200, TQueryData = ListarDevolucoesFornecedoresStatus200, TQueryKey extends QueryKey = ListarDevolucoesFornecedoresQueryKey>({ query }: { query?: ListarDevolucoesFornecedoresOptions['query'] | (() => ListarDevolucoesFornecedoresOptions['query']) } = {}, options: {
   query?: Partial<QueryObserverOptions<ListarDevolucoesFornecedoresStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>
 } = {}) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...resolvedOptions } = queryConfig
-  const queryKey = resolvedOptions?.queryKey ?? listarDevolucoesFornecedoresQueryKey()
+  const resolvedParams = { query: typeof query === 'function' ? query() : query }
+  const queryKey = resolvedOptions?.queryKey ?? listarDevolucoesFornecedoresQueryKey(resolvedParams)
 
   const queryResult = useQuery({
-   ...listarDevolucoesFornecedoresQueryOptions(config),
+   ...listarDevolucoesFornecedoresQueryOptions(resolvedParams, config),
    ...resolvedOptions,
    queryKey,
   } as unknown as QueryObserverOptions, queryClient) as UseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

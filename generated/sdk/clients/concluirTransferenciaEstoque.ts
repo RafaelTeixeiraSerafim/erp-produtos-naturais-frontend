@@ -13,5 +13,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function concluirTransferenciaEstoque<ThrowOnError extends boolean = true>(options: Options<ConcluirTransferenciaEstoqueOptions, ThrowOnError>): Unwrappable<RequestResult<ConcluirTransferenciaEstoqueResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/api/transferencias-estoque/{id}/concluir', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ConcluirTransferenciaEstoqueResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/api/transferencias-estoque/{id}/concluir', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ConcluirTransferenciaEstoqueResponses, ThrowOnError>>)
 }

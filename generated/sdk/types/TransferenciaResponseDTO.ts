@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { ItemTransferenciaResponseDTO } from './ItemTransferenciaResponseDTO'
+
 export const transferenciaResponseDTOStatusEnum = {
   RASCUNHO: 'RASCUNHO',
   CONCLUIDO: 'CONCLUIDO',
@@ -22,28 +24,85 @@ export type TransferenciaResponseDTO = {
   id?: string;
   /**
    * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  legado?: boolean;
+  status?: TransferenciaResponseDTOStatusEnumKey;
+  /**
+   * @description
    * Format: `uuid`
    * @type string | undefined
    */
   idLojaOrigem?: string;
+  nomeLojaOrigem?: string;
   /**
    * @description
    * Format: `uuid`
    * @type string | undefined
    */
   idLojaDestino?: string;
+  nomeLojaDestino?: string;
   /**
    * @description
    * Format: `uuid`
    * @type string | undefined
    */
   idUsuario?: string;
-  status?: TransferenciaResponseDTOStatusEnumKey;
+  nomeUsuario?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  nomeModificador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idConfirmador?: string;
+  nomeConfirmador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idCancelador?: string;
+  nomeCancelador?: string;
   /**
    * @description
    * Format: `date-time`
    * @type string | undefined
    */
   dataTransferencia?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  criadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  atualizadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  concluidoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  canceladoEm?: string;
   observacao?: string;
+  motivoCancelamento?: string;
+  itens?: ItemTransferenciaResponseDTO[];
 };

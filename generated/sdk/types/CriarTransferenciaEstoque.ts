@@ -6,6 +6,15 @@
 import type { TransferenciaRequestDTO } from './TransferenciaRequestDTO'
 import type { TransferenciaResponseDTO } from './TransferenciaResponseDTO'
 
+export type CriarTransferenciaEstoqueHeaders = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  'Idempotency-Key': string;
+};
+
 export type CriarTransferenciaEstoqueStatus200 = TransferenciaResponseDTO;
 
 export type CriarTransferenciaEstoqueBody = TransferenciaRequestDTO;
@@ -14,7 +23,7 @@ export type CriarTransferenciaEstoqueOptions = {
   body: CriarTransferenciaEstoqueBody;
   path?: never;
   query?: never;
-  headers?: never;
+  headers: CriarTransferenciaEstoqueHeaders;
 };
 
 export type CriarTransferenciaEstoqueResponses = {

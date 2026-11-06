@@ -1,15 +1,15 @@
-# Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos e vendas
+# Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos, vendas e transferências
 
-Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas abertas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
+Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas operacionais, transferências entre lojas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
 
 
 ## Etapa 8 — login, contas e permissões
 
 O sistema exige autenticação. Use `/login` com uma conta revisada pelo administrador; não existe cadastro público. Contas novas/resetadas devem trocar a senha em `/alterar-senha` e entrar novamente. O destino interno solicitado antes do login é preservado; destinos externos são recusados. `/usuarios` gerencia identidade, cargo (`ADMIN`, `GER`, `FUNC`), lojas, ativação/desativação e senha temporária. Somente ADMIN acessa essa tela. O backend cria automaticamente o primeiro administrador quando não há ADMIN ativo: usuário `admin`, senha temporária `admin`. A troca é obrigatória antes do acesso de negócio; senhas novas exigem ao menos 8 caracteres. A conta usa e-mail interno `admin@vilaverde.local`; o alias `admin` funciona no campo “E-mail ou usuário”. Reinícios preservam administradores e senhas existentes. `BOOTSTRAP_ADMIN_PASSWORD` no backend substitui a senha inicial; `BOOTSTRAP_ADMIN_ENABLED=false` desativa o bootstrap automático. Não existe endpoint público de bootstrap.
 
-O backend valida sessões, permissões, lojas e operadores diretamente, mesmo sem o frontend. ADMIN gerencia tudo; GER gerencia catálogo, fornecedores, clientes e compras/recebimentos das lojas atribuídas; FUNC lê catálogo, cria/edita clientes, registra vendas abertas e consulta estoque das lojas atribuídas. Visão geral e CSVs respeitam o mesmo escopo; seções proibidas não são consultadas. A ausência de lojas tem explicação na tela. Vendas PUT/DELETE, checkout, ajustes e transferências continuam indisponíveis.
+O backend valida sessões, permissões, lojas e operadores diretamente, mesmo sem o frontend. ADMIN gerencia tudo; GER gerencia catálogo, fornecedores, clientes e compras/recebimentos das lojas atribuídas; FUNC lê catálogo, cria/edita clientes, registra vendas abertas e consulta estoque das lojas atribuídas. Visão geral e CSVs respeitam o mesmo escopo; seções proibidas não são consultadas. A ausência de lojas tem explicação na tela. Vendas operacionais estão descritas na etapa 9. Transferências ADMIN/GER estão na etapa 10; DELETE, ajustes e reversões continuam indisponíveis.
 
-O proxy encaminha apenas `SESSION`, `X-CSRF-TOKEN` e os headers aprovados, incluindo `Idempotency-Key` nos recebimentos. Reescreve o cookie como host-only, HttpOnly, SameSite=Lax, Secure fora de localhost e preserva giro/remoção. Senhas/tokens não são armazenados no browser; CSRF fica em memória e é renovado após login/logout. **Configure `FRONTEND_ORIGINS`** com as origens públicas exatas autorizadas a escrever (separadas por vírgula), além de `BACKEND_API_URL` somente no servidor. O listener interno do Next pode usar outro hostname; não use sua origem interna como substituto da origem pública. Não use `*` nem `NEXT_PUBLIC_*` para credenciais.
+O proxy encaminha apenas `SESSION`, `X-CSRF-TOKEN` e os headers aprovados, incluindo `Idempotency-Key` na criação de recebimentos, vendas e transferências. Reescreve o cookie como host-only, HttpOnly, SameSite=Lax, Secure fora de localhost e preserva giro/remoção. Senhas/tokens não são armazenados no browser; CSRF fica em memória e é renovado após login/logout. **Configure `FRONTEND_ORIGINS`** com as origens públicas exatas autorizadas a escrever (separadas por vírgula), além de `BACKEND_API_URL` somente no servidor. O listener interno do Next pode usar outro hostname; não use sua origem interna como substituto da origem pública. Não use `*` nem `NEXT_PUBLIC_*` para credenciais.
 
 Sessões JDBC expiram após 30 minutos de inatividade ou 12 horas desde o login. Troca/reset de senha, desativação e alterações administrativas revogam sessões. Falhas de login usam mensagem genérica e limite persistido de cinco tentativas em 15 minutos por e-mail normalizado (429 durante o bloqueio). 401 interrompe gravações e leva ao login; 403 informa falta de permissão sem encerrar a sessão.
 
@@ -55,14 +55,14 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch de feature **`stage8-auth`** (base `novaVersao`), commit **`a3aa98212842a48bd3bb30302a25bca37c21727c`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, com a etapa 12 integrada a partir de `stage12-returns` (base `bdd39f3`), commit de código validado **`c87fe72a66ca2fe8aaf14bead7101c0e95e27267`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
-O SDK completo foi regenerado a partir do contrato local do backend de autenticação e recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
+O SDK completo foi regenerado a partir do contrato local completo do backend, incluindo devoluções. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
-O commit de integração está fixado no runner e foi enviado à branch `stage8-auth`; autenticação ainda não foi incorporada à `novaVersao`. Para conferir a referência:
+O commit de integração está fixado no runner e está contido na branch `novaVersao` após o merge de `stage12-returns`. Para conferir a referência:
 
 ```bash
-git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage8-auth
+git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/novaVersao
 ```
 
 ## Integração descartável
@@ -81,7 +81,7 @@ As portas loopback **8081** (backend) e **3100** (frontend de produção) precis
 
 Logs sem a senha temporária ficam em `integration-artifacts/`; relatório e traces de falha ficam em `playwright-live-report/` e `test-results/live/`. A CI possui um job separado com esses mesmos pré-requisitos e publica os artefatos em falhas.
 
-O backend usa Flyway V1/V2/V3 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
+O backend usa Flyway V1–V7 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
 
 ## Fluxo
 
@@ -95,7 +95,7 @@ As abas fazem operações independentes: uma falha não apaga o que já foi salv
 
 Busca, ordenação e paginação (20 registros) são locais porque a API retorna arrays. Os controles ficam nos parâmetros da URL; produtos também têm filtros de categoria e status. Cadastros de apoio usam modais, e produtos usam páginas completas. Exclusões exigem confirmação e nunca fazem cascata. Erros de integridade permanecem visíveis; formulários mantêm o conteúdo após falhas e bloqueiam novo envio enquanto salvam.
 
-Autenticação por sessão e gestão de usuários estão descritas na etapa 8 abaixo. Checkout de vendas, aprovação/cancelamento de compras, reversão e ajustes/transferências continuam fora do escopo.
+Autenticação por sessão e gestão de usuários estão descritas na etapa 8 abaixo. Aprovação/cancelamento de compras, reversão e ajustes continuam fora do escopo. Vendas e transferências foram acrescentadas nas etapas 9 e 10.
 
 ## Consulta de estoque (etapa 2)
 
@@ -211,3 +211,41 @@ Antes de criar, o navegador guarda uma chave UUID e o payload exato. Após resul
 O frontend invalida todas as queries de API relacionadas após sucesso. O backend impede edição de compra com qualquer recebimento; excluir todos os rascunhos libera uma compra ainda editável. Na etapa 7, autenticação permanecia pendente; a etapa 8 abaixo adiciona a proteção dos fluxos. Reversão, devoluções, checkout, aprovação e valoração continuam fora do escopo.
 
 Validação da etapa 7: 16 testes PostgreSQL, 156 testes frontend, regressão desktop/mobile, 12 cenários reais e persistência após reinício passaram localmente. CI backend: [execução final](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351). A entrega frontend passou nos jobs validate/integration da [CI original de `f77fa68`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779). BG-003/BG-004 foram encerradas; demais avanços são restritos ao recebimento e estão detalhados no handoff.
+
+## Etapa 10 — transferências entre lojas
+
+`/estoque/transferencias` lista rascunhos e documentos confirmados/cancelados com filtros locais, ordenação, paginação de 20 e estado na URL. ADMIN/GER precisam de acesso às duas lojas. `/nova`, `/{id}` e `/{id}/editar` oferecem criação, detalhe auditado e edição com IDs de itens preservados, unidade salva, versão e recuperação isolada por ambiente/usuário/documento.
+
+Rascunhos não reservam estoque. A revisão de confirmação explica a movimentação imediata origem→destino; qualquer falta/overflow impede a operação inteira. Confirmados são imutáveis; somente rascunhos podem ser cancelados com motivo. Conflitos mantêm os valores locais e exigem revisão explícita. A chave e o conteúdo da criação são guardados antes da rede para repetição após resposta perdida. Sucesso é reconhecido antes de atualizar consultas ou navegar. FUNC continua consultando movimentos permitidos sem link para o documento de transferência.
+
+Branches empilhadas `stage10-transfers`: frontend base `2730110`, backend base `65d6585`; SDK e integração fixados em `867cef2e35596ae67f692f9e2fcfd4932953d513`. V5 preserva transferências anteriores como históricas somente para consulta, sem replay. Nenhum merge, implantação, migração compartilhada ou reparo histórico. Veja [STAGE10_RELEASE.md](docs/STAGE10_RELEASE.md) e [procedência do SDK](generated/PROVENANCE.md).
+
+Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
+
+Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend.
+
+Etapa 11: ajustes quantitativos em `/estoque/ajustes` (ADMIN/GER).
+Salve um rascunho com loja, justificativa e itens de entrada/saída, revise os
+saldos projetados e confirme. A confirmação reconsulta o estoque e impede
+saldo negativo ou overflow; cancelamento exige motivo e preserva o histórico.
+O editor usa recuperação local por sete dias, isolada por usuário, ambiente e
+documento, e guarda chave e conteúdo antes de enviar uma criação.
+
+## Etapa 12 — devoluções
+
+A etapa 12, integrada em `main` do frontend e `novaVersao` do backend, acrescenta devoluções de clientes em Vendas e
+para fornecedores em Compras, para ADMIN/GER nas lojas permitidas. Abra a
+venda concluída ou compra recebida para consultar o histórico e iniciar um
+rascunho; revise os efeitos e confirme explicitamente. Itens sem reposição
+consomem o limite de devolução sem aumentar estoque. Fornecedores exigem
+saldo disponível. Não há reembolso, crédito ou acerto financeiro; os valores
+originais não mudam. Consulte [regras e contrato](docs/STAGE12_RETURNS.md) e
+[evidências de validação](docs/STAGE12_RELEASE.md). V7 e o SDK completo estão nas branches integradas. A integração Git não executou
+migração de banco compartilhado nem deploy manual.
+
+Aceite da etapa 12 em 06/11/2026: [backend `c87fe72` aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339)
+e [frontend `b78cfbe`, validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
+Foram 74 testes backend executados (mais um bootstrap exclusivo da integração),
+179 testes unitários/componentes, 112 cenários de interface e 30 cenários reais
+em desktop/mobile, incluindo persistência após reinício. Integração local também
+aprovada; detalhes e limitações em [STAGE12_RELEASE.md](docs/STAGE12_RELEASE.md).

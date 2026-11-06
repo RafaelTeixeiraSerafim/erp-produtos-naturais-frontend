@@ -1,10 +1,18 @@
 # SDK do backend
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch de feature: `stage8-auth`, base `novaVersao` com recebimento. Não usa `main` nem merge integral de `cargoUsuario`.
-- Commit: `a3aa98212842a48bd3bb30302a25bca37c21727c`.
-- Contrato: `openapi-stage8.json`, obtido de `/v3/api-docs` com sessão de administrador em PostgreSQL descartável, migrado até V3. O teste `AuthenticationTests.exportAuthenticatedContract` exporta o contrato com `OPENAPI_EXPORT_FILE`.
-- Geração: Kubb 5.15.3, lockfile existente do backend, `OPENAPI_FILE=./openapi-stage8.json npm run sdk:generate`.
-- A pasta `generated/sdk` inteira, incluindo `.kubb`, foi copiada desse commit. Nenhum arquivo gerado foi editado manualmente.
-- Base gerada vazia; providers mantém chamadas no proxy da aplicação. Login/sessões/CSRF e contas fazem parte do contrato completo. Operações sem suporte continuam bloqueadas diretamente no backend e no proxy.
-- `scripts/integration.mjs` fixa esse commit. `INTEGRATION_BACKEND_REPO` troca apenas a origem do clone para validar o mesmo commit em checkout local antes de publicá-lo.
+- Branch integrada: `novaVersao`; origem `stage12-returns`, base `bdd39f3`.
+- Commit de código validado e fixado no runner: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`, contido em `novaVersao`.
+- Contrato: `openapi-stage12.json`, exportado por `ReturnsTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V7 descartável.
+- Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage12.json npm run sdk:generate`.
+- SDK inteiro copiado do backend, incluindo `.kubb`, sem edição manual de arquivos gerados.
+- Tipos distintos para itens de ajuste, devolução de cliente e devolução a fornecedor.
+- Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID somente na criação das APIs aprovadas, incluindo devoluções.
+- `scripts/integration.mjs` fixa o SHA acima.
+- Evidências anteriores permanecem nos registros das etapas 9–11; evidência desta etapa em `docs/STAGE12_RELEASE.md`.
+
+- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
+- [CI consumidor validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563) no frontend `b78cfbe`.
+
+Integração em 06/11/2026: frontend `main`, backend `novaVersao`. O contrato e
+o SDK permanecem os mesmos do aceite; mudanças documentais não exigem regeneração.
