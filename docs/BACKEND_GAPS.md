@@ -6,7 +6,15 @@ IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de corr
 
 ## Contexto atual de publicação
 
-Frontend de referência: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend), branch `main`, commit `6a4d7f462196ac1d230f0c52a11a653ac175cb6d`. Backend de referência: `Zayma1/erp-produtos-naturais-backend`, branch `novaVersao`, commit `a3aa98212842a48bd3bb30302a25bca37c21727c`. A etapa 8 foi integrada por fast-forward em 06/11/2026. `stage8-auth` foi removida localmente e dos remotos de ambos; `cargoUsuario` foi removida do remoto backend após adaptação de suas partes úteis. O frontend original permanece como `upstream`.
+Frontend de referência: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend),
+branch `main`, contendo o código validado `b78cfbe`. Backend de referência:
+`Zayma1/erp-produtos-naturais-backend`, branch `novaVersao`, contendo o código
+validado `c87fe72`. Em 06/11/2026, as branches `stage12-returns` foram integradas
+nesses destinos por solicitação do usuário, incluindo as etapas 9–11. As branches
+de origem foram preservadas. A `main` do backend não foi alterada; o frontend
+original permanece como `upstream` e não recebeu este merge. Ver
+[registro da integração](STAGE12_RELEASE.md). A integração Git não comprova o
+commit em produção nem aplica migrações ao banco compartilhado.
 
 O frontend usa a integração nativa Vercel/Git. A leitura pública observada em 05/11/2026 pertence à versão anterior à autenticação: não descreve a versão integrada atual nem comprova o estado atual de produção. O push em `main` pode disparar deploy, mas não foram auditados nesta revisão o commit executado pelo Render/Vercel nem as migrações do banco compartilhado. Consultar o [checklist de release](STAGE8_RELEASE.md).
 
@@ -403,7 +411,7 @@ Substituída a função SQL ausente por confirmação transacional, com versão,
 escopo, idempotência, auditoria e snapshots. A parcela de ajustes de BG-001 e
 BG-002 está encerrada nesta branch; evidências em [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
 
-### Etapa 12 — devoluções (aceita na branch)
+### Etapa 12 — devoluções (integrada em main/novaVersao)
 
 As funções de devolução de cliente/fornecedor de BG-001 agora têm implementação
 transacional versionada em V7, com limites autoritativos, escopo ADMIN/GER,
@@ -421,5 +429,5 @@ Aceite final da etapa 12 em 06/11/2026: backend `c87fe72`, 75 testes registrados
 Frontend `b78cfbe`, 179 testes unitários/componentes, 112 cenários com fixtures
 e 30 cenários reais desktop/mobile, com persistência após reinício,
 [validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
-A parcela de devoluções de BG-001 está encerrada na branch; reconciliação de
+A parcela de devoluções de BG-001 está encerrada na versão integrada; reconciliação de
 históricos, acertos financeiros e demais itens diferidos não foram implementados.

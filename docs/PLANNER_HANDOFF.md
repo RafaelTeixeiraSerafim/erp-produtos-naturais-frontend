@@ -1,6 +1,13 @@
 # Handoff para o agente planejador — Vila Verde
 
-Referência atual: etapa 10 concluída em implementação e aceite local/CI, em 06/11/2026. Consulte [Etapa 10 — transferências imediatas entre lojas](#etapa-10--transferências-imediatas-entre-lojas) e [STAGE10_RELEASE.md](STAGE10_RELEASE.md). As seções das etapas anteriores preservam o histórico; as informações da etapa 10 prevalecem sobre estados de branches, checkouts e capacidades descritos nas etapas anteriores.
+Referência atual: etapa 12 concluída e integrada em `main` do frontend e
+`novaVersao` do backend em 06/11/2026, por solicitação do usuário. As etapas
+9–11 estão incluídas com seu histórico preservado. Código validado: frontend
+`b78cfbe`, backend `c87fe72`; o runner mantém esse pin de backend.
+Consulte [STAGE12_RELEASE.md](STAGE12_RELEASE.md) e
+[STAGE12_RETURNS.md](STAGE12_RETURNS.md). As seções anteriores são registros
+históricos; esta referência prevalece sobre estados antigos de branches e
+checkouts. Nenhum deploy manual ou migração compartilhada foi executado.
 
 ## Etapa 9 — vendas operacionais
 
@@ -396,4 +403,7 @@ aprovadas: 74 testes backend executados (um bootstrap separado), 179 testes
 unitários/componentes, 112 cenários de interface e 30 cenários reais. Integração
 local completa aprovada com os dados comparados após reinício do backend.
 Código concluído; último commit de documentação registra somente as evidências.
-Sem merge, deploy, migração compartilhada ou alteração de main/novaVersao.
+Integração posterior autorizada pelo usuário: `stage12-returns` → `main` no
+frontend e `stage12-returns` → `novaVersao` no backend. Merges sem conflitos,
+com histórico preservado; nenhum deploy manual ou migração compartilhada.
+As branches de origem permanecem; a `main` do backend não foi alterada.

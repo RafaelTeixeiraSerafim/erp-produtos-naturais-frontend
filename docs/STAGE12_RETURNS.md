@@ -1,7 +1,10 @@
 # Etapa 12 — devoluções de clientes e fornecedores
 
 Branches `stage12-returns`, frontend base `20c5c80` e backend base `bdd39f3`.
-Etapas 9–11 preservadas. Sem merge, implantação ou alteração de main/novaVersao.
+Etapas 9–11 preservadas. Em 06/11/2026, a etapa foi integrada em `main` do
+frontend e `novaVersao` do backend, por solicitação do usuário. As branches de
+origem permanecem disponíveis. A integração não executou deploy manual nem
+migração de banco compartilhado.
 
 As duas APIs `/api/devolucoes-clientes` e `/api/devolucoes-fornecedores` permitem
 GET de coleção/detalhe, POST com UUID Idempotency-Key, PUT com versão e POST

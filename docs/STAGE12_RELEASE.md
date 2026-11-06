@@ -3,7 +3,18 @@
 Implementação e decisões: [STAGE12_RETURNS.md](STAGE12_RETURNS.md).
 
 Branches `stage12-returns` criadas nas bases frontend `20c5c80` e backend
-`bdd39f3`. Nenhum merge, deploy ou migração de banco compartilhado foi realizado.
+`bdd39f3`. Em 06/11/2026, por solicitação do usuário, `stage12-returns` foi
+integrada em `main` do frontend e `novaVersao` do backend por commits de merge,
+sem conflitos. As etapas 9–11 foram incluídas com seu histórico preservado.
+A `main` do backend e o remoto `upstream` do frontend não foram alterados.
+Nenhum deploy manual ou migração de banco compartilhado foi executado.
+As branches de origem foram preservadas.
+
+A integração acrescenta apenas documentação ao código já validado abaixo.
+O pin do runner/SDK permanece no backend `c87fe72`, contido em `novaVersao`;
+não é necessário regenerar o SDK para mudanças exclusivamente documentais.
+Os pushes dos merges iniciam as verificações automáticas dos destinos; os links
+abaixo registram o aceite do código de origem, sem confundir merge com deploy.
 
 ## Backend
 

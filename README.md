@@ -55,14 +55,14 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch de feature **`stage12-returns`** (base `bdd39f3`), commit **`c87fe72a66ca2fe8aaf14bead7101c0e95e27267`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, com a etapa 12 integrada a partir de `stage12-returns` (base `bdd39f3`), commit de código validado **`c87fe72a66ca2fe8aaf14bead7101c0e95e27267`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
 O SDK completo foi regenerado a partir do contrato local completo do backend, incluindo devoluções. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
-O commit de integração está fixado no runner e foi enviado à branch `stage12-returns`; esta etapa ainda não foi incorporada à `novaVersao`. Para conferir a referência:
+O commit de integração está fixado no runner e está contido na branch `novaVersao` após o merge de `stage12-returns`. Para conferir a referência:
 
 ```bash
-git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage12-returns
+git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/novaVersao
 ```
 
 ## Integração descartável
@@ -233,15 +233,15 @@ documento, e guarda chave e conteúdo antes de enviar uma criação.
 
 ## Etapa 12 — devoluções
 
-As branches `stage12-returns` acrescentam devoluções de clientes em Vendas e
+A etapa 12, integrada em `main` do frontend e `novaVersao` do backend, acrescenta devoluções de clientes em Vendas e
 para fornecedores em Compras, para ADMIN/GER nas lojas permitidas. Abra a
 venda concluída ou compra recebida para consultar o histórico e iniciar um
 rascunho; revise os efeitos e confirme explicitamente. Itens sem reposição
 consomem o limite de devolução sem aumentar estoque. Fornecedores exigem
 saldo disponível. Não há reembolso, crédito ou acerto financeiro; os valores
 originais não mudam. Consulte [regras e contrato](docs/STAGE12_RETURNS.md) e
-[evidências de validação](docs/STAGE12_RELEASE.md). V7 e o SDK completo pertencem
-à nova branch; nenhum banco compartilhado, deploy ou merge foi realizado.
+[evidências de validação](docs/STAGE12_RELEASE.md). V7 e o SDK completo estão nas branches integradas. A integração Git não executou
+migração de banco compartilhado nem deploy manual.
 
 Aceite da etapa 12 em 06/11/2026: [backend `c87fe72` aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339)
 e [frontend `b78cfbe`, validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).

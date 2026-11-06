@@ -1,8 +1,8 @@
 # SDK do backend
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch: `stage12-returns`, base `bdd39f3`.
-- Commit: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`.
+- Branch integrada: `novaVersao`; origem `stage12-returns`, base `bdd39f3`.
+- Commit de código validado e fixado no runner: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`, contido em `novaVersao`.
 - Contrato: `openapi-stage12.json`, exportado por `ReturnsTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V7 descartável.
 - Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage12.json npm run sdk:generate`.
 - SDK inteiro copiado do backend, incluindo `.kubb`, sem edição manual de arquivos gerados.
@@ -13,3 +13,6 @@
 
 - [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
 - [CI consumidor validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563) no frontend `b78cfbe`.
+
+Integração em 06/11/2026: frontend `main`, backend `novaVersao`. O contrato e
+o SDK permanecem os mesmos do aceite; mudanças documentais não exigem regeneração.
