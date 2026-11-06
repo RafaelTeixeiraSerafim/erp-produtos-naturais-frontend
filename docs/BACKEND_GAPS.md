@@ -10,7 +10,7 @@ Frontend atual: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](http
 
 O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais-frontend.vercel.app) via dashboard/integração Git nativa. Em 05/11/2026, uma consulta HTTP sem credenciais/cookies retornou 200 em `/visao-geral` e em `/api/categorias` (JSON array). Não foram feitas mutações no ambiente publicado. Isso confirma acesso público de leitura e atualiza o impacto de BG-011; não comprova qual commit do backend está em execução nem revalida recebimento em produção.
 
-**Situação das lacunas:** BG-003/BG-004 resolvidas no commit de referência, com [CI frontend original](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779) e [CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351) aprovadas. A etapa 8 corrige BG-011/BG-020 na branch `stage8-auth` (backend `396c426b6709d2a95e10222064e6c10218247a09`), com aceite funcional local; não houve implantação em ambiente compartilhado. Actions foram habilitadas pelo usuário em 06/11/2026; os resultados dos jobs do fork estão em verificação. As demais entradas permanecem abertas; concorrência e idempotência continuam parcialmente resolvidas no recebimento.
+**Situação das lacunas:** BG-003/BG-004 resolvidas no commit de referência, com [CI frontend original](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779) e [CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351) aprovadas. A etapa 8 corrige BG-011/BG-020 na branch `stage8-auth` (backend `396c426b6709d2a95e10222064e6c10218247a09`), com aceite funcional local; não houve implantação em ambiente compartilhado. Os jobs `validate` e `integration` do fork passaram em 06/11/2026 na [execução 42154913714](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42154913714). As demais entradas permanecem abertas; concorrência e idempotência continuam parcialmente resolvidas no recebimento.
 
 ## Índice
 
@@ -182,7 +182,7 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 
 - **Tipo:** Capacidade ausente.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
-- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. Publicação coordenada e CI do fork pendentes.
+- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. CI do fork aprovada; publicação coordenada pendente.
 - **Fonte:** [SecurityConfig.securityFilterChain](https://github.com/Zayma1/erp-produtos-naturais-backend/blob/e0f312e611d56ab73a4a8e3d5832f8b8874ff362/src/main/java/com/vilaverde/erp/config/SecurityConfig.java).
 - **Comportamento observado:** Todas as requisições são permitAll; não há isolamento/autorização por usuário/loja.
 - **Impacto/contorno no frontend:** O frontend agora tem implantação pública na Vercel; leitura de categorias pelo proxy retornou 200 sem credenciais/cookies em 05/11/2026. A seleção explícita de operador em vendas/recebimentos identifica o registro internamente e não autentica nem autoriza a pessoa. Não foram testadas escritas no ambiente publicado.
@@ -193,7 +193,7 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 - **Atualização da etapa 7:** Etapa 7: recebimento exige operador existente, escolhido explicitamente na interface interna. Essa seleção não autentica nem autoriza o usuário. BG-011 continua aberta.
 
 - **Implementação da etapa 8:** Sessões JDBC, BCrypt, CSRF inclusive login/logout, expirações, revogação, limite persistido de tentativas e contas administrativas. ADMIN/GER/FUNC são validados diretamente na API, com atribuições aplicadas nas coleções SQL, detalhes, escritas, confirmação, histórico e replay. IDs de outra loja retornam 404; operações proibidas 403; anônimos recebem 401 direto e pelo proxy. O ator vem do principal, com autor/modificador/confirmador separados. A comparação de `cargoUsuario` encontrou loader nulo e sem registro, `findByUuid` inválido, authorities/enum incorretos, permitAll, senhas em texto puro e regressão de recebimento; a branch foi adaptada, sem merge integral.
-- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 104 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A ausência de execuções no fork não foi tratada como aprovação de CI.
+- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 104 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A CI do fork foi posteriormente confirmada na [execução 42154913714](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42154913714), com `validate` e `integration` aprovados.
 
 <a id="bg-012"></a>
 ## BG-012 — Precedência de preços sobrepostos indefinida
@@ -304,7 +304,7 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 
 - **Tipo:** Defeito.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
-- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. Publicação coordenada e CI do fork pendentes.
+- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. CI do fork aprovada; publicação coordenada pendente.
 - **Fonte:** [UsuarioService.criar / atualizar](https://github.com/Zayma1/erp-produtos-naturais-backend/blob/e0f312e611d56ab73a4a8e3d5832f8b8874ff362/src/main/java/com/vilaverde/erp/service/UsuarioService.java).
 - **Comportamento observado:** Ambos os métodos chamam setSenhaHash(dto.senha()), sem hashing no serviço inspecionado. Confirmado por inspeção; conteúdo de senha persistida não foi consultado nem registrado.
 - **Impacto/contorno no frontend:** Sem gestão de usuários ou autenticação. Operador descartável é criado somente por teste upstream com segredo aleatório.
@@ -313,7 +313,7 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 - **Commit de correção:** `396c426b6709d2a95e10222064e6c10218247a09` (branch `stage8-auth`, base `novaVersao`).
 
 - **Implementação da etapa 8:** Criação, reset e alteração usam BCrypt custo 12, com senha temporária obrigatoriamente substituída e sessões revogadas. V3 invalida todas as credenciais antigas, preserva IDs/referências e cargo legado, sem fallback em texto puro; contas antigas exigem revisão/reset explícito. Hashes não integram DTOs, `/me`, logs de aplicação ou armazenamento do browser. Bootstrap é comando local sem HTTP e sem senha padrão.
-- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 104 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A ausência de execuções no fork não foi tratada como aprovação de CI.
+- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 104 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A CI do fork foi posteriormente confirmada na [execução 42154913714](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42154913714), com `validate` e `integration` aprovados.
 
 <a id="bg-021"></a>
 ## BG-021 — Criação de compras e vendas sem idempotência de requisição
