@@ -2,7 +2,7 @@
 
 Este é um checklist para execução posterior pelo responsável pelo ambiente. A implementação trabalha em branches de feature; não publica nem migra bancos compartilhados.
 
-CI já verificada em 06/11/2026: [frontend 49e9f77 — validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42154913714) e [backend 396c426](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42149861607), ambas aprovadas. As etapas operacionais abaixo continuam para execução posterior.
+CI da atualização de bootstrap automático verificada em 06/11/2026: [frontend `4a020b6` — validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42211139909) e [backend `8d4099b`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42211068182), ambas aprovadas. As etapas operacionais abaixo continuam para execução posterior.
 
 1. Confirmar os commits revisados de backend/frontend e CI `validate`/`integration` do **fork pessoal**. Status Vercel é evidência separada e não substitui CI. Manter a integração nativa Vercel/Git; não adicionar workflow de deploy.
 2. Reservar janela coordenada: frontend antigo sem autenticação não funciona com a API protegida. Fazer backup restaurável e executar os preflights V1/V2 do backend e `scripts/auth-preflight.sh` somente leitura. Reconciliar manualmente todos os IDs com colisão de e-mail. Não mesclar contas automaticamente.
