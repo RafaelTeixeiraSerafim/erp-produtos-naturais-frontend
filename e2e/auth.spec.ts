@@ -10,6 +10,10 @@ test("anonymous pages redirect, failed login stays generic and internal return d
 test("temporary password blocks business access until replacement",async({page})=>{
   await login(page,"temporary@example.test");await expect(page).toHaveURL(/\/alterar-senha/);
   await page.goto("/produtos");await expect(page).toHaveURL(/\/alterar-senha/);
+  await expect(page.getByRole("complementary")).toHaveCount(0);
+  await expect(page.getByRole("banner")).toHaveCount(0);
+  await expect(page.getByRole("navigation")).toHaveCount(0);
+  await expect(page.getByRole("heading",{name:"Alterar senha",exact:true})).toBeVisible();
   await page.getByLabel("Senha atual").fill("Fixture-password-123");await page.getByLabel("Nova senha").fill("Replacement-password-123");await page.getByRole("button",{name:"Salvar nova senha"}).click();await expect(page).toHaveURL(/\/login/);
 });
 test("employee navigation excludes purchases, users and catalog writes and server denies forbidden pages",async({page})=>{
@@ -54,4 +58,9 @@ test("default admin username accepts the temporary admin password",async({page})
   await page.getByLabel("Senha",{exact:true}).fill("admin");
   await page.getByRole("button",{name:"Entrar",exact:true}).click();
   await expect(page).toHaveURL(/\/alterar-senha/);
+  await expect(page.getByRole("complementary")).toHaveCount(0);
+  await expect(page.getByRole("banner")).toHaveCount(0);
+  page.once("dialog",dialog=>dialog.accept());
+  await page.getByRole("button",{name:"Sair",exact:true}).click();
+  await expect(page).toHaveURL(/\/login/);
 });

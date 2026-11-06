@@ -9,6 +9,8 @@ test("real account administration, forced change, assigned stores and session lo
   const context=await browser.newContext({baseURL:"http://127.0.0.1:3100",storageState:{cookies:[],origins:[]}});const person=await context.newPage();
   try {
     await person.goto("/login?returnTo=%2Festoque");await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(temporary);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/alterar-senha/);
+    await expect(person.getByRole("complementary")).toHaveCount(0);
+    await expect(person.getByRole("banner")).toHaveCount(0);
     expect((await context.request.get("/api/estoques")).status()).toBe(403);
     await person.getByLabel("Senha atual",{exact:true}).fill(temporary);await person.getByLabel("Nova senha",{exact:false}).fill(permanent);await person.getByRole("button",{name:"Salvar nova senha"}).click();await expect(person).toHaveURL(/\/login/);
     await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(permanent);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/estoque$/);

@@ -4,6 +4,8 @@ Atualização: 06/11/2026. Etapa 8 implementada nas branches `stage8-auth` de fr
 
 ## Etapa 8 — autenticação
 
+Correção de layout em 06/11: `/alterar-senha` usa apresentação independente, como `/login`, sem sidebar, header ou footer do dashboard. A ação Sair permanece no formulário (sem submetê-lo). Os 14 cenários locais de autenticação desktop/mobile passaram, incluindo ausência dos landmarks de navegação e logout durante a troca obrigatória; lint, tipos e build também aprovados. A suíte real recebeu as mesmas verificações de layout.
+
 Atualização posterior de 06/11: bootstrap automático solicitado pelo usuário, backend `8d4099b`. PostgreSQL local: 32 testes registrados (31 executados, 1 ignorado), incluindo criação concorrente, senha BCrypt, alias `admin`, troca obrigatória, ausência de reset em reinícios e preservação de administradores existentes. Frontend: campo de login aceita usuário ou e-mail; 14 cenários de autenticação desktop/mobile passaram localmente. CI desta atualização aprovada: [backend `8d4099b`, 32 testes registrados/31 executados](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42211068182); [frontend `4a020b6`, jobs validate/integration, 166 testes unitários, 106 cenários de navegador e 14 cenários reais](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42211139909). Os registros abaixo preservam também o aceite da versão anterior.
 
 - Frontend no fork pessoal `RafaelTeixeiraSerafim/erp-produtos-naturais-frontend`, branch de feature destinada a `main`. Backend em checkout isolado `../backend-stage8`, branch derivada de `novaVersao` com recebimento. O checkout original mantém `application.properties` modificado pelo usuário.

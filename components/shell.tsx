@@ -146,7 +146,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const user = useIdentity();
   const path = usePathname(),
     [open, setOpen] = useState(false);
-  if (path === "/login") return <main id="conteudo">{children}</main>;
+  if (path === "/login" || path === "/alterar-senha") return <main id="conteudo">{children}</main>;
   const current =
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
     [...inventoryLinks].reverse().find((x) => path === x.href) ||
