@@ -1,8 +1,8 @@
 # Release coordenada — autenticação
 
-Este é um checklist para execução posterior pelo responsável pelo ambiente. A implementação trabalha em branches de feature; não publica nem migra bancos compartilhados.
+Este é um checklist para execução pelo responsável pelo ambiente. Em 06/11/2026, a etapa 8 foi integrada à `main` do fork frontend (`6a4d7f4`) e à `novaVersao` do backend (`a3aa982`); as branches de feature foram removidas. O push em `main` pode acionar a integração nativa Vercel/Git. Não foram executadas migrações de bancos compartilhados nesta sessão; o estado da implantação precisa ser verificado.
 
-CI da atualização de senha/foco verificada em 06/11/2026: [frontend `85f237f` — validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42218282295) e [backend `a3aa982`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42218105138), ambas aprovadas. As etapas operacionais abaixo continuam para execução posterior.
+CI da versão integrada verificada em 06/11/2026: [frontend `main`, `6a4d7f4` — validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42223775274) e [backend `a3aa982`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42218105138), ambas aprovadas. As etapas operacionais abaixo continuam para execução posterior.
 
 1. Confirmar os commits revisados de backend/frontend e CI `validate`/`integration` do **fork pessoal**. Status Vercel é evidência separada e não substitui CI. Manter a integração nativa Vercel/Git; não adicionar workflow de deploy.
 2. Reservar janela coordenada: frontend antigo sem autenticação não funciona com a API protegida. Fazer backup restaurável e executar os preflights V1/V2 do backend e `scripts/auth-preflight.sh` somente leitura. Reconciliar manualmente todos os IDs com colisão de e-mail. Não mesclar contas automaticamente.

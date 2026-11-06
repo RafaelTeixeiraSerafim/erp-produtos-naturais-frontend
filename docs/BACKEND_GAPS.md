@@ -6,11 +6,13 @@ IDs são permanentes. Ao resolver, manter a entrada e acrescentar commit de corr
 
 ## Contexto atual de publicação
 
-Frontend atual: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend), branch `main`. O original permanece como `upstream`; links históricos de CI continuam apontando para suas execuções originais. O backend de referência é `Zayma1/erp-produtos-naturais-backend`, branch `novaVersao`, commit `f335d525ea6ed107cd00824031ded904020967fe`; `stage7-receiving` já foi incorporada e removida.
+Frontend de referência: [fork RafaelTeixeiraSerafim/erp-produtos-naturais-frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend), branch `main`, commit `6a4d7f462196ac1d230f0c52a11a653ac175cb6d`. Backend de referência: `Zayma1/erp-produtos-naturais-backend`, branch `novaVersao`, commit `a3aa98212842a48bd3bb30302a25bca37c21727c`. A etapa 8 foi integrada por fast-forward em 06/11/2026. `stage8-auth` foi removida localmente e dos remotos de ambos; `cargoUsuario` foi removida do remoto backend após adaptação de suas partes úteis. O frontend original permanece como `upstream`.
 
-O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais-frontend.vercel.app) via dashboard/integração Git nativa. Em 05/11/2026, uma consulta HTTP sem credenciais/cookies retornou 200 em `/visao-geral` e em `/api/categorias` (JSON array). Não foram feitas mutações no ambiente publicado. Isso confirma acesso público de leitura e atualiza o impacto de BG-011; não comprova qual commit do backend está em execução nem revalida recebimento em produção.
+O frontend usa a integração nativa Vercel/Git. A leitura pública observada em 05/11/2026 pertence à versão anterior à autenticação: não descreve a versão integrada atual nem comprova o estado atual de produção. O push em `main` pode disparar deploy, mas não foram auditados nesta revisão o commit executado pelo Render/Vercel nem as migrações do banco compartilhado. Consultar o [checklist de release](STAGE8_RELEASE.md).
 
-**Situação das lacunas:** BG-003/BG-004 resolvidas no commit de referência, com [CI frontend original](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779) e [CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351) aprovadas. A etapa 8 corrige BG-011/BG-020 na branch `stage8-auth` (backend `396c426b6709d2a95e10222064e6c10218247a09`), com aceite funcional local; não houve implantação em ambiente compartilhado. Os jobs `validate` e `integration` do fork passaram em 06/11/2026 na [execução 42211139909](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42211139909). As demais entradas permanecem abertas; concorrência e idempotência continuam parcialmente resolvidas no recebimento.
+**Situação das lacunas:** BG-003/BG-004 resolvidas na etapa 7; BG-011/BG-020 encerradas na versão integrada da etapa 8, com aceite funcional backend/frontend e CI. [Frontend `main`: validate/integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42223775274) e [backend `a3aa982`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42218105138) aprovados. As demais entradas permanecem abertas; concorrência e idempotência continuam parcialmente resolvidas no recebimento. As observações sob o SHA legado em cada entrada registram o diagnóstico original; as atualizações posteriores indicam o efeito da etapa 8.
+
+**Revalidação local em 06/11/2026:** GET sem cookies em `localhost:8090` para vendas, produtos, clientes, compras, usuários e `/api/auth/me` retornou 401. O processo ativo usa o checkout isolado atualizado. Abrir a API no mesmo navegador autenticado pode enviar o cookie `SESSION`, pois cookies de `localhost` são compartilhados entre portas; esse acesso autenticado não reproduz BG-011.
 
 ## Índice
 
@@ -182,18 +184,18 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 
 - **Tipo:** Capacidade ausente.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
-- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. CI do fork aprovada; publicação coordenada pendente.
+- **Situação:** Encerrada na versão integrada em `novaVersao` (`a3aa982`), após aceite funcional backend/frontend e CI aprovada. Implantação e migrações em produção não auditadas.
 - **Fonte:** [SecurityConfig.securityFilterChain](https://github.com/Zayma1/erp-produtos-naturais-backend/blob/e0f312e611d56ab73a4a8e3d5832f8b8874ff362/src/main/java/com/vilaverde/erp/config/SecurityConfig.java).
 - **Comportamento observado:** Todas as requisições são permitAll; não há isolamento/autorização por usuário/loja.
 - **Impacto/contorno no frontend:** O frontend agora tem implantação pública na Vercel; leitura de categorias pelo proxy retornou 200 sem credenciais/cookies em 05/11/2026. A seleção explícita de operador em vendas/recebimentos identifica o registro internamente e não autentica nem autoriza a pessoa. Não foram testadas escritas no ambiente publicado.
 - **Correção solicitada:** Definir autenticação, autorização por operação/loja e identidade auditável no servidor.
 - **Aceite testável:** Sem credencial válida retorna 401; sem permissão retorna 403; cliente não consegue escolher identidade ou acessar loja indevida.
-- **Commit de correção:** `396c426b6709d2a95e10222064e6c10218247a09` (branch `stage8-auth`, base `novaVersao`).
+- **Commit de correção:** `396c426b6709d2a95e10222064e6c10218247a09` (correção inicial), incorporado em `novaVersao`; referência final `a3aa98212842a48bd3bb30302a25bca37c21727c`.
 
 - **Atualização da etapa 7:** Etapa 7: recebimento exige operador existente, escolhido explicitamente na interface interna. Essa seleção não autentica nem autoriza o usuário. BG-011 continua aberta.
 
 - **Implementação da etapa 8:** Sessões JDBC, BCrypt, CSRF inclusive login/logout, expirações, revogação, limite persistido de tentativas e contas administrativas. ADMIN/GER/FUNC são validados diretamente na API, com atribuições aplicadas nas coleções SQL, detalhes, escritas, confirmação, histórico e replay. IDs de outra loja retornam 404; operações proibidas 403; anônimos recebem 401 direto e pelo proxy. O ator vem do principal, com autor/modificador/confirmador separados. A comparação de `cargoUsuario` encontrou loader nulo e sem registro, `findByUuid` inválido, authorities/enum incorretos, permitAll, senhas em texto puro e regressão de recebimento; a branch foi adaptada, sem merge integral.
-- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 106 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A CI do fork foi posteriormente confirmada na [execução 42211139909](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42211139909), com `validate` e `integration` aprovados.
+- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 106 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). CI final na [execução de `main` 42223775274](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42223775274), com `validate` e `integration` aprovados, e [backend `a3aa982`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42218105138) aprovado (33 testes registrados, 32 executados e 1 ignorado).
 
 <a id="bg-012"></a>
 ## BG-012 — Precedência de preços sobrepostos indefinida
@@ -247,6 +249,8 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 - **Aceite testável:** Omitir cada ID individualmente retorna 400 com mensagem de campo; payload válido cria ABERTA.
 - **Commit de correção:** pendente.
 
+- **Atualização da etapa 8:** Operador passa a vir do principal autenticado; `idUsuario` omitido é permitido e outro ID é rejeitado. A interface não oferece seletor de operador. `idCliente` continua opcional no DTO; a inconsistência de cliente permanece aberta.
+
 <a id="bg-016"></a>
 ## BG-016 — Observação de venda não retorna na consulta
 
@@ -272,6 +276,8 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 - **Correção solicitada:** Definir política de imutabilidade por status e validá-la em transação.
 - **Aceite testável:** PUT/DELETE de venda concluída/cancelada são rejeitados com erro de negócio, sem modificar itens/cabeçalho.
 - **Commit de correção:** pendente.
+
+- **Atualização da etapa 8:** PUT/DELETE de vendas são negados diretamente pela API para todos os perfis, além do proxy. Isso bloqueia o fluxo sem suporte, mas não implementa política de edição/exclusão por status no serviço; a lacuna permanece aberta.
 
 <a id="bg-018"></a>
 ## BG-018 — Validação monetária e de precisão insuficiente nos itens de venda
@@ -304,16 +310,16 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 
 - **Tipo:** Defeito.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
-- **Situação:** Corrigida na branch da etapa 8, após aceite funcional backend/frontend. CI do fork aprovada; publicação coordenada pendente.
+- **Situação:** Encerrada na versão integrada em `novaVersao` (`a3aa982`), após aceite funcional backend/frontend e CI aprovada. Implantação e migrações em produção não auditadas.
 - **Fonte:** [UsuarioService.criar / atualizar](https://github.com/Zayma1/erp-produtos-naturais-backend/blob/e0f312e611d56ab73a4a8e3d5832f8b8874ff362/src/main/java/com/vilaverde/erp/service/UsuarioService.java).
 - **Comportamento observado:** Ambos os métodos chamam setSenhaHash(dto.senha()), sem hashing no serviço inspecionado. Confirmado por inspeção; conteúdo de senha persistida não foi consultado nem registrado.
 - **Impacto/contorno no frontend:** Sem gestão de usuários ou autenticação. Operador descartável é criado somente por teste upstream com segredo aleatório.
 - **Correção solicitada:** Aplicar hash de senha adequado e política consistente de criação/atualização, com tratamento seguro de credenciais.
 - **Aceite testável:** Teste de serviço comprova hash verificável diferente da senha recebida; resposta/log não expõe senha nem hash.
-- **Commit de correção:** `396c426b6709d2a95e10222064e6c10218247a09` (branch `stage8-auth`, base `novaVersao`).
+- **Commit de correção:** `396c426b6709d2a95e10222064e6c10218247a09` (correção inicial), incorporado em `novaVersao`; referência final `a3aa98212842a48bd3bb30302a25bca37c21727c`.
 
-- **Implementação da etapa 8:** Criação, reset e alteração usam BCrypt custo 12, com senha temporária obrigatoriamente substituída e sessões revogadas. V3 invalida todas as credenciais antigas, preserva IDs/referências e cargo legado, sem fallback em texto puro; contas antigas exigem revisão/reset explícito. Hashes não integram DTOs, `/me`, logs de aplicação ou armazenamento do browser. Por solicitação posterior do usuário (backend `8d4099b`), o startup HTTP cria `admin` / `admin` somente se não houver ADMIN ativo/revisado; a senha é BCrypt, temporária e exige troca antes de acesso de negócio. Administradores/senhas existentes não são alterados. O comando local continua como alternativa, sem endpoint público de bootstrap.
-- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 106 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). A CI do fork foi posteriormente confirmada na [execução 42211139909](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42211139909), com `validate` e `integration` aprovados.
+- **Implementação da etapa 8:** Criação, reset e alteração usam BCrypt custo 12, com senha temporária obrigatoriamente substituída e sessões revogadas. V3 invalida todas as credenciais antigas, preserva IDs/referências e cargo legado, sem fallback em texto puro; contas antigas exigem revisão/reset explícito. Hashes não integram DTOs, `/me`, logs de aplicação ou armazenamento do browser. Por solicitação posterior do usuário (backend `8d4099b`), o startup HTTP cria `admin` / `admin` somente se não houver ADMIN ativo/revisado; a senha é BCrypt, temporária e exige troca antes de acesso de negócio. Administradores/senhas existentes não são alterados. O comando local continua como alternativa, sem endpoint público de bootstrap. O mínimo atual é de 8 caracteres para criação/reset/troca (backend `a3aa982`); a credencial inicial `admin` é a exceção temporária do bootstrap.
+- **Aceite da etapa 8:** testes PostgreSQL/HTTP de autenticação, perfis, isolamento, falsificação de ator, replay e concorrência; 166 testes frontend, 106 cenários de navegador e 14 cenários reais autenticados desktop/mobile com PostgreSQL descartável, build de produção, 401 anônimo nos dois caminhos e persistência após reinício. Evidência local registrada no [handoff](PLANNER_HANDOFF.md#etapa-8--autenticação). CI final na [execução de `main` 42223775274](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42223775274), com `validate` e `integration` aprovados, e [backend `a3aa982`](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42218105138) aprovado (33 testes registrados, 32 executados e 1 ignorado).
 
 <a id="bg-021"></a>
 ## BG-021 — Criação de compras e vendas sem idempotência de requisição
@@ -363,6 +369,12 @@ Esta seção atualiza o estado das lacunas de vendas; os relatos anteriores desc
 
 O contrato integral e o runner do frontend fixam esse commit. O [aceite da etapa 9](STAGE9_RELEASE.md) descreve as verificações, o comando da integração real e o gate de CI do fork pessoal. Nenhum banco compartilhado foi migrado e a versão em produção não foi auditada nesta etapa.
 
+### Aceite final e correção local
+
+Frontend final: `27301102f2906e7a00c2eed02a3b445e964eeac1`, branch `stage9-sales`. [CI do fork pessoal aprovada, validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42242646140): lint, tipos, 167 testes unitários/componentes, 106 cenários de navegador, build, smoke autenticado e 18 cenários reais desktop/mobile, incluindo persistência de vendas/itens/estoque/movimentos após reinício do backend fixado. O aceite local da mesma integração também passou. Esses resultados completam a evidência das correções de vendas descritas acima; compras continuam com BG-021/BG-022 abertas.
+
+Após a entrega, o banco local `vila-verde-demo-db` apresentou checksum da V4 intermediária `-979646665`, enquanto o código final possui `597117758`. A comparação com esquema isolado confirmou apenas duas diferenças: `venda.atualizado_em` e `venda_lifecycle_audit`. Com backup/relatório em `/home/rafael.serafim/.local/state/vila-verde/backups/20261106-141433-stage9/`, foram aplicadas as adições e reconciliado o histórico local transacionalmente, sem alterar dados de negócio. A inicialização temporária validou as quatro migrations e retornou 401 sem sessão em /api/vendas; processo de verificação encerrado. Não houve alteração das migrations publicadas nem intervenção em banco compartilhado. Esta reconciliação específica não autoriza repair genérico para outros checksums/esquemas.
+
 ## Atualização da etapa 10 — transferências
 
 Backend `867cef2e35596ae67f692f9e2fcfd4932953d513`, branch `stage10-transfers`, base `65d6585` de `stage9-sales`. SDK completo e runner usam esse SHA; V1–V4 permanecem inalteradas.
@@ -373,3 +385,9 @@ Backend `867cef2e35596ae67f692f9e2fcfd4932953d513`, branch `stage10-transfers`, 
 | BG-002 | Resolvida para transferências: detalhe retorna IDs de itens/produtos, nomes, quantidades, unidades salvas, versão e auditoria. Detalhes de ajustes permanecem abertos. |
 
 Históricos são somente leitura e não recebem efeitos/snapshots inferidos. Não há reparo de estoque ou migração compartilhada. Evidências e limites: [STAGE10_RELEASE.md](STAGE10_RELEASE.md). Demais lacunas preservam seus estados anteriores.
+
+### Aceite final da etapa 10
+
+Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
+
+Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend. Esta evidência encerra somente as parcelas de transferências de BG-001/BG-002. As parcelas de ajustes e as demais lacunas abertas não foram encerradas por inferência. As branches seguem sem integração, implantação ou migração compartilhada.

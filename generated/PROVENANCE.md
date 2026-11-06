@@ -8,3 +8,6 @@
 - `generated/sdk` inteira, incluindo `.kubb`, copiada do backend; nenhum arquivo gerado editado manualmente.
 - Base gerada vazia; proxy de mesma origem com sessão e CSRF. Transferências exigem UUID Idempotency-Key na criação e versão em edição/conclusão/cancelamento. DELETE bloqueado.
 - `scripts/integration.mjs` fixa esse SHA; `INTEGRATION_BACKEND_REPO` muda somente a origem do clone.
+
+- Validação do pin: [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737) em `867cef2e35596ae67f692f9e2fcfd4932953d513`.
+- Consumidor validado: frontend `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, [validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532), incluindo smoke, 26 cenários reais e persistência após reinício.

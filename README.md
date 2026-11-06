@@ -1,6 +1,6 @@
-# Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos e vendas
+# Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos, vendas e transferências
 
-Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas abertas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
+Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas operacionais, transferências entre lojas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
 
 
 ## Etapa 8 — login, contas e permissões
@@ -9,7 +9,7 @@ O sistema exige autenticação. Use `/login` com uma conta revisada pelo adminis
 
 O backend valida sessões, permissões, lojas e operadores diretamente, mesmo sem o frontend. ADMIN gerencia tudo; GER gerencia catálogo, fornecedores, clientes e compras/recebimentos das lojas atribuídas; FUNC lê catálogo, cria/edita clientes, registra vendas abertas e consulta estoque das lojas atribuídas. Visão geral e CSVs respeitam o mesmo escopo; seções proibidas não são consultadas. A ausência de lojas tem explicação na tela. Vendas operacionais estão descritas na etapa 9. Transferências ADMIN/GER estão na etapa 10; DELETE, ajustes e reversões continuam indisponíveis.
 
-O proxy encaminha apenas `SESSION`, `X-CSRF-TOKEN` e os headers aprovados, incluindo `Idempotency-Key` nos recebimentos. Reescreve o cookie como host-only, HttpOnly, SameSite=Lax, Secure fora de localhost e preserva giro/remoção. Senhas/tokens não são armazenados no browser; CSRF fica em memória e é renovado após login/logout. **Configure `FRONTEND_ORIGINS`** com as origens públicas exatas autorizadas a escrever (separadas por vírgula), além de `BACKEND_API_URL` somente no servidor. O listener interno do Next pode usar outro hostname; não use sua origem interna como substituto da origem pública. Não use `*` nem `NEXT_PUBLIC_*` para credenciais.
+O proxy encaminha apenas `SESSION`, `X-CSRF-TOKEN` e os headers aprovados, incluindo `Idempotency-Key` na criação de recebimentos, vendas e transferências. Reescreve o cookie como host-only, HttpOnly, SameSite=Lax, Secure fora de localhost e preserva giro/remoção. Senhas/tokens não são armazenados no browser; CSRF fica em memória e é renovado após login/logout. **Configure `FRONTEND_ORIGINS`** com as origens públicas exatas autorizadas a escrever (separadas por vírgula), além de `BACKEND_API_URL` somente no servidor. O listener interno do Next pode usar outro hostname; não use sua origem interna como substituto da origem pública. Não use `*` nem `NEXT_PUBLIC_*` para credenciais.
 
 Sessões JDBC expiram após 30 minutos de inatividade ou 12 horas desde o login. Troca/reset de senha, desativação e alterações administrativas revogam sessões. Falhas de login usam mensagem genérica e limite persistido de cinco tentativas em 15 minutos por e-mail normalizado (429 durante o bloqueio). 401 interrompe gravações e leva ao login; 403 informa falta de permissão sem encerrar a sessão.
 
@@ -219,3 +219,7 @@ Validação da etapa 7: 16 testes PostgreSQL, 156 testes frontend, regressão de
 Rascunhos não reservam estoque. A revisão de confirmação explica a movimentação imediata origem→destino; qualquer falta/overflow impede a operação inteira. Confirmados são imutáveis; somente rascunhos podem ser cancelados com motivo. Conflitos mantêm os valores locais e exigem revisão explícita. A chave e o conteúdo da criação são guardados antes da rede para repetição após resposta perdida. Sucesso é reconhecido antes de atualizar consultas ou navegar. FUNC continua consultando movimentos permitidos sem link para o documento de transferência.
 
 Branches empilhadas `stage10-transfers`: frontend base `2730110`, backend base `65d6585`; SDK e integração fixados em `867cef2e35596ae67f692f9e2fcfd4932953d513`. V5 preserva transferências anteriores como históricas somente para consulta, sem replay. Nenhum merge, implantação, migração compartilhada ou reparo histórico. Veja [STAGE10_RELEASE.md](docs/STAGE10_RELEASE.md) e [procedência do SDK](generated/PROVENANCE.md).
+
+Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
+
+Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend.
