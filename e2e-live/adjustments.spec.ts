@@ -3,6 +3,9 @@ test("ajuste real: revisão, saldos persistidos, repetição, falta e cancelamen
   const f=JSON.parse(process.env.SALES_FIXTURE!);
   const post=async(path:string,data:unknown,key?:string)=>{const r=await request.post(`/api/${path}`,{data,headers:key?{"Idempotency-Key":key}:{}});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
   const balance=async()=>Number((await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json()).quantidadeAtual);
+  const source=await (await request.get(`/api/produtos/${f.product}`)).json();
+  const createProduct=async()=>post("produtos",{nome:`Ajuste integração ${crypto.randomUUID()}`,idCategoria:source.idCategoria,idUnidadeMedida:source.idUnidadeMedida,tipoVenda:"PESO",status:"ATIVO"});
+  f.product=(await createProduct()).id;f.otherProduct=(await createProduct()).id;
   const initial=await balance();
   await page.goto("/estoque/ajustes/novo");
   await page.getByLabel("Loja *",{exact:true}).selectOption(f.store);

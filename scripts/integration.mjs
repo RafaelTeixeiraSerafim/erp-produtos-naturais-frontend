@@ -161,7 +161,7 @@ try {
   process.exitCode = 1;
 } finally {
   if (inventoryFixture) {
-    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
+    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Ajuste integração %'); DELETE FROM produto WHERE nome LIKE 'Ajuste integração %'; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
     catch(error) {process.exitCode=1;console.error(`Falha na limpeza de transferências: ${error.message}`);}
   }
   if (purchasesFixture && salesFixture) {
