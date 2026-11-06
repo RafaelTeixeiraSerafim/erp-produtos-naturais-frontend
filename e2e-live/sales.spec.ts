@@ -51,7 +51,7 @@ test("vendas reais: cliente e venda aberta com total agregado, reload e estoque 
   await expect(page.getByText("Status: Aberta")).toBeVisible();
   await expect(page.getByText(/^Total salvo:/)).toContainText("0,01");
   await expect(page.getByText("Subtotal salvo:")).toContainText("0,01");
-  await expect(page.getByRole("row")).toHaveCount(3);
+  await expect(page.getByRole("table").filter({has:page.getByRole("columnheader",{name:"PREÇO UNITÁRIO",exact:true})}).getByRole("row")).toHaveCount(3);
   await expect(page.getByRole("button", { name:"Concluir venda" })).toBeVisible();
   await expect(page.getByRole("link", { name:"Editar venda" })).toBeVisible();
   expect(await (await request.get("/api/estoques")).json()).toEqual(stock);

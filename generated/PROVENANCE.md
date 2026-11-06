@@ -2,7 +2,7 @@
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
 - Branch: `stage12-returns`, base `bdd39f3`.
-- Commit: `fac6c7352b18dc8847b529097bf25610af68a219`.
+- Commit: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`.
 - Contrato: `openapi-stage12.json`, exportado por `ReturnsTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V7 descartável.
 - Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage12.json npm run sdk:generate`.
 - SDK inteiro copiado do backend, incluindo `.kubb`, sem edição manual de arquivos gerados.
