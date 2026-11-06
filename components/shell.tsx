@@ -13,6 +13,7 @@ import {
   Menu,
   ChevronRight,
   Sprout,
+  UsersRound,
 } from "lucide-react";
 import {
   Dialog,
@@ -42,6 +43,9 @@ const purchaseLinks = [
 const inventoryLinks = [
   { href: "/estoque", label: "Saldos", icon: Package },
   { href: "/estoque/movimentacoes", label: "Movimentações", icon: Store },
+];
+const administrationLinks = [
+  { href: "/usuarios", label: "Usuários", icon: UsersRound },
 ];
 function Brand() {
   return (
@@ -123,7 +127,6 @@ function Navigation({
           {label}
         </Link>
       ))}
-      {user?.permissions.includes("users.manage") && <Link className="block px-3.5 py-3" href="/usuarios" onClick={onNavigate}>Usuários</Link>}
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         ESTOQUE
       </p>
@@ -139,6 +142,18 @@ function Navigation({
           {label}
         </Link>
       ))}
+      {administrationLinks.some(x => visible(x.href)) && <>
+        <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
+          ADMINISTRAÇÃO
+        </p>
+        {administrationLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} onClick={onNavigate}
+            aria-current={path.startsWith(href) ? "page" : undefined}
+            className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-primary">
+            <Icon size={19} />{label}
+          </Link>
+        ))}
+      </>}
     </nav>
   );
 }
@@ -152,7 +167,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
     [...inventoryLinks].reverse().find((x) => path === x.href) ||
     salesLinks.find((x) => path.startsWith(x.href)) ||
     purchaseLinks.find((x) => path.startsWith(x.href)) ||
-    links.find((x) => path.startsWith(x.href));
+    links.find((x) => path.startsWith(x.href)) ||
+    administrationLinks.find((x) => path.startsWith(x.href));
   return (
     <div className="flex min-h-screen">
       <a
@@ -204,7 +220,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-3 text-[12px] text-[#7b877e] mobile:gap-[7px] mobile:text-[11px]">
             <span>
-              {path === "/visao-geral" ? "Início" : salesLinks.some((x) => path.startsWith(x.href))
+              {path === "/visao-geral" ? "Início" : administrationLinks.some(x => path.startsWith(x.href)) ? "Administração" : salesLinks.some((x) => path.startsWith(x.href))
                 ? "Vendas"
                 : purchaseLinks.some((x) => path.startsWith(x.href))
                   ? "Compras"
