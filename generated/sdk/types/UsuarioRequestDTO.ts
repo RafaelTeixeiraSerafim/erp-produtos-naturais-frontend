@@ -33,7 +33,7 @@ export type UsuarioRequestDTO = {
    */
   email: string;
   /**
-   * @minLength 12
+   * @minLength 8
    * @maxLength 72
    * @type string | undefined
    */

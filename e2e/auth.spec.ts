@@ -14,7 +14,13 @@ test("temporary password blocks business access until replacement",async({page})
   await expect(page.getByRole("banner")).toHaveCount(0);
   await expect(page.getByRole("navigation")).toHaveCount(0);
   await expect(page.getByRole("heading",{name:"Alterar senha",exact:true})).toBeVisible();
-  await page.getByLabel("Senha atual").fill("Fixture-password-123");await page.getByLabel("Nova senha").fill("Replacement-password-123");await page.getByRole("button",{name:"Salvar nova senha"}).click();await expect(page).toHaveURL(/\/login/);
+  await expect(page.getByText("Operador",{exact:true})).toHaveCount(0);
+  await expect(page.getByText("Use ao menos 8 caracteres.",{exact:true})).toBeVisible();
+  const currentPassword=page.getByLabel("Senha atual");
+  await currentPassword.fill("Fixture-password-123");
+  expect(await currentPassword.evaluate(el=>getComputedStyle(el).outlineStyle)).toBe("none");
+  expect(await currentPassword.evaluate(el=>getComputedStyle(el).borderColor)).toBe("rgb(103, 166, 129)");
+  await page.getByLabel("Nova senha").fill("newpass8");await page.getByRole("button",{name:"Salvar nova senha"}).click();await expect(page).toHaveURL(/\/login/);
 });
 test("employee navigation excludes purchases, users and catalog writes and server denies forbidden pages",async({page})=>{
   const requested:string[]=[];page.on("request",r=>requested.push(new URL(r.url()).pathname));

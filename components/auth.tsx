@@ -28,17 +28,17 @@ export function AuthForm({ change = false }: { change?: boolean }) {
     <h1 className="text-2xl font-semibold">{change ? "Alterar senha" : "Entrar na Vila Verde"}</h1>
     {change ? <p>Substitua sua senha temporária para acessar o sistema. Depois, entre com a nova senha.</p> : <label className="block">E-mail ou usuário<Input type="text" autoComplete="username" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>}
     <label className="block">{change ? "Senha atual" : "Senha"}<Input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></label>
-    {change && <label className="block">Nova senha<Input type="password" autoComplete="new-password" required minLength={12} maxLength={72} value={next} onChange={e => setNext(e.target.value)} /><small>Use ao menos 12 caracteres (até 72 bytes).</small></label>}
+    {change && <label className="block">Nova senha<Input type="password" autoComplete="new-password" required minLength={8} maxLength={72} value={next} onChange={e => setNext(e.target.value)} /><small>Use ao menos 8 caracteres.</small></label>}
     {error && <p role="alert">{error}</p>}
     <Button disabled={busy} type="submit">{busy ? "Aguarde…" : change ? "Salvar nova senha" : "Entrar"}</Button>
-    {change && <AccountControls showPasswordChange={false} />}
+    {change && <AccountControls showPasswordChange={false} showIdentity={false} />}
   </form>;
 }
-export function AccountControls({ showPasswordChange = true }: { showPasswordChange?: boolean }) {
+export function AccountControls({ showPasswordChange = true, showIdentity = true }: { showPasswordChange?: boolean; showIdentity?: boolean }) {
   const user = useIdentity(), client = useQueryClient();
   const [error, setError] = useState("");
   if (!user) return null;
-  return <div className="flex flex-wrap items-center gap-2 text-xs"><span>{user.nome}</span>{showPasswordChange && <a href="/alterar-senha" className="underline">Alterar senha</a>}<Button type="button" variant="ghost" size="sm" onClick={async () => {
+  return <div className="flex flex-wrap items-center gap-2 text-xs">{showIdentity && <span>{user.nome}</span>}{showPasswordChange && <a href="/alterar-senha" className="underline">Alterar senha</a>}<Button type="button" variant="ghost" size="sm" onClick={async () => {
     if (!window.confirm("Sair e descartar os rascunhos locais desta conta neste ambiente?")) return;
     try {
       // Stop recovery writers in every tab before clearing the account's copies.

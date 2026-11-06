@@ -10,7 +10,7 @@ export type Password = {
    */
   senhaAtual: string;
   /**
-   * @minLength 12
+   * @minLength 8
    * @maxLength 72
    * @type string
    */

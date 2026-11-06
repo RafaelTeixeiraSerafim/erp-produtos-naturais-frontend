@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { test, expect } from "./auth-fixture";
 test("real account administration, forced change, assigned stores and session logout",async({page,browser,request})=>{
   const fixture=JSON.parse(process.env.SALES_FIXTURE!);
-  const name=`auth-${randomUUID().slice(0,8)}`, email=`${name}@example.test`, temporary=`Temporary-${randomUUID()}`, permanent=`Permanent-${randomUUID()}`;
+  const name=`auth-${randomUUID().slice(0,8)}`, email=`${name}@example.test`, temporary=`Temporary-${randomUUID()}`, permanent="newpass8";
   await page.goto("/usuarios");await page.getByLabel("Nome",{exact:true}).fill(name);await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Cargo",{exact:true}).selectOption("FUNC");
   const stores=await(await request.get("/api/lojas")).json();const store=stores.find((s:{id:string})=>s.id===fixture.store);
   await page.getByRole("checkbox",{name:store.nomeFantasia,exact:true}).check();await page.getByLabel("Senha temporária",{exact:true}).fill(temporary);await page.getByRole("button",{name:"Salvar conta"}).click();await expect(page.getByRole("button",{name:`Editar ${name}`})).toBeVisible();
@@ -11,6 +11,7 @@ test("real account administration, forced change, assigned stores and session lo
     await person.goto("/login?returnTo=%2Festoque");await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(temporary);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/alterar-senha/);
     await expect(person.getByRole("complementary")).toHaveCount(0);
     await expect(person.getByRole("banner")).toHaveCount(0);
+    await expect(person.getByText(name,{exact:true})).toHaveCount(0);
     expect((await context.request.get("/api/estoques")).status()).toBe(403);
     await person.getByLabel("Senha atual",{exact:true}).fill(temporary);await person.getByLabel("Nova senha",{exact:false}).fill(permanent);await person.getByRole("button",{name:"Salvar nova senha"}).click();await expect(person).toHaveURL(/\/login/);
     await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(permanent);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/estoque$/);

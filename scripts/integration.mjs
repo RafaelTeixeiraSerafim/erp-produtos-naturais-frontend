@@ -13,7 +13,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "8d4099b1a3051a7810b9507ff73d7d6a987ded9c";
+const commit = "a3aa98212842a48bd3bb30302a25bca37c21727c";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");

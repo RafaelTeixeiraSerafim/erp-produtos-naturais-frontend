@@ -5,7 +5,7 @@
 
 export type Reset = {
   /**
-   * @minLength 12
+   * @minLength 8
    * @maxLength 72
    * @type string
    */
