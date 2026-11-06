@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { listarVendas } from "@/generated/sdk/clients/listarVendas";
+import { listarCompras } from "@/generated/sdk/clients/listarCompras";
 import type { DevolucaoClienteResponseDTO } from "@/generated/sdk/types/DevolucaoClienteResponseDTO";
 import type { DevolucaoFornecedorResponseDTO } from "@/generated/sdk/types/DevolucaoFornecedorResponseDTO";
 import type { VendaResponseDTO } from "@/generated/sdk/types/VendaResponseDTO";
@@ -70,4 +72,14 @@ export async function saveReturn(kind:ReturnKind,body:ReturnBody,id?:string,vers
 export async function actReturn(kind:ReturnKind,id:string,version:number,action:"concluir"|"cancelar",motivo:string) {
   const options={path:{id},body:{versao:version,motivo}};
   return normalizeReturn(await (kind==="clientes" ? action==="concluir"?concluirDevolucaoCliente(options):cancelarDevolucaoCliente(options) : action==="concluir"?concluirDevolucaoFornecedor(options):cancelarDevolucaoFornecedor(options)).unwrap());
+}
+
+// Keep source documents in their SDK shape in the shared cache. Only the
+// observer for the source chooser projects them into return eligibility rows.
+export function returnChoicesOptions(kind:ReturnKind) {
+  return {
+    queryKey:[{url:kind==="clientes"?"/api/vendas":"/api/compras"}],
+    queryFn:async()=>kind==="clientes"?await listarVendas().unwrap():await listarCompras().unwrap(),
+    select:(rows:(VendaResponseDTO|CompraResponseDTO)[])=>rows.map(s=>returnSource(kind,s)),
+  };
 }

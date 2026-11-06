@@ -5,15 +5,13 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { buscarVendaPorId } from "@/generated/sdk/clients/buscarVendaPorId";
 import { buscarCompraPorId } from "@/generated/sdk/clients/buscarCompraPorId";
-import { listarVendas } from "@/generated/sdk/clients/listarVendas";
-import { listarCompras } from "@/generated/sdk/clients/listarCompras";
 import { useListarEstoques } from "@/generated/sdk/hooks/useListarEstoques";
 import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
 import { useIdentity } from "./auth";
 import { useDocumentRecovery } from "./document-recovery";
 import { ambiguousSave } from "@/lib/recovery";
-import { listReturns, getReturn, actReturn, saveReturn, returnSource, returnPath, returnValues, returnPayload, returnDraftSchema, returnHint, type ReturnKind, type ReturnSource, type ReturnRecord, type ReturnDraft } from "@/lib/returns";
+import { listReturns, getReturn, actReturn, saveReturn, returnChoicesOptions, returnSource, returnPath, returnValues, returnPayload, returnDraftSchema, returnHint, type ReturnKind, type ReturnSource, type ReturnRecord, type ReturnDraft } from "@/lib/returns";
 import { refreshCatalog } from "@/lib/queries";
 import { quantity, timestamp } from "@/lib/inventory";
 import { Heading, Loading, Empty, ErrorNotice } from "./feedback";
@@ -58,7 +56,7 @@ function SourceAllowance({source}:{source:ReturnSource}) {
 }
 export function ReturnNew({kind}:{kind:ReturnKind}) {
   const params=useSearchParams(),id=params.get("origem")||"";
-  const choices=useQuery({queryKey:[{url:kind==="clientes"?"/api/vendas":"/api/compras"}],enabled:!id,queryFn:async()=>kind==="clientes"?(await listarVendas().unwrap()).map(s=>returnSource(kind,s)):(await listarCompras().unwrap()).map(s=>returnSource(kind,s))});
+  const choices=useQuery({...returnChoicesOptions(kind),enabled:!id});
   const source=useReturnSource(kind,id);
   if(!id)return <><Heading title="Selecionar origem da devolução" description="Abra uma venda concluída ou uma compra com recebimento para conferir seus itens e histórico."/>{choices.isPending?<Loading/>:choices.isError?<ErrorNotice error={choices.error}/>:<ul className="space-y-4">{choices.data?.filter(s=>s.eligible).map(s=><li key={s.id}><Link href={sourcePath(kind,s.id)}>Consultar {s.id} · Loja {s.nomeLoja||s.idLoja}</Link></li>)}</ul>}</>;
   if(source.isPending)return <Loading/>;
