@@ -1,4 +1,5 @@
 "use client";
+import { SourceReturns } from "./returns";
 import Link from "next/link";
 import { useDocumentRecovery, MissingSelection, selectedExists } from "./document-recovery";
 import { saleDraftSchema, ambiguousSave } from "@/lib/recovery";
@@ -312,6 +313,7 @@ export function SaleRecord({ id }: { id: string }) {
       />
       {refreshError}
       <LookupErrors lookups={lookups} />
+      <SourceReturns kind="clientes" id={id} />
       <Panel className="space-y-4 p-5">
         <p>
           Cliente:{" "}

@@ -402,3 +402,16 @@ Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de 
 Substituída a função SQL ausente por confirmação transacional, com versão,
 escopo, idempotência, auditoria e snapshots. A parcela de ajustes de BG-001 e
 BG-002 está encerrada nesta branch; evidências em [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
+
+### Etapa 12 — devoluções (branch de implementação)
+
+As funções de devolução de cliente/fornecedor de BG-001 agora têm implementação
+transacional versionada em V7, com limites autoritativos, escopo ADMIN/GER,
+versão, idempotência persistida, auditoria, movimentos únicos e replay seguro.
+Os detalhes de devoluções incluem itens reais e snapshots. A unidade de compras
+é explicitamente a da criação da devolução, pois não existia snapshot histórico.
+Históricos ficam somente leitura e bloqueiam novas devoluções da origem até
+reconciliação; não há ferramenta automática de reconciliação nesta etapa.
+Não foram implementados reembolso, crédito, fiscal ou reversão de concluídas.
+Evidências e limites exatos: [STAGE12_RELEASE.md](STAGE12_RELEASE.md) e
+[STAGE12_RETURNS.md](STAGE12_RETURNS.md). Não encerra outras lacunas por inferência.

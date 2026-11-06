@@ -380,3 +380,11 @@ Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de 
 
 Implementação e roteiro: [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
 Manter os registros de aceitação anteriores; BG-001/BG-002 têm a parcela de ajustes encerrada na branch da etapa 11 com CI e integração aprovados. Nenhuma integração das branches ou implantação foi realizada.
+
+## Etapa 12
+
+Devoluções de clientes e fornecedores implementadas nas branches `stage12-returns`,
+partindo dos aceites das etapas anteriores. Consulte [STAGE12_RETURNS.md](STAGE12_RETURNS.md)
+para regras, contrato, bloqueio de legados e decisões de unidade, e
+[STAGE12_RELEASE.md](STAGE12_RELEASE.md) para evidências atuais. Os registros
+anteriores descrevem seus respectivos aceites históricos e permanecem preservados.

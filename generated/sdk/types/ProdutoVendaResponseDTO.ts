@@ -4,6 +4,9 @@
 */
 
 export type ProdutoVendaResponseDTO = {
+  quantidadeDevolvida?: number;
+  quantidadeDevolvivel?: number;
+  devolucaoLegadaPendente?: boolean;
   /**
    * @description
    * Format: `uuid`

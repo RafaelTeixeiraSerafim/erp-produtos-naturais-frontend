@@ -1,4 +1,5 @@
 "use client";
+import { SourceReturns } from "./returns";
 import { useCan } from "./auth";
 import Link from "next/link";
 import { ReceiptList } from "./receipts";
@@ -373,6 +374,7 @@ export function PurchaseRecord({
           ))}
         </tbody>
       </Table>
+      <SourceReturns kind="fornecedores" id={id} />
       {canReceive(row) && <Button asChild><Link href={`/compras/${id}/recebimentos/novo`}>Novo recebimento</Link></Button>}
       {!!receipts.data?.length && <p className="my-3">A compra possui recebimentos. Para editar um rascunho de compra, exclua todos os recebimentos em rascunho. Recebimentos confirmados mantêm a compra bloqueada.</p>}
       <ReceiptList purchaseId={id} />

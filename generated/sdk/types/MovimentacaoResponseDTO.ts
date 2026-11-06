@@ -80,5 +80,29 @@ export type MovimentacaoResponseDTO = {
    * Format: `uuid`
    * @type string | undefined
    */
+  idDevolucaoCliente?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idItemDevolucaoCliente?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idDevolucaoFornecedor?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idItemDevolucaoFornecedor?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
   idRecebimentoCompra?: string;
 };

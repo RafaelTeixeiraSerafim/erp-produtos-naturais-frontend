@@ -230,3 +230,15 @@ saldos projetados e confirme. A confirmação reconsulta o estoque e impede
 saldo negativo ou overflow; cancelamento exige motivo e preserva o histórico.
 O editor usa recuperação local por sete dias, isolada por usuário, ambiente e
 documento, e guarda chave e conteúdo antes de enviar uma criação.
+
+## Etapa 12 — devoluções
+
+As branches `stage12-returns` acrescentam devoluções de clientes em Vendas e
+para fornecedores em Compras, para ADMIN/GER nas lojas permitidas. Abra a
+venda concluída ou compra recebida para consultar o histórico e iniciar um
+rascunho; revise os efeitos e confirme explicitamente. Itens sem reposição
+consomem o limite de devolução sem aumentar estoque. Fornecedores exigem
+saldo disponível. Não há reembolso, crédito ou acerto financeiro; os valores
+originais não mudam. Consulte [regras e contrato](docs/STAGE12_RETURNS.md) e
+[evidências de validação](docs/STAGE12_RELEASE.md). V7 e o SDK completo pertencem
+à nova branch; nenhum banco compartilhado, deploy ou merge foi realizado.

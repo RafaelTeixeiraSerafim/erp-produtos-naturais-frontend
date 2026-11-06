@@ -277,3 +277,13 @@ it("vendas permitem edição e ações explícitas com chave restrita à criaç�
   expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",headers:{"Idempotency-Key":inventoryId},body:"{}"}),["vendas"])).status).toBe(200);
   expect(fetch.mock.calls.at(-1)?.[1].headers["Idempotency-Key"]).toBe(inventoryId);
 });
+
+it.each(["devolucoes-clientes","devolucoes-fornecedores"])("devoluções %s: ciclo explícito, chave UUID e DELETE bloqueado",async(resource)=>{
+  const fetch=vi.fn().mockImplementation(()=>Promise.resolve(Response.json({})));vi.stubGlobal("fetch",fetch);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),[resource])).status).toBe(400);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",headers:{"Idempotency-Key":inventoryId},body:"{}"}),[resource])).status).toBe(200);
+  expect(fetch.mock.calls.at(-1)?.[1].headers["Idempotency-Key"]).toBe(inventoryId);
+  for(const action of ["concluir","cancelar"]){expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),[resource,inventoryId,action])).status).toBe(200);expect(fetch.mock.calls.at(-1)?.[1].headers["Idempotency-Key"]).toBeUndefined();expect((await forwardCatalog(browserRequest("http://localhost/api/r"),[resource,inventoryId,action])).status).toBe(405);}
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"DELETE"}),[resource,inventoryId])).status).toBe(405);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST"}),[resource,inventoryId,"estornar"])).status).toBe(404);
+});

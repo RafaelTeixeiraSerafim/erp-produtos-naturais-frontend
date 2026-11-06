@@ -13,7 +13,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "bdd39f3b08c0c0e535e8b5e1c1ebb23c28b21ea4";
+const commit = "fac6c7352b18dc8847b529097bf25610af68a219";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
@@ -141,12 +141,13 @@ try {
   await run("npm", ["run", "test:live"], root, testEnv);
   await run("npx", ["playwright", "test", "--config=playwright.live.config.ts"], root, testEnv);
   // A real process restart must retain operational receipts, stock, quantities and movements.
-  const snapshot = async () => Object.fromEntries(await Promise.all(["ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
+  const snapshot = async () => Object.fromEntries(await Promise.all(["devolucoes-clientes", "devolucoes-fornecedores", "ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
     const rows = await (await fetch(`http://127.0.0.1:8081/api/${resource}`)).json();
-    if (["ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras"].includes(resource)) for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
+    if (["devolucoes-clientes", "devolucoes-fornecedores", "ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras"].includes(resource)) for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
     return [resource, rows.sort((a,b) => a.id.localeCompare(b.id))];
   })));
   const beforeRestart = await snapshot();
+  for (const resource of ["devolucoes-clientes","devolucoes-fornecedores"]) assert(beforeRestart[resource].some(r=>r.status==="CONCLUIDA" && r.idConfirmador),"Return browser tests must persist completed documents");
   assert(beforeRestart["ajustes-estoque"].some(r=>r.status==="CONCLUIDO" && r.idConfirmador),"Adjustment browser tests must persist confirmed documents");
   assert(beforeRestart["recebimentos-compras"].some(r => r.status === "CONCLUIDO"), "Receiving browser tests must persist confirmed receipts");
   assert(beforeRestart["transferencias-estoque"].some(t=>t.status==="CONCLUIDA" && t.idConfirmador),"Transfer browser tests must persist completed transfers");
@@ -161,7 +162,7 @@ try {
   process.exitCode = 1;
 } finally {
   if (inventoryFixture) {
-    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Ajuste integração %'); DELETE FROM produto WHERE nome LIKE 'Ajuste integração %'; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
+    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_devolucao_cliente IS NOT NULL OR id_devolucao_fornecedor IS NOT NULL; DELETE FROM devolucao_cliente_idempotencia; DELETE FROM devolucao_fornecedor_idempotencia; DELETE FROM item_devolucao_cliente; DELETE FROM item_devolucao_fornecedor; DELETE FROM devolucao_cliente; DELETE FROM devolucao_fornecedor; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Ajuste integração %'); DELETE FROM produto WHERE nome LIKE 'Ajuste integração %'; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
     catch(error) {process.exitCode=1;console.error(`Falha na limpeza de transferências: ${error.message}`);}
   }
   if (purchasesFixture && salesFixture) {
@@ -181,6 +182,7 @@ try {
     catch (error) { process.exitCode = 1; console.error(`Falha na limpeza de compras: ${error.message}`); }
   }
   if (inventoryFixture) {
+    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Devolução integração %'); DELETE FROM produto WHERE nome LIKE 'Devolução integração %'; COMMIT;"],root,{},"returns-products-cleanup.log"); } catch(error) {process.exitCode=1;console.error(`Falha na limpeza de produtos de devolução: ${error.message}`);}
     try { await inventoryFixture.cleanup(); }
     catch (error) { process.exitCode = 1; console.error(`Falha na limpeza de estoque: ${error.message}`); }
   }

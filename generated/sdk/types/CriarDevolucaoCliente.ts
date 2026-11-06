@@ -6,6 +6,15 @@
 import type { DevolucaoClienteRequestDTO } from './DevolucaoClienteRequestDTO'
 import type { DevolucaoClienteResponseDTO } from './DevolucaoClienteResponseDTO'
 
+export type CriarDevolucaoClienteHeaders = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  'Idempotency-Key': string;
+};
+
 export type CriarDevolucaoClienteStatus200 = DevolucaoClienteResponseDTO;
 
 export type CriarDevolucaoClienteBody = DevolucaoClienteRequestDTO;
@@ -14,7 +23,7 @@ export type CriarDevolucaoClienteOptions = {
   body: CriarDevolucaoClienteBody;
   path?: never;
   query?: never;
-  headers?: never;
+  headers: CriarDevolucaoClienteHeaders;
 };
 
 export type CriarDevolucaoClienteResponses = {

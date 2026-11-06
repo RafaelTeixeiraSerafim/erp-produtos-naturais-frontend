@@ -6,6 +6,15 @@
 import type { DevolucaoFornecedorRequestDTO } from './DevolucaoFornecedorRequestDTO'
 import type { DevolucaoFornecedorResponseDTO } from './DevolucaoFornecedorResponseDTO'
 
+export type CriarDevolucaoFornecedorHeaders = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  'Idempotency-Key': string;
+};
+
 export type CriarDevolucaoFornecedorStatus200 = DevolucaoFornecedorResponseDTO;
 
 export type CriarDevolucaoFornecedorBody = DevolucaoFornecedorRequestDTO;
@@ -14,7 +23,7 @@ export type CriarDevolucaoFornecedorOptions = {
   body: CriarDevolucaoFornecedorBody;
   path?: never;
   query?: never;
-  headers?: never;
+  headers: CriarDevolucaoFornecedorHeaders;
 };
 
 export type CriarDevolucaoFornecedorResponses = {

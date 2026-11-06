@@ -32,10 +32,12 @@ const links = [
   { href: "/lojas", label: "Lojas", icon: Store },
 ];
 const salesLinks = [
+  { href: "/vendas/devolucoes", label: "Devoluções", icon: Package },
   { href: "/vendas", label: "Registros", icon: Package },
   { href: "/clientes", label: "Clientes", icon: Store },
 ];
 const purchaseLinks = [
+  { href: "/compras/devolucoes", label: "Devoluções", icon: Package },
   { href: "/recebimentos", label: "Recebimentos", icon: Package },
   { href: "/compras", label: "Pedidos", icon: Package },
   { href: "/fornecedores", label: "Fornecedores", icon: Store },
@@ -102,7 +104,7 @@ function Navigation({
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         VENDAS
       </p>
-      {salesLinks.map(({ href, label, icon: Icon }) => (
+      {salesLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
