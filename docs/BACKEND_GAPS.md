@@ -403,7 +403,7 @@ Substituída a função SQL ausente por confirmação transacional, com versão,
 escopo, idempotência, auditoria e snapshots. A parcela de ajustes de BG-001 e
 BG-002 está encerrada nesta branch; evidências em [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
 
-### Etapa 12 — devoluções (branch de implementação)
+### Etapa 12 — devoluções (aceita na branch)
 
 As funções de devolução de cliente/fornecedor de BG-001 agora têm implementação
 transacional versionada em V7, com limites autoritativos, escopo ADMIN/GER,
@@ -415,3 +415,11 @@ reconciliação; não há ferramenta automática de reconciliação nesta etapa.
 Não foram implementados reembolso, crédito, fiscal ou reversão de concluídas.
 Evidências e limites exatos: [STAGE12_RELEASE.md](STAGE12_RELEASE.md) e
 [STAGE12_RETURNS.md](STAGE12_RETURNS.md). Não encerra outras lacunas por inferência.
+
+Aceite final da etapa 12 em 06/11/2026: backend `c87fe72`, 75 testes registrados
+(74 executados e um bootstrap ignorado), [CI aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
+Frontend `b78cfbe`, 179 testes unitários/componentes, 112 cenários com fixtures
+e 30 cenários reais desktop/mobile, com persistência após reinício,
+[validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
+A parcela de devoluções de BG-001 está encerrada na branch; reconciliação de
+históricos, acertos financeiros e demais itens diferidos não foram implementados.

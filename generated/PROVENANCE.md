@@ -10,3 +10,6 @@
 - Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID somente na criação das APIs aprovadas, incluindo devoluções.
 - `scripts/integration.mjs` fixa o SHA acima.
 - Evidências anteriores permanecem nos registros das etapas 9–11; evidência desta etapa em `docs/STAGE12_RELEASE.md`.
+
+- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
+- [CI consumidor validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563) no frontend `b78cfbe`.

@@ -388,3 +388,12 @@ partindo dos aceites das etapas anteriores. Consulte [STAGE12_RETURNS.md](STAGE1
 para regras, contrato, bloqueio de legados e decisões de unidade, e
 [STAGE12_RELEASE.md](STAGE12_RELEASE.md) para evidências atuais. Os registros
 anteriores descrevem seus respectivos aceites históricos e permanecem preservados.
+
+Aceite final da etapa 12 (06/11/2026): backend `c87fe72`, frontend `b78cfbe`.
+[CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339)
+e [CI frontend validate/integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563)
+aprovadas: 74 testes backend executados (um bootstrap separado), 179 testes
+unitários/componentes, 112 cenários de interface e 30 cenários reais. Integração
+local completa aprovada com os dados comparados após reinício do backend.
+Código concluído; último commit de documentação registra somente as evidências.
+Sem merge, deploy, migração compartilhada ou alteração de main/novaVersao.

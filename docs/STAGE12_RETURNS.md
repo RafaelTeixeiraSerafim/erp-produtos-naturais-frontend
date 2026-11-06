@@ -48,6 +48,8 @@ Detalhes de venda/compra mostram histórico e vendido/recebido, devolvido e
 restante. Quantidades começam vazias. Conflitos preservam a digitação e exigem
 revisão dos dados atualizados. Recuperação de sete dias, proteção de navegação
 e chave/payload de criação persistidos usam a infraestrutura existente.
+A seleção de origem transforma dados apenas na exibição: o cache compartilhado
+conserva o formato completo do SDK para as listas e relatórios.
 
 ## Verificação
 

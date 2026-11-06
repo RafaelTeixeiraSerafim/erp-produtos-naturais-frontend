@@ -55,14 +55,14 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch de feature **`stage8-auth`** (base `novaVersao`), commit **`a3aa98212842a48bd3bb30302a25bca37c21727c`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch de feature **`stage12-returns`** (base `bdd39f3`), commit **`c87fe72a66ca2fe8aaf14bead7101c0e95e27267`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
-O SDK completo foi regenerado a partir do contrato local do backend de autenticação e recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
+O SDK completo foi regenerado a partir do contrato local completo do backend, incluindo devoluções. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
-O commit de integração está fixado no runner e foi enviado à branch `stage8-auth`; autenticação ainda não foi incorporada à `novaVersao`. Para conferir a referência:
+O commit de integração está fixado no runner e foi enviado à branch `stage12-returns`; esta etapa ainda não foi incorporada à `novaVersao`. Para conferir a referência:
 
 ```bash
-git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage8-auth
+git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage12-returns
 ```
 
 ## Integração descartável
@@ -81,7 +81,7 @@ As portas loopback **8081** (backend) e **3100** (frontend de produção) precis
 
 Logs sem a senha temporária ficam em `integration-artifacts/`; relatório e traces de falha ficam em `playwright-live-report/` e `test-results/live/`. A CI possui um job separado com esses mesmos pré-requisitos e publica os artefatos em falhas.
 
-O backend usa Flyway V1/V2/V3 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
+O backend usa Flyway V1–V7 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
 
 ## Fluxo
 
@@ -242,3 +242,10 @@ saldo disponível. Não há reembolso, crédito ou acerto financeiro; os valores
 originais não mudam. Consulte [regras e contrato](docs/STAGE12_RETURNS.md) e
 [evidências de validação](docs/STAGE12_RELEASE.md). V7 e o SDK completo pertencem
 à nova branch; nenhum banco compartilhado, deploy ou merge foi realizado.
+
+Aceite da etapa 12 em 06/11/2026: [backend `c87fe72` aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339)
+e [frontend `b78cfbe`, validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
+Foram 74 testes backend executados (mais um bootstrap exclusivo da integração),
+179 testes unitários/componentes, 112 cenários de interface e 30 cenários reais
+em desktop/mobile, incluindo persistência após reinício. Integração local também
+aprovada; detalhes e limitações em [STAGE12_RELEASE.md](docs/STAGE12_RELEASE.md).
