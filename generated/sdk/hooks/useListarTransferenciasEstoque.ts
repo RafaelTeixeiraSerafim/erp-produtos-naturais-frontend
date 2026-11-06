@@ -4,21 +4,21 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { ListarTransferenciasEstoqueStatus200 } from '../types/ListarTransferenciasEstoque'
+import type { ListarTransferenciasEstoqueOptions, ListarTransferenciasEstoqueStatus200 } from '../types/ListarTransferenciasEstoque'
 import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from '@tanstack/react-query'
 import { listarTransferenciasEstoque } from '../clients/listarTransferenciasEstoque'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const listarTransferenciasEstoqueQueryKey = () => [{ url: '/api/transferencias-estoque' }] as const
+export const listarTransferenciasEstoqueQueryKey = ({ query }: Omit<ListarTransferenciasEstoqueOptions, 'headers'> = {}) => [{ url: '/api/transferencias-estoque' }, ...(query ? [query] : [])] as const
 
 type ListarTransferenciasEstoqueQueryKey = ReturnType<typeof listarTransferenciasEstoqueQueryKey>
 
-export function listarTransferenciasEstoqueQueryOptions(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
-  const queryKey = listarTransferenciasEstoqueQueryKey()
+export function listarTransferenciasEstoqueQueryOptions({ query }: ListarTransferenciasEstoqueOptions = {}, config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
+  const queryKey = listarTransferenciasEstoqueQueryKey({ query })
   return queryOptions<ListarTransferenciasEstoqueStatus200, ResponseErrorConfig<Error>, ListarTransferenciasEstoqueStatus200, typeof queryKey>({
    queryKey,
    queryFn: async ({ signal }) => {
-      return listarTransferenciasEstoque({ ...config, signal: config.signal ?? signal, throwOnError: true }).unwrap()
+      return listarTransferenciasEstoque({ ...config, query, signal: config.signal ?? signal, throwOnError: true }).unwrap()
    },
   })
 }
@@ -26,16 +26,17 @@ export function listarTransferenciasEstoqueQueryOptions(config: Partial<Omit<Req
 /**
  * {@link /api/transferencias-estoque}
  */
-export function useListarTransferenciasEstoque<TData = ListarTransferenciasEstoqueStatus200, TQueryData = ListarTransferenciasEstoqueStatus200, TQueryKey extends QueryKey = ListarTransferenciasEstoqueQueryKey>(options: {
+export function useListarTransferenciasEstoque<TData = ListarTransferenciasEstoqueStatus200, TQueryData = ListarTransferenciasEstoqueStatus200, TQueryKey extends QueryKey = ListarTransferenciasEstoqueQueryKey>({ query }: { query?: ListarTransferenciasEstoqueOptions['query'] | (() => ListarTransferenciasEstoqueOptions['query']) } = {}, options: {
   query?: Partial<QueryObserverOptions<ListarTransferenciasEstoqueStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>
 } = {}) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...resolvedOptions } = queryConfig
-  const queryKey = resolvedOptions?.queryKey ?? listarTransferenciasEstoqueQueryKey()
+  const resolvedParams = { query: typeof query === 'function' ? query() : query }
+  const queryKey = resolvedOptions?.queryKey ?? listarTransferenciasEstoqueQueryKey(resolvedParams)
 
   const queryResult = useQuery({
-   ...listarTransferenciasEstoqueQueryOptions(config),
+   ...listarTransferenciasEstoqueQueryOptions(resolvedParams, config),
    ...resolvedOptions,
    queryKey,
   } as unknown as QueryObserverOptions, queryClient) as UseQueryResult<TData, ResponseErrorConfig<Error>> & { queryKey: TQueryKey }

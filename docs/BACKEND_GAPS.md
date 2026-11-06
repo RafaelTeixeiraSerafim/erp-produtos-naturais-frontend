@@ -362,3 +362,14 @@ Esta seção atualiza o estado das lacunas de vendas; os relatos anteriores desc
 | BG-001 | Progresso restrito a vendas: V4 versiona o fluxo sem alterar V1–V3. Relatório de reconciliação e testes de migração preservam históricos sem replay. Ajustes/transferências e demais funções não foram incorporados. |
 
 O contrato integral e o runner do frontend fixam esse commit. O [aceite da etapa 9](STAGE9_RELEASE.md) descreve as verificações, o comando da integração real e o gate de CI do fork pessoal. Nenhum banco compartilhado foi migrado e a versão em produção não foi auditada nesta etapa.
+
+## Atualização da etapa 10 — transferências
+
+Backend `867cef2e35596ae67f692f9e2fcfd4932953d513`, branch `stage10-transfers`, base `65d6585` de `stage9-sales`. SDK completo e runner usam esse SHA; V1–V4 permanecem inalteradas.
+
+| Lacuna | Situação nesta etapa |
+| --- | --- |
+| BG-001 | Resolvida para transferências: aplicação transacional substitui `fn_concluir_transferencia`; V5 versiona auditoria, idempotência, snapshots e unique por item/direção. Confirmação atômica, ordem produto→loja, replay sem duplicação, rollback e persistência. A parte de ajustes (`fn_concluir_ajuste_estoque`) permanece aberta. |
+| BG-002 | Resolvida para transferências: detalhe retorna IDs de itens/produtos, nomes, quantidades, unidades salvas, versão e auditoria. Detalhes de ajustes permanecem abertos. |
+
+Históricos são somente leitura e não recebem efeitos/snapshots inferidos. Não há reparo de estoque ou migração compartilhada. Evidências e limites: [STAGE10_RELEASE.md](STAGE10_RELEASE.md). Demais lacunas preservam seus estados anteriores.

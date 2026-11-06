@@ -41,6 +41,7 @@ const purchaseLinks = [
   { href: "/fornecedores", label: "Fornecedores", icon: Store },
 ];
 const inventoryLinks = [
+  { href: "/estoque/transferencias", label: "Transferências", icon: Store },
   { href: "/estoque", label: "Saldos", icon: Package },
   { href: "/estoque/movimentacoes", label: "Movimentações", icon: Store },
 ];

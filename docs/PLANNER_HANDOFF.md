@@ -335,3 +335,13 @@ Validação local: lint e typecheck passaram; 16 testes PostgreSQL (incluindo ba
 BG-003/BG-004 encerradas com a evidência acima. O teste de estoque real considera as entradas de compra confirmadas que o desktop grava antes da execução mobile, preservando a base conhecida de 1.234,567 e as asserções de datas/ajustes/ausência/zero. Falhas iniciais vieram de seletores de campos/data, atualização automática durante a regressão e expectativa antiga do saldo inicial; a execução completa final passou após os ajustes. A revisão também corrigiu reenvio sem persistência após falha de quota e refresh de detalhe já excluído, com testes específicos verdes.
 
 Fora do escopo: autenticação/senhas, vendas/checkout, aprovação, reversão, devoluções, ajustes/transferências, valoração, upgrades, deploy e merge. BG-007/BG-011/BG-021/BG-022 têm apenas progresso restrito a recebimento; não representam correção geral de compras/vendas.
+
+## Etapa 10 — transferências imediatas entre lojas
+
+Implementação nas branches `stage10-transfers`, frontend base `2730110`, backend base `65d6585`; anteriores preservadas, sem merge/deploy/migração compartilhada. Backend/SDK/runner fixados em `867cef2e35596ae67f692f9e2fcfd4932953d513`.
+
+A criação idempotente gera rascunho sem reserva. ADMIN/GER exigem as duas lojas em todas as operações; confirmado é imutável, cancelamento de rascunho exige motivo e não altera estoque. Confirmação bloqueia documento e saldos em ordem produto→loja, valida todos os itens, debita/credita e grava movimentos pareados atomicamente. V5 mantém documentos anteriores em quarentena de leitura, sem replay histórico. IDs de itens sobrevivem à edição; omitidos são removidos; unidades salvas não acompanham alterações posteriores do catálogo.
+
+Telas `/estoque/transferencias`, `/nova`, `/{id}` e `/{id}/editar`: filtros/ordenação/paginação/URL, recuperação isolada e proteção ao navegar, chave/payload persistidos antes da rede, revisão explícita de conflitos, confirmação imediata, motivo de cancelamento e auditoria. FUNC mantém seus movimentos sem link para o documento de transferência.
+
+[STAGE10_RELEASE.md](STAGE10_RELEASE.md) registra validações, CI e roteiro de aceite. Apenas as parcelas de transferências de BG-001/BG-002 foram encerradas; ajustes continuam abertos. As quatro alterações de documentação anteriores ao trabalho foram preservadas como alterações locais, separadas dos commits novos.

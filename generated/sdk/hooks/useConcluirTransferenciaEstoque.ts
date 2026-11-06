@@ -15,8 +15,8 @@ export function concluirTransferenciaEstoqueMutationOptions<TContext = unknown>(
   const mutationKey = concluirTransferenciaEstoqueMutationKey()
   return mutationOptions<ConcluirTransferenciaEstoqueStatus200, ResponseErrorConfig<Error>, ConcluirTransferenciaEstoqueOptions, TContext>({
     mutationKey,
-    mutationFn: async({ path, query }) => {
-      return concluirTransferenciaEstoque({ ...config, path, query, throwOnError: true }).unwrap()
+    mutationFn: async({ path, body }) => {
+      return concluirTransferenciaEstoque({ ...config, path, body, throwOnError: true }).unwrap()
     },
   })
 }

@@ -2,6 +2,7 @@ import { sessionHeader, sessionCookie } from "./auth";
 const resources = new Set([
   "clientes",
   "vendas",
+  "transferencias-estoque",
   "usuarios",
   "fornecedores",
   "compras",
@@ -28,7 +29,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
   const inventory =
     resource === "estoques" || resource === "movimentacoes-estoque";
   const receipt = resource === "recebimentos-compras";
-  const saleAction = resource === "vendas" && path.length === 3 && ["concluir", "cancelar"].includes(path[2]);
+  const saleAction = ["vendas","transferencias-estoque"].includes(resource) && path.length === 3 && ["concluir", "cancelar"].includes(path[2]);
   const conclude = receipt && path.length === 3 && path[2] === "concluir";
   const balance = resource === "estoques" && id === "saldo";
   if (
@@ -45,7 +46,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
       ? conclude ? ["POST"] : id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
       : resource === "usuarios"
       ? id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
-      : resource === "vendas"
+      : ["vendas","transferencias-estoque"].includes(resource)
         ? saleAction ? ["POST"] : id
           ? ["GET", "PUT"]
           : ["GET", "POST"]
@@ -66,7 +67,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
         headers: { Allow: allowed.join(", "), "Cache-Control": "no-store" },
       },
     );
-  if (resource === "vendas" && !id && request.method === "POST" && !uuid.test(request.headers.get("Idempotency-Key") || ""))
+  if (["vendas","transferencias-estoque"].includes(resource) && !id && request.method === "POST" && !uuid.test(request.headers.get("Idempotency-Key") || ""))
     return Response.json({ message:"Informe Idempotency-Key UUID." }, { status:400 });
   if (receipt) {
     const params = new URL(request.url).searchParams;
@@ -104,7 +105,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
         Accept: "application/json",
         ...(sessionHeader(request.headers.get("cookie")) ? { Cookie: sessionHeader(request.headers.get("cookie")) } : {}),
         ...(request.headers.get("x-csrf-token") ? { "X-CSRF-TOKEN": request.headers.get("x-csrf-token")! } : {}),
-        ...((receipt || resource === "vendas") && !id && request.method === "POST" ? { "Idempotency-Key": request.headers.get("Idempotency-Key")! } : {}),
+        ...((receipt || ["vendas","transferencias-estoque"].includes(resource)) && !id && request.method === "POST" ? { "Idempotency-Key": request.headers.get("Idempotency-Key")! } : {}),
         ...(request.method === "POST" || request.method === "PUT"
           ? { "Content-Type": "application/json" }
           : {}),

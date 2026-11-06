@@ -7,6 +7,12 @@ export type ItemTransferenciaRequestDTO = {
   /**
    * @description
    * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @description
+   * Format: `uuid`
    * @type string
    */
   idProduto: string;

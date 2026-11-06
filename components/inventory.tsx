@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useCan } from "./auth";
 import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useListarEstoques } from "@/generated/sdk/hooks/useListarEstoques";
@@ -22,6 +23,7 @@ import { ExportCsv } from "./export-csv";
 import { csvNumber, isoTimestamp } from "@/lib/reports";
 
 export function Inventory({ movements = false }: { movements?: boolean }) {
+  const canTransfer=useCan("transfers.read");
   const params = useSearchParams(), path = usePathname();
   const product = params.get("idProduto") || "", store = params.get("idLoja") || "";
   const search = params.get("busca") || "", amount = params.get("quantidade") || "";
@@ -98,7 +100,7 @@ export function Inventory({ movements = false }: { movements?: boolean }) {
     </Panel>
     <Dialog open={!!detail} onOpenChange={(open) => { if (!open) setDetail(undefined); }}><DialogContent><DialogTitle>Detalhes da movimentação</DialogTitle><DialogDescription>Consulta somente leitura · America/Sao_Paulo</DialogDescription>{detail && <dl className="space-y-3 break-words text-sm">
       {detail.idRecebimentoCompra && <Link href={`/recebimentos/${detail.idRecebimentoCompra}`}>Ver recebimento</Link>}
-      {[["Movimentação", detail.id], ["Data / hora", timestamp(detail.dataMovimentacao)], ["Produto", productName(detail.idProduto)], ["Loja", storeName(detail.idLoja)], ["Tipo", detail.tipo && movementLabels[detail.tipo]], ["Quantidade", `${quantity(detail.quantidade)} ${unit(detail.idProduto)}`], ["Observação", detail.observacao || "Sem observação"], ["Usuário", detail.nomeUsuario || detail.idUsuario], ["Venda", detail.idVenda], ["Compra", detail.idCompra], ["Transferência", detail.idTransferencia], ["Ajuste de estoque", detail.idAjusteEstoque]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="whitespace-pre-wrap">{label === "Venda" ? <Link href={`/vendas/${value}`}>{value}</Link> : value}</dd></div>)}
+      {[["Movimentação", detail.id], ["Data / hora", timestamp(detail.dataMovimentacao)], ["Produto", productName(detail.idProduto)], ["Loja", storeName(detail.idLoja)], ["Tipo", detail.tipo && movementLabels[detail.tipo]], ["Quantidade", `${quantity(detail.quantidade)} ${unit(detail.idProduto)}`], ["Observação", detail.observacao || "Sem observação"], ["Usuário", detail.nomeUsuario || detail.idUsuario], ["Venda", detail.idVenda], ["Compra", detail.idCompra], ["Transferência", detail.idTransferencia], ["Ajuste de estoque", detail.idAjusteEstoque]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt className="text-xs text-muted">{label}</dt><dd className="whitespace-pre-wrap">{label === "Venda" ? <Link href={`/vendas/${value}`}>{value}</Link> : label === "Transferência" && canTransfer ? <Link href={`/estoque/transferencias/${value}`}>{value}</Link> : value}</dd></div>)}
     </dl>}</DialogContent></Dialog>
   </>;
 }

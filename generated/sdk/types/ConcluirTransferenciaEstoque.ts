@@ -3,6 +3,7 @@
 * Do not edit manually.
 */
 
+import type { TransferenciaAcaoDTO } from './TransferenciaAcaoDTO'
 import type { TransferenciaResponseDTO } from './TransferenciaResponseDTO'
 
 export type ConcluirTransferenciaEstoquePath = {
@@ -14,21 +15,14 @@ export type ConcluirTransferenciaEstoquePath = {
   id: string;
 };
 
-export type ConcluirTransferenciaEstoqueQuery = {
-  /**
-   * @description
-   * Format: `uuid`
-   * @type string | undefined
-   */
-  idUsuario?: string;
-};
-
 export type ConcluirTransferenciaEstoqueStatus200 = TransferenciaResponseDTO;
 
+export type ConcluirTransferenciaEstoqueBody = TransferenciaAcaoDTO;
+
 export type ConcluirTransferenciaEstoqueOptions = {
-  body?: never;
+  body: ConcluirTransferenciaEstoqueBody;
   path: ConcluirTransferenciaEstoquePath;
-  query?: ConcluirTransferenciaEstoqueQuery;
+  query?: never;
   headers?: never;
 };
 
