@@ -25,10 +25,16 @@ export type AjusteRequestDTO = {
   /**
    * @description
    * Format: `uuid`
-   * @type string
+   * @type string | undefined
    */
-  idUsuario: string;
+  idUsuario?: string;
   justificativa: string;
   status?: AjusteRequestDTOStatusEnumKey;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
   itens: ItemAjusteRequestDTO[];
 };

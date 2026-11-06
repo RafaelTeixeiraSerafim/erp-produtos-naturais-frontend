@@ -15,8 +15,8 @@ export function criarAjusteEstoqueMutationOptions<TContext = unknown>(config: Pa
   const mutationKey = criarAjusteEstoqueMutationKey()
   return mutationOptions<CriarAjusteEstoqueStatus200, ResponseErrorConfig<Error>, CriarAjusteEstoqueOptions, TContext>({
     mutationKey,
-    mutationFn: async({ body }) => {
-      return criarAjusteEstoque({ ...config, body, throwOnError: true }).unwrap()
+    mutationFn: async({ body, headers }) => {
+      return criarAjusteEstoque({ ...config, body, headers, throwOnError: true }).unwrap()
     },
   })
 }

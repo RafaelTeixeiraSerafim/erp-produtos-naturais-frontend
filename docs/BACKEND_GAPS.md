@@ -391,3 +391,9 @@ Históricos são somente leitura e não recebem efeitos/snapshots inferidos. Nã
 Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
 
 Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend. Esta evidência encerra somente as parcelas de transferências de BG-001/BG-002. As parcelas de ajustes e as demais lacunas abertas não foram encerradas por inferência. As branches seguem sem integração, implantação ou migração compartilhada.
+
+### Etapa 11 — ajustes (em validação)
+
+Substituída a função SQL ausente por confirmação transacional, com versão,
+escopo, idempotência, auditoria e snapshots. A parcela de ajustes de BG-001 e
+BG-002 permanece aberta até aprovação das evidências finais da etapa 11.

@@ -1,13 +1,11 @@
 # SDK do backend
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch: `stage10-transfers`, base `65d6585767398c100a6db40e956b683eb7221125` de `stage9-sales`.
-- Commit exato: `867cef2e35596ae67f692f9e2fcfd4932953d513`.
-- Contrato: `openapi-stage10.json`, exportado por `AuthenticationTests.exportAuthenticatedContract` com sessão ADMIN e PostgreSQL descartável migrado até V5.
-- Geração completa: Kubb 5.15.3 e lockfile existente, `OPENAPI_FILE=./openapi-stage10.json npm run sdk:generate`.
-- `generated/sdk` inteira, incluindo `.kubb`, copiada do backend; nenhum arquivo gerado editado manualmente.
-- Base gerada vazia; proxy de mesma origem com sessão e CSRF. Transferências exigem UUID Idempotency-Key na criação e versão em edição/conclusão/cancelamento. DELETE bloqueado.
-- `scripts/integration.mjs` fixa esse SHA; `INTEGRATION_BACKEND_REPO` muda somente a origem do clone.
-
-- Validação do pin: [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737) em `867cef2e35596ae67f692f9e2fcfd4932953d513`.
-- Consumidor validado: frontend `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, [validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532), incluindo smoke, 26 cenários reais e persistência após reinício.
+- Branch: `stage11-adjustments`, base `867cef2`.
+- Commit: `bdd39f3b08c0c0e535e8b5e1c1ebb23c28b21ea4`.
+- Contrato: `openapi-stage11.json`, exportado por `AdjustmentTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V6 descartável.
+- Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage11.json npm run sdk:generate`.
+- SDK inteiro copiado do backend, sem edição manual de arquivos gerados.
+- Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID na criação de ajustes.
+- `scripts/integration.mjs` fixa o SHA acima.
+- Evidências anteriores permanecem nos registros das etapas 9/10; evidência desta etapa em `docs/STAGE11_ADJUSTMENTS.md`.

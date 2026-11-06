@@ -41,6 +41,7 @@ const purchaseLinks = [
   { href: "/fornecedores", label: "Fornecedores", icon: Store },
 ];
 const inventoryLinks = [
+  { href: "/estoque/ajustes", label: "Ajustes", icon: Store },
   { href: "/estoque/transferencias", label: "Transferências", icon: Store },
   { href: "/estoque", label: "Saldos", icon: Package },
   { href: "/estoque/movimentacoes", label: "Movimentações", icon: Store },
@@ -165,7 +166,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   if (path === "/login" || path === "/alterar-senha") return <main id="conteudo">{children}</main>;
   const current =
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
-    [...inventoryLinks].reverse().find((x) => path === x.href || (x.href === "/estoque/transferencias" && path.startsWith(x.href+"/"))) ||
+    [...inventoryLinks].reverse().find((x) => path === x.href || (["/estoque/transferencias","/estoque/ajustes"].includes(x.href) && path.startsWith(x.href+"/"))) ||
     salesLinks.find((x) => path.startsWith(x.href)) ||
     purchaseLinks.find((x) => path.startsWith(x.href)) ||
     links.find((x) => path.startsWith(x.href)) ||

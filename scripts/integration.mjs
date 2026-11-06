@@ -13,7 +13,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "867cef2e35596ae67f692f9e2fcfd4932953d513";
+const commit = "bdd39f3b08c0c0e535e8b5e1c1ebb23c28b21ea4";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
@@ -141,12 +141,13 @@ try {
   await run("npm", ["run", "test:live"], root, testEnv);
   await run("npx", ["playwright", "test", "--config=playwright.live.config.ts"], root, testEnv);
   // A real process restart must retain operational receipts, stock, quantities and movements.
-  const snapshot = async () => Object.fromEntries(await Promise.all(["transferencias-estoque", "vendas", "recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
+  const snapshot = async () => Object.fromEntries(await Promise.all(["ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
     const rows = await (await fetch(`http://127.0.0.1:8081/api/${resource}`)).json();
-    if (["transferencias-estoque", "vendas", "recebimentos-compras"].includes(resource)) for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
+    if (["ajustes-estoque", "transferencias-estoque", "vendas", "recebimentos-compras"].includes(resource)) for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
     return [resource, rows.sort((a,b) => a.id.localeCompare(b.id))];
   })));
   const beforeRestart = await snapshot();
+  assert(beforeRestart["ajustes-estoque"].some(r=>r.status==="CONCLUIDO" && r.idConfirmador),"Adjustment browser tests must persist confirmed documents");
   assert(beforeRestart["recebimentos-compras"].some(r => r.status === "CONCLUIDO"), "Receiving browser tests must persist confirmed receipts");
   assert(beforeRestart["transferencias-estoque"].some(t=>t.status==="CONCLUIDA" && t.idConfirmador),"Transfer browser tests must persist completed transfers");
   assert(beforeRestart.vendas.some(r=>r.status==="CONCLUIDA" && r.idConfirmador),"Sales browser tests must persist confirmed sales");

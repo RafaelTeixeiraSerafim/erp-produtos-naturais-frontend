@@ -3,6 +3,7 @@
 * Do not edit manually.
 */
 
+import type { AjusteAcaoDTO } from './AjusteAcaoDTO'
 import type { AjusteResponseDTO } from './AjusteResponseDTO'
 
 export type ConcluirAjusteEstoquePath = {
@@ -16,8 +17,10 @@ export type ConcluirAjusteEstoquePath = {
 
 export type ConcluirAjusteEstoqueStatus200 = AjusteResponseDTO;
 
+export type ConcluirAjusteEstoqueBody = AjusteAcaoDTO;
+
 export type ConcluirAjusteEstoqueOptions = {
-  body?: never;
+  body: ConcluirAjusteEstoqueBody;
   path: ConcluirAjusteEstoquePath;
   query?: never;
   headers?: never;

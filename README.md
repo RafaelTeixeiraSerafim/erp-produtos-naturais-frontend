@@ -223,3 +223,10 @@ Branches empilhadas `stage10-transfers`: frontend base `2730110`, backend base `
 Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
 
 Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend.
+
+Etapa 11: ajustes quantitativos em `/estoque/ajustes` (ADMIN/GER).
+Salve um rascunho com loja, justificativa e itens de entrada/saída, revise os
+saldos projetados e confirme. A confirmação reconsulta o estoque e impede
+saldo negativo ou overflow; cancelamento exige motivo e preserva o histórico.
+O editor usa recuperação local por sete dias, isolada por usuário, ambiente e
+documento, e guarda chave e conteúdo antes de enviar uma criação.

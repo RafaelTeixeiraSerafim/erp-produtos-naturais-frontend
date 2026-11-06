@@ -375,3 +375,9 @@ Telas `/estoque/transferencias`, `/nova`, `/{id}` e `/{id}/editar`: filtros/orde
 Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-transfers`; [CI aprovada: validate e integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42267039532). Backend/SDK: `867cef2e35596ae67f692f9e2fcfd4932953d513`; [CI PostgreSQL aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737).
 
 Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend. As bases foram confirmadas por ancestralidade Git: frontend `27301102f2906e7a00c2eed02a3b445e964eeac1` e backend `65d6585767398c100a6db40e956b683eb7221125`, ambas de `stage9-sales`, sem partir de `main`/`novaVersao`.
+
+## Etapa 11
+
+Implementação e roteiro: [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
+Manter os registros de aceitação anteriores; BG-001/BG-002 só serão encerrados
+para ajustes após CI e integração da branch atual aprovados.

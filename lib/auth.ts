@@ -11,6 +11,7 @@ export function internalDestination(value: string | null | undefined) {
   return url.pathname + url.search;
 }
 export function pagePermission(path: string) {
+  if (path.startsWith("/estoque/ajustes")) return "transfers.read";
   if (path.startsWith("/estoque/transferencias")) return "transfers.read";
   if (path.startsWith("/usuarios")) return "users.manage";
   if (path.startsWith("/lojas")) return "stores.manage";
