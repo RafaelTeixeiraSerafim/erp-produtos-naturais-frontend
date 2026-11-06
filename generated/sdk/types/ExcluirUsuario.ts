@@ -12,7 +12,7 @@ export type ExcluirUsuarioPath = {
   id: string;
 };
 
-export type ExcluirUsuarioStatus200 = unknown;
+export type ExcluirUsuarioStatus204 = unknown;
 
 export type ExcluirUsuarioOptions = {
   body?: never;
@@ -22,10 +22,10 @@ export type ExcluirUsuarioOptions = {
 };
 
 export type ExcluirUsuarioResponses = {
-  '200': ExcluirUsuarioStatus200;
+  '204': ExcluirUsuarioStatus204;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type ExcluirUsuarioResponse = ExcluirUsuarioStatus200;
+export type ExcluirUsuarioResponse = ExcluirUsuarioStatus204;

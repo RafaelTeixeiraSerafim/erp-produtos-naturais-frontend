@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { LogoutStatus200 } from '../types/Logout'
+import type { LogoutStatus204 } from '../types/Logout'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { logout } from '../clients/logout'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const logoutMutationKey = () => [{ url: '/api/auth/logout' }] as const
 
 export function logoutMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = logoutMutationKey()
-  return mutationOptions<LogoutStatus200, ResponseErrorConfig<Error>, undefined, TContext>({
+  return mutationOptions<LogoutStatus204, ResponseErrorConfig<Error>, undefined, TContext>({
     mutationKey,
     mutationFn: async(_) => {
       return logout({ ...config, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function logoutMutationOptions<TContext = unknown>(config: Partial<Omit<R
  * {@link /api/auth/logout}
  */
 export function useLogout<TContext>(options: {
-  mutation?: UseMutationOptions<LogoutStatus200, ResponseErrorConfig<Error>, undefined, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<LogoutStatus204, ResponseErrorConfig<Error>, undefined, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? logoutMutationKey()
 
-  const baseOptions = logoutMutationOptions(config) as UseMutationOptions<LogoutStatus200, ResponseErrorConfig<Error>, undefined, TContext>
+  const baseOptions = logoutMutationOptions(config) as UseMutationOptions<LogoutStatus204, ResponseErrorConfig<Error>, undefined, TContext>
 
-  return useMutation<LogoutStatus200, ResponseErrorConfig<Error>, undefined, TContext>({
+  return useMutation<LogoutStatus204, ResponseErrorConfig<Error>, undefined, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<LogoutStatus200, ResponseErrorConfig<Error>, undefined, TContext>
+  }, queryClient) as UseMutationResult<LogoutStatus204, ResponseErrorConfig<Error>, undefined, TContext>
 }

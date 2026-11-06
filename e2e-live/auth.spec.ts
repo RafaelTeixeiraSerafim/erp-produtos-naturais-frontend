@@ -6,7 +6,7 @@ test("real account administration, forced change, assigned stores and session lo
   await page.goto("/usuarios");await page.getByLabel("Nome",{exact:true}).fill(name);await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Cargo",{exact:true}).selectOption("FUNC");
   const stores=await(await request.get("/api/lojas")).json();const store=stores.find((s:{id:string})=>s.id===fixture.store);
   await page.getByRole("checkbox",{name:store.nomeFantasia,exact:true}).check();await page.getByLabel("Senha temporária",{exact:true}).fill(temporary);await page.getByRole("button",{name:"Salvar conta"}).click();await expect(page.getByRole("button",{name:`Editar ${name}`})).toBeVisible();
-  const context=await browser.newContext({baseURL:"http://127.0.0.1:3100"});const person=await context.newPage();
+  const context=await browser.newContext({baseURL:"http://127.0.0.1:3100",storageState:{cookies:[],origins:[]}});const person=await context.newPage();
   try {
     await person.goto("/login?returnTo=%2Festoque");await person.getByLabel("E-mail",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(temporary);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/alterar-senha/);
     expect((await context.request.get("/api/estoques")).status()).toBe(403);
@@ -16,5 +16,14 @@ test("real account administration, forced change, assigned stores and session lo
     const allowed=await(await context.request.get("/api/lojas")).json();expect(allowed.map((s:{id:string})=>s.id)).toEqual([fixture.store]);
     expect((await context.request.get("/api/compras")).status()).toBe(403);expect((await person.goto("/usuarios"))?.status()).toBe(403);
     await person.goto("/estoque");person.once("dialog",dialog=>dialog.accept());await person.getByRole("button",{name:"Sair",exact:true}).click();await expect(person).toHaveURL(/\/login/);expect((await context.request.get("/api/estoques")).status()).toBe(401);
-  } finally { await context.close(); }
+  } finally {
+    await context.close();
+    const accounts=await(await request.get("/api/usuarios")).json();
+    const account=accounts.find((u:{email:string})=>u.email===email);
+    if(account) {
+      const cleanup=await request.put(`/api/usuarios/${account.id}`,{data:{nome:name,email,cargo:"FUNC",status:"INATIVO",lojas:[]}});
+      expect(cleanup.ok()).toBe(true);
+    }
+  }
+  expect((await request.get("/api/auth/me")).status()).toBe(200);
 });

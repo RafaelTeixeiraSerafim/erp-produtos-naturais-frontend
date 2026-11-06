@@ -2,7 +2,7 @@
 
 - Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
 - Branch de feature: `stage8-auth`, base `novaVersao` com recebimento. Não usa `main` nem merge integral de `cargoUsuario`.
-- Commit: `556e48209f824737d4a42e53d722a07e9f73e259`.
+- Commit: `396c426b6709d2a95e10222064e6c10218247a09`.
 - Contrato: `openapi-stage8.json`, obtido de `/v3/api-docs` com sessão de administrador em PostgreSQL descartável, migrado até V3. O teste `AuthenticationTests.exportAuthenticatedContract` exporta o contrato com `OPENAPI_EXPORT_FILE`.
 - Geração: Kubb 5.15.3, lockfile existente do backend, `OPENAPI_FILE=./openapi-stage8.json npm run sdk:generate`.
 - A pasta `generated/sdk` inteira, incluindo `.kubb`, foi copiada desse commit. Nenhum arquivo gerado foi editado manualmente.

@@ -99,7 +99,7 @@ export function salesSeed({ base, inventory, sql }) {
         await api(`clientes/${customer.id}`, "DELETE");
 
       console.log(
-        `Limpeza vendas: ${sales.length} vendas, ${customers.length} clientes e operador removidos.`,
+        `Limpeza vendas: ${sales.length} vendas e ${customers.length} clientes removidos; a conta pertence ao banco descartável.`,
       );
     },
   };

@@ -14,7 +14,7 @@ export type SenhaTemporariaPath = {
   id: string;
 };
 
-export type SenhaTemporariaStatus200 = unknown;
+export type SenhaTemporariaStatus204 = unknown;
 
 export type SenhaTemporariaBody = Reset;
 
@@ -26,10 +26,10 @@ export type SenhaTemporariaOptions = {
 };
 
 export type SenhaTemporariaResponses = {
-  '200': SenhaTemporariaStatus200;
+  '204': SenhaTemporariaStatus204;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type SenhaTemporariaResponse = SenhaTemporariaStatus200;
+export type SenhaTemporariaResponse = SenhaTemporariaStatus204;

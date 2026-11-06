@@ -17,6 +17,8 @@ Recuperação usa namespace v2 por ambiente **e usuário**, sem importar cópias
 
 A migração V3 invalida todas as credenciais legadas, preserva IDs/referências e mantém o cargo anterior para revisão, sem conceder privilégios ou lojas automaticamente. Colisões de e-mail normalizado interrompem a migração com relatório para reconciliação. Consulte o [checklist de release coordenada](docs/STAGE8_RELEASE.md). Esta implementação não migra bancos compartilhados, publica release ou altera `main`. A publicação continua pela integração nativa Vercel/Git.
 
+Validação da etapa 8: 166 testes unitários/componentes, 104 cenários de navegador, 14 cenários reais autenticados e persistência após reinício passaram localmente. Lint, tipos e build passaram. BG-011/BG-020 estão corrigidas na branch; produção não foi alterada. A CI do backend passou; a CI do fork pessoal ainda precisa de habilitação de Actions pelo proprietário (a API retornou zero execuções). Não há aprovação de `validate`/`integration` do fork registrada nesta entrega.
+
 Os testes de browser com fixtures usam um backend local de autenticação separado, com guardas reais do Next e build de produção na porta 3200. `test:integration` cria PostgreSQL/backend/frontend próprios, faz bootstrap só no classpath de teste, autentica todas as suítes reais e também verifica 401 anônimo direto/pelo proxy e persistência após reinício. O token/credencial desse ambiente descartável não é reutilizado na aplicação publicada.
 
 ## Estado da implementação
@@ -53,14 +55,14 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, commit **`556e48209f824737d4a42e53d722a07e9f73e259`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch de feature **`stage8-auth`** (base `novaVersao`), commit **`396c426b6709d2a95e10222064e6c10218247a09`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
-O SDK completo foi regenerado a partir do contrato local do backend de recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
+O SDK completo foi regenerado a partir do contrato local do backend de autenticação e recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
-O commit de integração está fixado no runner e foi incorporado à `novaVersao`; a branch temporária `stage7-receiving` foi removida. Para conferir a referência:
+O commit de integração está fixado no runner e foi enviado à branch `stage8-auth`; autenticação ainda não foi incorporada à `novaVersao`. Para conferir a referência:
 
 ```bash
-git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/novaVersao
+git ls-remote https://github.com/Zayma1/erp-produtos-naturais-backend.git refs/heads/stage8-auth
 ```
 
 ## Integração descartável
@@ -120,13 +122,13 @@ npm run build
 
 Os testes unitários cobrem schemas, enums, moeda, datas, mensagens reais `ApiError`, transporte dos clientes gerados, atualização de listas/detalhes/relacionamentos e a lista permitida do proxy. O Playwright intercepta a API com fixtures **apenas nos testes** e cobre desktop/mobile, fluxo completo, edição/exclusão, recarga, duplicidades, filtros, erros de backend, pré-requisitos vazios e foco por teclado. A CI em `.github/workflows/ci.yml` executa essas verificações com `npm ci`, além do job separado de integração real.
 
-Com backend **descartável** e frontend rodando localmente:
+Com backend **descartável** e frontend rodando localmente, exporte antes `INTEGRATION_ADMIN_EMAIL` e `INTEGRATION_ADMIN_PASSWORD` de uma conta desse ambiente. Prefira o runner completo, que injeta credenciais aleatórias automaticamente:
 
 ```bash
 CATALOG_DISPOSABLE=1 npm run test:live
 ```
 
-O script chama o proxy, cria e relê categoria, unidade, loja, produto, SKU, vínculo e preço, edita o produto e limpa os registros em ordem inversa. Aceita apenas origem loopback, por padrão `http://127.0.0.1:3000`. Use `SMOKE_BASE_URL` para mudar a porta local. A variável `CATALOG_DISPOSABLE=1` é obrigatória e declara que o backend e seu banco são descartáveis. **Uma URL frontend loopback sozinha não garante que o banco upstream seja descartável.** Prefira `npm run test:integration`, que cria e controla os serviços e fornece essa opção ao smoke. A suíte `e2e-live/` não intercepta requests e verifica cadastros pelo UI, edições, duplicidades, bloqueios por referência, saves independentes, moeda brasileira, datas e persistência após reload. Sua limpeza por API segue a ordem de dependências e falhas de limpeza reprovam o teste.
+O script autentica a conta descartável pelo proxy, cria e relê categoria, unidade, loja, produto, SKU, vínculo e preço, edita o produto e limpa os registros em ordem inversa. Aceita apenas origem loopback, por padrão `http://127.0.0.1:3000`. Use `SMOKE_BASE_URL` para mudar a porta local. A variável `CATALOG_DISPOSABLE=1` é obrigatória e declara que o backend e seu banco são descartáveis. **Uma URL frontend loopback sozinha não garante que o banco upstream seja descartável.** Prefira `npm run test:integration`, que cria e controla os serviços e fornece essa opção ao smoke. A suíte `e2e-live/` não intercepta requests e verifica cadastros pelo UI, edições, duplicidades, bloqueios por referência, saves independentes, moeda brasileira, datas e persistência após reload. Sua limpeza por API segue a ordem de dependências e falhas de limpeza reprovam o teste.
 
 ## Repositório de destino
 
@@ -152,13 +154,13 @@ Validação local da etapa 3: lint, tipos, 82 testes unitários/de componentes, 
 
 `/clientes` oferece cadastro, busca, ordenação, paginação, edição e exclusão confirmada, com CPF/nascimento opcionais. Nascimento é data civil, sem conversão de fuso. “Ver vendas” abre o filtro por cliente.
 
-`/vendas` lista registros em todos os status com filtros restauráveis na URL (cliente, loja, status e intervalo inclusivo de datas em São Paulo), ordenação e 20 registros por página. `/vendas/nova` exige cliente, loja, operador já existente e itens do catálogo. O operador é o usuário autenticado. As lojas disponíveis são as atribuídas à conta; somente administradores gerenciam contas.
+`/vendas` lista registros em todos os status com filtros restauráveis na URL (cliente, loja, status e intervalo inclusivo de datas em São Paulo), ordenação e 20 registros por página. `/vendas/nova` exige cliente, loja atribuída e itens do catálogo. O operador é o usuário autenticado. As lojas disponíveis são as atribuídas à conta; somente administradores gerenciam contas.
 
 Preços são informados manualmente, com até duas casas; quantidades têm até três. Descontos monetários não podem exceder o bruto. A prévia usa inteiros escalados e HALF_UP, arredondando a soma dos brutos antes de descontar; pode diferir da soma das prévias dos itens. Nenhum preço de validade, vínculo com loja ou saldo é escolhido como restrição automática.
 
 Salvar cria ABERTA e abre `/vendas/[id]`, somente leitura, com totais autoritativos do backend. Não conclui checkout ou baixa estoque. Não há edição, cancelamento ou exclusão de vendas. A unidade exibida vem do catálogo atual; a API não devolve o snapshot nem o total persistido dos itens. Não existe campo de observação porque a API não o retorna. Limitações: [BG-008, BG-009 e BG-015 a BG-020](docs/BACKEND_GAPS.md).
 
-A integração descartável agora cria um operador temporário diretamente na API upstream e cria cliente/venda pelo navegador em desktop/mobile, verificando arredondamento agregado, status, reload e estoque inalterado. Probes de falhas e mutações upstream ficam exclusivamente em `scripts/sales-seed.mjs`; vendas são limpas antes de clientes/operadores e do catálogo. `npm run test:integration` executa build isolado, smoke e todas as suítes reais. As suítes novas são descobertas automaticamente pelos jobs existentes de CI.
+A integração descartável faz bootstrap de uma conta administrativa somente no classpath de teste e cria cliente/venda pelo navegador em desktop/mobile, verificando arredondamento agregado, status, reload e estoque inalterado. Probes de falhas e mutações upstream ficam exclusivamente em `scripts/sales-seed.mjs`; vendas são limpas antes de clientes e do catálogo. Contas de teste são desativadas e desatribuídas quando necessário; o banco inteiro é descartado ao final. `npm run test:integration` executa build isolado, smoke e todas as suítes reais. As suítes novas são descobertas automaticamente pelos jobs existentes de CI.
 
 Validação local final da etapa 4 (05/11/2026): lint, tipos, 119 testes unitários/componentes, 50 cenários Playwright e integração real (build, smoke e 8 cenários desktop/mobile) passaram. Evidências e situação da CI remota no [handoff](docs/PLANNER_HANDOFF.md#etapa-4--clientes-e-vendas-abertas).
 

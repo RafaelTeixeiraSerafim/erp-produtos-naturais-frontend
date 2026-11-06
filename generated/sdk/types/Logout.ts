@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-export type LogoutStatus200 = unknown;
+export type LogoutStatus204 = unknown;
 
 export type LogoutOptions = {
   body?: never;
@@ -13,10 +13,10 @@ export type LogoutOptions = {
 };
 
 export type LogoutResponses = {
-  '200': LogoutStatus200;
+  '204': LogoutStatus204;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type LogoutResponse = LogoutStatus200;
+export type LogoutResponse = LogoutStatus204;

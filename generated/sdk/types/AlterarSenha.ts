@@ -5,7 +5,7 @@
 
 import type { Password } from './Password'
 
-export type AlterarSenhaStatus200 = unknown;
+export type AlterarSenhaStatus204 = unknown;
 
 export type AlterarSenhaBody = Password;
 
@@ -17,10 +17,10 @@ export type AlterarSenhaOptions = {
 };
 
 export type AlterarSenhaResponses = {
-  '200': AlterarSenhaStatus200;
+  '204': AlterarSenhaStatus204;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type AlterarSenhaResponse = AlterarSenhaStatus200;
+export type AlterarSenhaResponse = AlterarSenhaStatus204;

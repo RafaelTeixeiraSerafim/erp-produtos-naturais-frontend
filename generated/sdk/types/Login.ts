@@ -3,6 +3,9 @@
 * Do not edit manually.
 */
 
+import type { Failure } from './Failure'
+import type { Identity } from './Identity'
+
 export type Login = {
   /**
    * @minLength 0
@@ -18,7 +21,11 @@ export type Login = {
   senha: string;
 };
 
-export type LoginStatus200 = object;
+export type LoginStatus200 = Identity;
+
+export type LoginStatus401 = Failure;
+
+export type LoginStatus429 = Failure;
 
 export type LoginBody = Login;
 
@@ -31,6 +38,8 @@ export type LoginOptions = {
 
 export type LoginResponses = {
   '200': LoginStatus200;
+  '401': LoginStatus401;
+  '429': LoginStatus429;
 };
 
 /**

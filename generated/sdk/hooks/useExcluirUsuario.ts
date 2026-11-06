@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { ExcluirUsuarioOptions, ExcluirUsuarioStatus200 } from '../types/ExcluirUsuario'
+import type { ExcluirUsuarioOptions, ExcluirUsuarioStatus204 } from '../types/ExcluirUsuario'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { excluirUsuario } from '../clients/excluirUsuario'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const excluirUsuarioMutationKey = () => [{ url: '/api/usuarios/:id' }] as
 
 export function excluirUsuarioMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = excluirUsuarioMutationKey()
-  return mutationOptions<ExcluirUsuarioStatus200, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>({
+  return mutationOptions<ExcluirUsuarioStatus204, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>({
     mutationKey,
     mutationFn: async({ path }) => {
       return excluirUsuario({ ...config, path, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function excluirUsuarioMutationOptions<TContext = unknown>(config: Partia
  * {@link /api/usuarios/:id}
  */
 export function useExcluirUsuario<TContext>(options: {
-  mutation?: UseMutationOptions<ExcluirUsuarioStatus200, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<ExcluirUsuarioStatus204, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? excluirUsuarioMutationKey()
 
-  const baseOptions = excluirUsuarioMutationOptions(config) as UseMutationOptions<ExcluirUsuarioStatus200, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>
+  const baseOptions = excluirUsuarioMutationOptions(config) as UseMutationOptions<ExcluirUsuarioStatus204, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>
 
-  return useMutation<ExcluirUsuarioStatus200, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>({
+  return useMutation<ExcluirUsuarioStatus204, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<ExcluirUsuarioStatus200, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>
+  }, queryClient) as UseMutationResult<ExcluirUsuarioStatus204, ResponseErrorConfig<Error>, ExcluirUsuarioOptions, TContext>
 }

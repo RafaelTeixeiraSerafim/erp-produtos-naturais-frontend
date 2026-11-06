@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { SenhaTemporariaOptions, SenhaTemporariaStatus200 } from '../types/SenhaTemporaria'
+import type { SenhaTemporariaOptions, SenhaTemporariaStatus204 } from '../types/SenhaTemporaria'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { senhaTemporaria } from '../clients/senhaTemporaria'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const senhaTemporariaMutationKey = () => [{ url: '/api/usuarios/:id/senha
 
 export function senhaTemporariaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = senhaTemporariaMutationKey()
-  return mutationOptions<SenhaTemporariaStatus200, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>({
+  return mutationOptions<SenhaTemporariaStatus204, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>({
     mutationKey,
     mutationFn: async({ path, body }) => {
       return senhaTemporaria({ ...config, path, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function senhaTemporariaMutationOptions<TContext = unknown>(config: Parti
  * {@link /api/usuarios/:id/senha-temporaria}
  */
 export function useSenhaTemporaria<TContext>(options: {
-  mutation?: UseMutationOptions<SenhaTemporariaStatus200, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<SenhaTemporariaStatus204, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? senhaTemporariaMutationKey()
 
-  const baseOptions = senhaTemporariaMutationOptions(config) as UseMutationOptions<SenhaTemporariaStatus200, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>
+  const baseOptions = senhaTemporariaMutationOptions(config) as UseMutationOptions<SenhaTemporariaStatus204, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>
 
-  return useMutation<SenhaTemporariaStatus200, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>({
+  return useMutation<SenhaTemporariaStatus204, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<SenhaTemporariaStatus200, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>
+  }, queryClient) as UseMutationResult<SenhaTemporariaStatus204, ResponseErrorConfig<Error>, SenhaTemporariaOptions, TContext>
 }

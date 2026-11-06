@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { AlterarSenhaOptions, AlterarSenhaStatus200 } from '../types/AlterarSenha'
+import type { AlterarSenhaOptions, AlterarSenhaStatus204 } from '../types/AlterarSenha'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { alterarSenha } from '../clients/alterarSenha'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const alterarSenhaMutationKey = () => [{ url: '/api/auth/alterar-senha' }
 
 export function alterarSenhaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = alterarSenhaMutationKey()
-  return mutationOptions<AlterarSenhaStatus200, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>({
+  return mutationOptions<AlterarSenhaStatus204, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>({
     mutationKey,
     mutationFn: async({ body }) => {
       return alterarSenha({ ...config, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function alterarSenhaMutationOptions<TContext = unknown>(config: Partial<
  * {@link /api/auth/alterar-senha}
  */
 export function useAlterarSenha<TContext>(options: {
-  mutation?: UseMutationOptions<AlterarSenhaStatus200, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<AlterarSenhaStatus204, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? alterarSenhaMutationKey()
 
-  const baseOptions = alterarSenhaMutationOptions(config) as UseMutationOptions<AlterarSenhaStatus200, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>
+  const baseOptions = alterarSenhaMutationOptions(config) as UseMutationOptions<AlterarSenhaStatus204, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>
 
-  return useMutation<AlterarSenhaStatus200, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>({
+  return useMutation<AlterarSenhaStatus204, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<AlterarSenhaStatus200, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>
+  }, queryClient) as UseMutationResult<AlterarSenhaStatus204, ResponseErrorConfig<Error>, AlterarSenhaOptions, TContext>
 }
