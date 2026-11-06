@@ -6,6 +6,15 @@
 import type { VendaRequestDTO } from './VendaRequestDTO'
 import type { VendaResponseDTO } from './VendaResponseDTO'
 
+export type CriarVendaHeaders = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  'Idempotency-Key': string;
+};
+
 export type CriarVendaStatus200 = VendaResponseDTO;
 
 export type CriarVendaBody = VendaRequestDTO;
@@ -14,7 +23,7 @@ export type CriarVendaOptions = {
   body: CriarVendaBody;
   path?: never;
   query?: never;
-  headers?: never;
+  headers: CriarVendaHeaders;
 };
 
 export type CriarVendaResponses = {

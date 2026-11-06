@@ -146,12 +146,17 @@ it("não reenvia venda persistida quando navegação falha depois do refresh", a
   expect(state.create).toHaveBeenCalledTimes(1);
 });
 
-it("falha de rede mantém recuperação e orienta consulta à lista sem replay", async () => {
+it("falha de rede mantém chave e payload para repetição segura", async () => {
   state.create.mockRejectedValue(new Error("network"));
   mount(); fill();
   fireEvent.click(screen.getByRole("button", { name: "Salvar venda aberta" }));
-  expect(await screen.findByRole("link", { name: "lista de registros" })).toHaveAttribute("href", "/vendas");
+  const repeat=await screen.findByRole("button",{name:"Repetir envio salvo"});
+  await waitFor(()=>expect(repeat).toBeEnabled());
+  const first=state.create.mock.calls[0][0];
+  fireEvent.click(repeat);
+  await waitFor(()=>expect(state.create).toHaveBeenCalledTimes(2));
+  expect(state.create.mock.calls[1][0]).toEqual(first);
   expect(screen.getByLabelText(/Quantidade/)).toHaveValue("1,125");
   await waitFor(() => expect(localStorage.length).toBe(1));
-  expect(state.create).toHaveBeenCalledTimes(1);
+  expect(state.create).toHaveBeenCalledTimes(2);
 });

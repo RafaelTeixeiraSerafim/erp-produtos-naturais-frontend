@@ -344,3 +344,21 @@ O frontend foi publicado pelo usuário na [Vercel](https://erp-produtos-naturais
 - **Commit de correção:** pendente.
 
 - **Atualização da etapa 7:** Etapa 7, progresso restrito a recebimentos: versão otimista em PUT/DELETE, bloqueio de compra antes de editar/criar/confirmar e revisão explícita após conflito. Confirmação revalida pendentes sob lock. Não há versão otimista no PUT geral de compras, nem controle equivalente para vendas; BG-022 permanece aberta.
+
+## Atualização da etapa 9 — vendas operacionais
+
+Esta seção atualiza o estado das lacunas de vendas; os relatos anteriores descrevem o backend antigo. Correção: [`65d6585767398c100a6db40e956b683eb7221125`](https://github.com/Zayma1/erp-produtos-naturais-backend/commit/65d6585767398c100a6db40e956b683eb7221125), branch `stage9-sales`, sem merge/implantação. [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42241771727): 44 testes registrados, 43 executados e um bootstrap exclusivo de integração ignorado.
+
+| Lacuna | Estado e evidência na etapa 9 |
+| --- | --- |
+| BG-008 | Corrigida: conclusão transacional, falta bloqueia toda a venda, produtos repetidos agregados, saldos bloqueados em ordem e baixa atômica. Movimentos únicos por item, replay sem duplicação; concorrência com vendas e recebimentos e rollback de múltiplos produtos em `SalesTests`. A política acordada permite cancelar apenas abertas, sem movimentação; estorno/devolução de concluídas ficam fora do escopo e substituem a proposta antiga de estorno neste aceite. Confirmação não registra pagamento. |
+| BG-015 | Corrigida: cliente obrigatório com 400; identidade do operador vem da sessão. Campo opcional idUsuario apenas valida a própria identidade, sem delegação de autoria. Autores e escopos cobertos em `SalesTests` e `AuthenticationTests`. |
+| BG-016 | Corrigida: observação retorna em criação, edição e GET; formulário e recuperação conservam o valor. |
+| BG-017 | Corrigida: PUT apenas ABERTA com versão, identidade de itens preservada; estados finais rejeitam edição/conversão com 409. DELETE permanece 403 para preservar histórico. Cancelamento explícito audita motivo/ator/horário. |
+| BG-018 | Corrigida: validação de sinal, escala, precisão, limites por item/cabeçalho e desconto <= bruto antes da persistência. HALF_UP agregado e total separado por item preservados; testes PostgreSQL e probe HTTP de preço negativo rejeitado com 400. |
+| BG-019 | Corrigida: DTO inclui totalItem e unidadeSiglaSnapshot. Teste altera a unidade do catálogo e conserva a unidade histórica; interface explica ausência de snapshot legado. |
+| BG-021 | Parcial: criação de vendas agora idempotente, com UUID, hash canônico, dono, persistência e replay concorrente/reinício. Recuperação guarda chave e payload antes do POST. **Criação de compras continua sem idempotência; lacuna permanece aberta para compras.** |
+| BG-022 | Permanece aberta para PUT geral de compras. Vendas agora têm versão, lock transacional e conflito explícito; isso não corrige a concorrência da edição de compras. |
+| BG-001 | Progresso restrito a vendas: V4 versiona o fluxo sem alterar V1–V3. Relatório de reconciliação e testes de migração preservam históricos sem replay. Ajustes/transferências e demais funções não foram incorporados. |
+
+O contrato integral e o runner do frontend fixam esse commit. O [aceite da etapa 9](STAGE9_RELEASE.md) descreve as verificações, o comando da integração real e o gate de CI do fork pessoal. Nenhum banco compartilhado foi migrado e a versão em produção não foi auditada nesta etapa.

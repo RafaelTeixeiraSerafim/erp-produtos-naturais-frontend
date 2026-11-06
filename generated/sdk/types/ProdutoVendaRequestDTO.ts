@@ -7,6 +7,12 @@ export type ProdutoVendaRequestDTO = {
   /**
    * @description
    * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @description
+   * Format: `uuid`
    * @type string
    */
   idProduto: string;
@@ -15,6 +21,14 @@ export type ProdutoVendaRequestDTO = {
    * @type number
    */
   quantidade: number;
+  /**
+   * @minimum 0
+   * @type number
+   */
   precoUnitario: number;
+  /**
+   * @minimum 0
+   * @type number | undefined
+   */
   desconto?: number;
 };

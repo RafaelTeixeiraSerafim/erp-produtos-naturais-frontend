@@ -22,6 +22,54 @@ export type VendaResponseDTO = {
   id?: string;
   /**
    * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  observacao?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  criadoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  concluidoEm?: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  canceladoEm?: string;
+  motivoCancelamento?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  nomeModificador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idConfirmador?: string;
+  nomeConfirmador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idCancelador?: string;
+  nomeCancelador?: string;
+  legado?: boolean;
+  /**
+   * @description
    * Format: `date-time`
    * @type string | undefined
    */

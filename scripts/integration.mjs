@@ -13,7 +13,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "a3aa98212842a48bd3bb30302a25bca37c21727c";
+const commit = "65d6585767398c100a6db40e956b683eb7221125";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
@@ -141,13 +141,14 @@ try {
   await run("npm", ["run", "test:live"], root, testEnv);
   await run("npx", ["playwright", "test", "--config=playwright.live.config.ts"], root, testEnv);
   // A real process restart must retain operational receipts, stock, quantities and movements.
-  const snapshot = async () => Object.fromEntries(await Promise.all(["recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
+  const snapshot = async () => Object.fromEntries(await Promise.all(["vendas", "recebimentos-compras", "compras", "estoques", "movimentacoes-estoque"].map(async resource => {
     const rows = await (await fetch(`http://127.0.0.1:8081/api/${resource}`)).json();
-    if (resource === "recebimentos-compras") for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
+    if (["vendas", "recebimentos-compras"].includes(resource)) for (let i=0; i<rows.length; i++) rows[i] = await (await fetch(`http://127.0.0.1:8081/api/${resource}/${rows[i].id}`)).json();
     return [resource, rows.sort((a,b) => a.id.localeCompare(b.id))];
   })));
   const beforeRestart = await snapshot();
   assert(beforeRestart["recebimentos-compras"].some(r => r.status === "CONCLUIDO"), "Receiving browser tests must persist confirmed receipts");
+  assert(beforeRestart.vendas.some(r=>r.status==="CONCLUIDA" && r.idConfirmador),"Sales browser tests must persist confirmed sales");
   await stop(api); children.delete(api);
   backendProcess = start("./mvnw", ["--batch-mode", "--no-transfer-progress", "spring-boot:run"], backend, backendEnv, "backend-restart.log");
   await ready("http://127.0.0.1:8081/api/auth/csrf", backendProcess, 600000);

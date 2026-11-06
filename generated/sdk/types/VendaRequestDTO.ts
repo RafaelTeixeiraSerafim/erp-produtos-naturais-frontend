@@ -8,6 +8,13 @@ import type { ProdutoVendaRequestDTO } from './ProdutoVendaRequestDTO'
 export type VendaRequestDTO = {
   /**
    * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  versao?: number;
+  status?: string;
+  /**
+   * @description
    * Format: `date-time`
    * @type string | undefined
    */
@@ -15,9 +22,9 @@ export type VendaRequestDTO = {
   /**
    * @description
    * Format: `uuid`
-   * @type string | undefined
+   * @type string
    */
-  idCliente?: string;
+  idCliente: string;
   /**
    * @description
    * Format: `uuid`
@@ -30,6 +37,11 @@ export type VendaRequestDTO = {
    * @type string
    */
   idLoja: string;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string | undefined
+   */
   observacao?: string;
   itens: ProdutoVendaRequestDTO[];
 };

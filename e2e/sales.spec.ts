@@ -141,7 +141,8 @@ test("venda: seleções obrigatórias, precisão, vários itens, arredondamento 
   await expect(page.getByText("Status: Aberta")).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Editar|Excluir|Concluir|Cancelar/ }),
-  ).toHaveCount(0);
+  ).toHaveCount(2);
+  await expect(page.getByRole("link",{name:"Editar venda"})).toBeVisible();
 });
 test("lojas ausentes bloqueiam gravação com explicação e links", async ({
   page,

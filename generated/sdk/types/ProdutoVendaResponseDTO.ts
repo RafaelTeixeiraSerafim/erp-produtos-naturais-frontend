@@ -20,4 +20,6 @@ export type ProdutoVendaResponseDTO = {
   quantidade?: number;
   precoUnitario?: number;
   desconto?: number;
+  totalItem?: number;
+  unidadeSiglaSnapshot?: string;
 };

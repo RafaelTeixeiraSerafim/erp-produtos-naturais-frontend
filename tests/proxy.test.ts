@@ -218,7 +218,7 @@ it.each([
   expect(
     (
       await forwardCatalog(
-        browserRequest(`http://localhost/api/${path.join("/")}`, { method }),
+        browserRequest(`http://localhost/api/${path.join("/")}`, { method, headers:{"Idempotency-Key":inventoryId} }),
         path,
       )
     ).status,
@@ -226,7 +226,6 @@ it.each([
   expect(fetch).toHaveBeenCalledOnce();
 });
 it.each([
-  ["vendas", "PUT"],
   ["vendas", "DELETE"],
   ["usuarios", "PUT"],
   ["usuarios", "DELETE"],
@@ -246,7 +245,6 @@ it.each([
 });
 it.each([
   ["vendas", "invalido"],
-  ["vendas", inventoryId, "concluir"],
   ["clientes", "x"],
 ])("etapa 4 bloqueia caminho %s", async (...path) => {
   expect(
@@ -266,4 +264,16 @@ it("recebimentos: conclusão estreita, sem liberar ações em outras APIs",async
   expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(200);
   expect((await forwardCatalog(browserRequest("http://localhost/api/r"),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(405);
   expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST"}),["compras",inventoryId,"concluir"])).status).toBe(404);
+});
+
+it("vendas permitem edição e ações explícitas com chave restrita à criação",async()=>{
+  const fetch=vi.fn().mockImplementation(()=>Promise.resolve(Response.json({})));vi.stubGlobal("fetch",fetch);
+  for(const action of ["concluir","cancelar"]) {
+    expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),["vendas",inventoryId,action])).status).toBe(200);
+    expect((await forwardCatalog(browserRequest("http://localhost/api/r"),["vendas",inventoryId,action])).status).toBe(405);
+  }
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"PUT",body:"{}"}),["vendas",inventoryId])).status).toBe(200);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),["vendas"])).status).toBe(400);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",headers:{"Idempotency-Key":inventoryId},body:"{}"}),["vendas"])).status).toBe(200);
+  expect(fetch.mock.calls.at(-1)?.[1].headers["Idempotency-Key"]).toBe(inventoryId);
 });

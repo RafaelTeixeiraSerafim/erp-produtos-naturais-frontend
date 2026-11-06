@@ -8,8 +8,9 @@ export const purchaseDraftSchema = z.object({
   itens: z.array(z.object({ ...item, id: text.optional(), custoUnitario: text }).strict()),
 }).strict();
 export const saleDraftSchema = z.object({
-  idCliente: text, idUsuario: text, idLoja: text, dataVenda: text,
-  itens: z.array(z.object({ ...item, precoUnitario: text }).strict()),
+  idCliente: text, idUsuario: text, idLoja: text, dataVenda: text, observacao: text.optional(), baseVersion: z.number().int().nonnegative().optional(),
+  pending: z.object({ key:z.uuid(), body:z.object({ idCliente:z.uuid(), idUsuario:z.uuid().optional(), idLoja:z.uuid(), dataVenda:text.optional(), observacao:text.optional(), itens:z.array(z.object({ id:z.uuid().optional(), idProduto:z.uuid(), quantidade:z.number(), precoUnitario:z.number(), desconto:z.number().optional() }).strict()) }).strict() }).strict().optional(),
+  itens: z.array(z.object({ ...item, id:text.optional(), precoUnitario: text }).strict()),
 }).strict();
 export const lifetime = 7 * 24 * 60 * 60 * 1000;
 export const recoveryKey = (environment: string, user: string, context: string) => `vila:recovery:v2:${environment}:${user}:${context}`;

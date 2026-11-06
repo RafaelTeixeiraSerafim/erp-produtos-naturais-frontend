@@ -7,7 +7,7 @@ export function salesSeed({ base, inventory, sql }) {
   async function api(resource, method = "GET", body) {
     const response = await fetch(`${base}/api/${resource}`, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(resource === "vendas" && method === "POST" ? {"Idempotency-Key":randomUUID()} : {}) },
       body: body && JSON.stringify(body),
     });
     assert(
@@ -40,9 +40,9 @@ export function salesSeed({ base, inventory, sql }) {
       assert.equal(saved.status, "ABERTA");
       assert.equal(saved.subtotal, 0.01);
       assert.equal(saved.valorTotal, 0.01);
-      assert(!("observacao" in saved));
-      assert(!("totalItem" in saved.itens[0]));
-      assert(!("unidadeSiglaSnapshot" in saved.itens[0]));
+      assert.equal(saved.observacao,"probe");
+      assert.equal(saved.itens[0].totalItem,0.01);
+      assert(saved.itens[0].unidadeSiglaSnapshot);
       assert.equal((await api(`vendas/${saved.id}`)).valorTotal, 0.01);
       assert.deepEqual(await api("estoques"), before);
       const missing = await fetch(`${base}/api/vendas`, {
@@ -54,31 +54,23 @@ export function salesSeed({ base, inventory, sql }) {
           idUsuario: undefined,
         }),
       });
-      assert.equal(missing.status, 500);
+      assert.equal(missing.status, 400);
       await missing.text();
-      const negative = await api("vendas", "POST", {
-        ...body,
-        itens: [
-          { ...body.itens[0], quantidade: 1, precoUnitario: -1, desconto: 0 },
-        ],
-      });
-      assert.equal(negative.valorTotal, -1);
-      // Status probes are test-only; product UI remains read-only.
-      await sql(
-        `UPDATE venda SET status = 'CONCLUIDA' WHERE id = '${negative.id}'`,
-      );
-      for (const method of ["PUT","DELETE"]) {
-        const denied=await fetch(`${base}/api/vendas/${negative.id}`,{method,headers:{"Content-Type":"application/json"},body:method==="PUT" ? JSON.stringify(body):undefined});
-        assert.equal(denied.status,403);
-      }
-      console.log("Vendas: persistência e totais preservados; edição e exclusão negadas diretamente pelo backend.");
+      const negative = await fetch(`${base}/api/vendas`, { method:"POST", headers:{"Content-Type":"application/json","Idempotency-Key":randomUUID()}, body:JSON.stringify({...body,itens:[{...body.itens[0],quantidade:1,precoUnitario:-1}]}) });
+      assert.equal(negative.status,400);
+      const key=randomUUID();
+      const create=()=>fetch(`${base}/api/vendas`,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":key},body:JSON.stringify(body)}).then(r=>r.json());
+      const [first,replay]=await Promise.all([create(),create()]);assert.equal(first.id,replay.id);
+      const cancelled=await api(`vendas/${first.id}/cancelar`,"POST",{versao:first.versao,motivo:"Probe"});
+      assert.equal(cancelled.status,"CANCELADA");assert.deepEqual(await api("estoques"),before);
+      console.log("Vendas: validação, observação, snapshots, idempotência concorrente e cancelamento sem baixa verificados.");
       // Mixed report statuses are inserted before browser suites, only in the owned DB.
       const reports = [];
       for (let i = 0; i < 25; i++) {
         const row = await api("vendas", "POST", { ...body, dataVenda: "2020-06-15T12:00:00-03:00", itens: [{ idProduto: inventory.product, quantidade: 1, precoUnitario: 1.23, desconto: 0 }] });
         assert.match(row.id, /^[0-9a-f-]{36}$/i);
         const status = ["ABERTA", "CONCLUIDA", "CANCELADA"][i % 3];
-        await sql(`UPDATE venda SET status = '${status}' WHERE id = '${row.id}'`);
+        await sql(`UPDATE venda SET legado=true,status = '${status}' WHERE id = '${row.id}'`);
         reports.push({ id: row.id, status, total: row.valorTotal });
       }
       return { ...inventory, prefix, operator: operator.id, customer: customer.id, reports };
@@ -93,7 +85,7 @@ export function salesSeed({ base, inventory, sql }) {
       );
       for (const sale of sales) {
         assert.match(sale.id,/^[0-9a-f-]{36}$/i);
-        await sql(`DELETE FROM produto_venda WHERE id_venda='${sale.id}'; DELETE FROM venda WHERE id='${sale.id}'`);
+        await sql(`DELETE FROM movimentacao_estoque WHERE id_venda='${sale.id}'; DELETE FROM venda_idempotencia WHERE venda_id='${sale.id}'; DELETE FROM produto_venda WHERE id_venda='${sale.id}'; DELETE FROM venda WHERE id='${sale.id}'`);
       }
       for (const customer of customers)
         await api(`clientes/${customer.id}`, "DELETE");

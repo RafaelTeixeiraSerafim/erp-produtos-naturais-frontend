@@ -1,7 +1,9 @@
 import type { VendaRequestDTO } from "@/generated/sdk/types/VendaRequestDTO";
-import { decimal, saoPauloTimestamp } from "./purchases";
+import type { VendaResponseDTO } from "@/generated/sdk/types/VendaResponseDTO";
+import { decimal, purchaseLocalDate, saoPauloTimestamp } from "./purchases";
 import { uuid } from "./validation";
 export type SaleItem = {
+  id?: string;
   idProduto: string;
   quantidade: string;
   precoUnitario: string;
@@ -12,6 +14,9 @@ export type SaleDraft = {
   idUsuario: string;
   idLoja: string;
   dataVenda: string;
+  observacao?: string;
+  baseVersion?: number;
+  pending?: { key: string; body: VendaRequestDTO };
   itens: SaleItem[];
 };
 export const blankItem = (): SaleItem => ({
@@ -25,6 +30,7 @@ export const draftValues = (): SaleDraft => ({
   idUsuario: "",
   idLoja: "",
   dataVenda: "",
+  observacao: "",
   itens: [blankItem()],
 });
 const limit = 99999999999999n;
@@ -73,17 +79,20 @@ export function salePayload(draft: SaleDraft): VendaRequestDTO {
   )
     throw new Error("Data inválida.");
   return {
+    ...(draft.baseVersion === undefined ? {} : { versao: draft.baseVersion }),
     idCliente: draft.idCliente,
     idUsuario: draft.idUsuario,
     idLoja: draft.idLoja,
     ...(draft.dataVenda
       ? { dataVenda: saoPauloTimestamp(draft.dataVenda) }
       : {}),
+    observacao: draft.observacao || "",
     itens: draft.itens.map((i) => {
       if (!uuid.safeParse(i.idProduto).success)
         throw new Error("Selecione um produto válido em cada item.");
       const { q, c, d } = itemCalculation(i);
       return {
+        ...(i.id ? { id:i.id } : {}),
         idProduto: i.idProduto,
         quantidade: Number(q) / 1000,
         precoUnitario: Number(c) / 100,
@@ -98,3 +107,9 @@ export const statusLabels: Record<string, string> = {
   CANCELADA: "Cancelada",
 };
 export const saleStatus = (v?: string) => (v ? statusLabels[v] || v : "—");
+
+export function savedSaleValues(row: VendaResponseDTO): SaleDraft {
+  const format = (n?: number) => n === undefined ? "" : n.toLocaleString("pt-BR", { useGrouping:false, maximumFractionDigits:3 });
+  return { idCliente:row.idCliente || "", idUsuario:row.idUsuario || "", idLoja:row.idLoja || "", dataVenda:purchaseLocalDate(row.dataVenda), observacao:row.observacao || "", baseVersion:row.versao,
+    itens:(row.itens || []).map(i => ({ id:i.id, idProduto:i.idProduto || "", quantidade:format(i.quantidade), precoUnitario:format(i.precoUnitario), desconto:format(i.desconto) })) };
+}
