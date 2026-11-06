@@ -14,7 +14,8 @@ Validação local:
 
 - Backend PostgreSQL descartável: 54 testes registrados, 53 executados, um bootstrap exclusivo de integração ignorado; sem falhas. Inclui nove testes de transferências, dez de migração e regressões de autenticação/recebimento/vendas. Concorrência de direções opostas, origem disputada, recebimentos nas duas lojas e venda; rollback de falta/overflow/falha de movimento, auditoria, escopo, CSRF, snapshots, IDs e replay concorrente.
 - Frontend: lint/tipos e 170 testes unitários/componentes aprovados; 106 cenários de navegador desktop/mobile aprovados; build de produção executado pelo runner de navegador.
-- Integração real e CI: em verificação; resultados finais serão registrados abaixo.
+- Integração local real: smoke autenticado e 26 cenários aprovados (13 desktop e 13 mobile), incluindo os quatro cenários específicos de transferências em cada resolução. Reinício real do backend preservou documentos completos, itens, versões, auditoria, saldos e movimentos. Banco/processos descartáveis removidos ao terminar.
+- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42265562737) no SHA fixado. A implementação frontend `a9de913` tem sua [execução de validate/integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42266541890). Os dois jobs são exigidos antes do aceite; nenhum resultado de uma branch anterior substitui esse gate.
 
 Roteiro de aceite: receber em A, criar e recuperar rascunho, editar preservando ID, revisar e confirmar parte para B, conferir saldos e os dois movimentos e vender em B. Verificar também falta sem efeitos, cancelamento sem efeitos, replay de resposta perdida após reload, conflito de versão e gerente sem uma das atribuições. O runner reinicia o backend e compara documentos, itens, saldos e movimentos persistidos.
 
