@@ -1,4 +1,4 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./auth-fixture";
 test("vendas reais: cliente e venda aberta com total agregado, reload e estoque inalterado", async ({
   page,
   request,
@@ -25,9 +25,6 @@ test("vendas reais: cliente e venda aberta com total agregado, reload e estoque 
     .getByLabel("Cliente *", { exact: true })
     .selectOption({ label: name });
   await page.getByLabel("Loja *", { exact: true }).selectOption(fixture.store);
-  await page
-    .getByLabel("Operador *", { exact: true })
-    .selectOption(fixture.operator);
   const fill = async (
     n: number,
     product: string,

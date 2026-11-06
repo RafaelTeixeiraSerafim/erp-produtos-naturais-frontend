@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./auth-fixture";
 
 // No routing/interception: all writes go through the production proxy and real API.
 test.beforeAll(() => {

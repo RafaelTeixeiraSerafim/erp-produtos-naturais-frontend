@@ -1,4 +1,5 @@
 // Own every service used by this run; never target an existing backend/database.
+import { authenticatedSession } from "./session.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { openSync, closeSync } from "node:fs";
@@ -12,13 +13,15 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "f335d525ea6ed107cd00824031ded904020967fe";
+const commit = "556e48209f824737d4a42e53d722a07e9f73e259";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
 const frontend = path.join(temp, "frontend");
 const container = `vila-integration-${randomUUID()}`;
 const password = randomUUID();
+const adminPassword = randomUUID();
+const nativeFetch = globalThis.fetch;
 const children = new Set();
 const streams = [];
 let stopping = false;
@@ -28,7 +31,7 @@ let purchasesFixture;
 let salesFixture;
 let backendProcess;
 let inventorySqlStep = 0;
-const env = { ...process.env, BACKEND_API_URL: "http://127.0.0.1:8081" };
+const env = { ...process.env, BACKEND_API_URL: "http://127.0.0.1:8081", FRONTEND_ORIGINS:"http://127.0.0.1:3100" };
 await rm(logs, { recursive: true, force: true });
 await mkdir(logs, { recursive: true });
 function start(command, args, cwd, extraEnv = {}, log) {
@@ -65,8 +68,8 @@ async function ready(url, child, timeout) {
     if (stopping) throw new Error("Execução interrompida.");
     if (child.exitCode !== null || child.signalCode) { await child.done; throw new Error("Servidor encerrado antes da prontidão."); }
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(2000) });
-      if (response.ok && Array.isArray(await response.json())) return;
+      const response = await nativeFetch(url, { signal: AbortSignal.timeout(2000) });
+      if (response.ok) return;
     } catch { /* Retry until the owned API is ready. */ }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
@@ -107,12 +110,18 @@ try {
   await run("chmod", ["+x", "mvnw"], backend);
   const backendEnv = {
     SERVER_ADDRESS: "127.0.0.1", SERVER_PORT: "8081",
-    DB_URL: `jdbc:postgresql://127.0.0.1:${port}/catalog`, DB_USER: "catalog", DB_PASSWORD: password,
+    DB_URL: `jdbc:postgresql://127.0.0.1:${port}/catalog`, DB_USER: "catalog", DB_PASSWORD: password, SESSION_COOKIE_SECURE: "false",
   };
+  await run("./mvnw", ["--batch-mode", "--no-transfer-progress", "test", "-Dtest=IntegrationBootstrapTests"], backend,
+    { ...backendEnv, CATALOG_DISPOSABLE:"1", INTEGRATION_ADMIN_PASSWORD:adminPassword }, "bootstrap.log");
   const api = start("./mvnw", ["--batch-mode", "--no-transfer-progress", "spring-boot:run"], backend, backendEnv, "backend.log");
   backendProcess = api;
   console.log(`Backend fixado em ${commit}; aguardando API real…`);
-  await ready("http://127.0.0.1:8081/api/categorias", api, 600000);
+  await ready("http://127.0.0.1:8081/api/auth/csrf", api, 600000);
+  assert.equal((await nativeFetch("http://127.0.0.1:8081/api/categorias")).status,401);
+  process.env.CATALOG_DISPOSABLE="1";
+  const session=await authenticatedSession("http://127.0.0.1:8081","stage8-admin@example.test",adminPassword,nativeFetch);
+  globalThis.fetch=session.fetch;
   inventoryFixture = inventorySeed({ base: "http://127.0.0.1:8081", sql: (statement) => run("docker", ["exec", container, "psql", "-U", "catalog", "-d", "catalog", "-v", "ON_ERROR_STOP=1", "-c", statement], root, {}, `inventory-sql-${++inventorySqlStep}.log`) });
   const inventory = await inventoryFixture.seed();
   purchasesFixture = purchasesSeed({ base: "http://127.0.0.1:8081", inventory, sql: (statement) => run("docker", ["exec", container, "psql", "-U", "catalog", "-d", "catalog", "-v", "ON_ERROR_STOP=1", "-c", statement], root, {}, `purchases-sql-${++inventorySqlStep}.log`) });
@@ -125,8 +134,10 @@ try {
   await run("ln", ["-s", path.join(root, "node_modules"), path.join(frontend, "node_modules")]);
   await run("npm", ["run", "build"], frontend, {}, "frontend-build.log");
   const web = start("npm", ["run", "start", "--", "--hostname", "127.0.0.1", "--port", "3100"], frontend, {}, "frontend.log");
-  await ready("http://127.0.0.1:3100/api/categorias", web, 60000);
-  const testEnv = { SMOKE_BASE_URL: "http://127.0.0.1:3100", CATALOG_DISPOSABLE: "1", INVENTORY_FIXTURE: JSON.stringify(inventory), SALES_FIXTURE: JSON.stringify(sales), PURCHASES_FIXTURE: JSON.stringify(purchases) };
+  await ready("http://127.0.0.1:3100/api/auth/csrf", web, 60000);
+  assert.equal((await nativeFetch("http://127.0.0.1:3100/api/categorias")).status,401);
+  const proxySession=await authenticatedSession("http://127.0.0.1:3100","stage8-admin@example.test",adminPassword,nativeFetch);
+  const testEnv = { INTEGRATION_ADMIN_EMAIL:"stage8-admin@example.test", INTEGRATION_ADMIN_PASSWORD:adminPassword, LIVE_SESSION:JSON.stringify(proxySession.storageState), LIVE_HEADERS:JSON.stringify(proxySession.headers), SMOKE_BASE_URL: "http://127.0.0.1:3100", CATALOG_DISPOSABLE: "1", INVENTORY_FIXTURE: JSON.stringify(inventory), SALES_FIXTURE: JSON.stringify(sales), PURCHASES_FIXTURE: JSON.stringify(purchases) };
   await run("npm", ["run", "test:live"], root, testEnv);
   await run("npx", ["playwright", "test", "--config=playwright.live.config.ts"], root, testEnv);
   // A real process restart must retain operational receipts, stock, quantities and movements.
@@ -139,7 +150,7 @@ try {
   assert(beforeRestart["recebimentos-compras"].some(r => r.status === "CONCLUIDO"), "Receiving browser tests must persist confirmed receipts");
   await stop(api); children.delete(api);
   backendProcess = start("./mvnw", ["--batch-mode", "--no-transfer-progress", "spring-boot:run"], backend, backendEnv, "backend-restart.log");
-  await ready("http://127.0.0.1:8081/api/categorias", backendProcess, 600000);
+  await ready("http://127.0.0.1:8081/api/auth/csrf", backendProcess, 600000);
   assert.deepEqual(await snapshot(), beforeRestart, "Backend restart must retain all operational data");
   console.log("Integração real concluída: smoke, Chromium desktop/mobile e persistência após reiniciar o backend.");
 } catch (error) {
@@ -176,7 +187,7 @@ try {
   for (const [stream, name] of streams) {
     closeSync(stream);
     const raw = await readFile(path.join(temp, name), "utf8");
-    await writeFile(path.join(logs, name), raw.replaceAll(password, "[REDACTED]").replace(/(Using generated security password:) .*/g, "$1 [REDACTED]"));
+    await writeFile(path.join(logs, name), raw.replaceAll(password, "[REDACTED]").replaceAll(adminPassword,"[REDACTED]").replace(/(Using generated security password:) .*/g, "$1 [REDACTED]"));
   }
   await rm(temp, { recursive: true, force: true });
   if (stopping) process.exitCode = 1;

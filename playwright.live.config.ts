@@ -9,6 +9,7 @@ export default defineConfig({
   reporter: [["list"], ["html", { outputFolder: "playwright-live-report", open: "never" }]],
   outputDir: "test-results/live",
   use: {
+    storageState: process.env.LIVE_SESSION ? JSON.parse(process.env.LIVE_SESSION) : undefined,
     baseURL: "http://127.0.0.1:3100",
     timezoneId: "America/Sao_Paulo",
     trace: "retain-on-failure",

@@ -1,4 +1,6 @@
 "use client";
+import { AccountControls, useIdentity } from "./auth";
+import { pagePermission } from "@/lib/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -68,6 +70,8 @@ function Navigation({
   onNavigate: () => void;
   className?: string;
 }) {
+  const user = useIdentity();
+  const visible = (href: string) => !pagePermission(href) || !!user?.permissions.includes(pagePermission(href)!);
   return (
     <nav
       aria-label="Navegação principal"
@@ -77,7 +81,7 @@ function Navigation({
       <p className="px-3.5 pb-2.5 text-[10px] font-semibold tracking-[1.8px] text-[#8a958c]">
         CATÁLOGO
       </p>
-      {links.map(({ href, label, icon: Icon }) => (
+      {links.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
@@ -107,7 +111,7 @@ function Navigation({
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         COMPRAS
       </p>
-      {purchaseLinks.map(({ href, label, icon: Icon }) => (
+      {purchaseLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
@@ -119,6 +123,7 @@ function Navigation({
           {label}
         </Link>
       ))}
+      {user?.permissions.includes("users.manage") && <Link className="block px-3.5 py-3" href="/usuarios" onClick={onNavigate}>Usuários</Link>}
       <p className="mt-6 px-3.5 pb-2 text-[10px] font-semibold tracking-[1.8px] text-muted">
         ESTOQUE
       </p>
@@ -138,8 +143,10 @@ function Navigation({
   );
 }
 export function Shell({ children }: { children: React.ReactNode }) {
+  const user = useIdentity();
   const path = usePathname(),
     [open, setOpen] = useState(false);
+  if (path === "/login") return <main id="conteudo">{children}</main>;
   const current =
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
     [...inventoryLinks].reverse().find((x) => path === x.href) ||
@@ -227,16 +234,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
                           : ""}
             </span>
           </div>
-          <span className="flex items-center gap-[7px] text-[10px] tracking-[0.2px] text-[#79877b] compact:hidden">
-            <span className="size-1.5 rounded-full bg-[#8cae71]" />
-            Ambiente de desenvolvimento
-          </span>
+          <AccountControls />
         </header>
         <main
           id="conteudo"
           tabIndex={-1}
           className="m-auto w-full max-w-[1600px] flex-1 px-[42px] pt-[39px] pb-[60px] compact:px-[25px] compact:pt-[30px] compact:pb-[45px] mobile:px-4 mobile:pt-[25px] mobile:pb-10 wide:pt-[50px]"
         >
+          {user && user.cargo !== "ADMIN" && user.lojas.length === 0 && <p role="status" className="mb-5 rounded border border-border p-4">Você ainda não tem lojas atribuídas. Solicite a um administrador a liberação das lojas para consultar e registrar operações.</p>}
           {children}
         </main>
         <footer className="mx-[42px] flex justify-between border-t border-border py-[18px] text-[10px] text-[#859086] compact:mx-[25px] mobile:mx-4 mobile:text-[9px]">

@@ -1,6 +1,9 @@
 // @vitest-environment node
 import { afterEach, expect, it, vi } from "vitest";
 import { forwardCatalog } from "@/lib/proxy";
+function browserRequest(url: string, init: RequestInit = {}) {
+  return new Request(url, { ...init, headers: { Origin: new URL(url).origin, ...init.headers } });
+}
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -14,7 +17,7 @@ it("mantém filtros, status e mensagem JSON sem cache", async () => {
     );
   vi.stubGlobal("fetch", fetch);
   const result = await forwardCatalog(
-    new Request("http://localhost/api/produtos?idProduto=abc"),
+    browserRequest("http://localhost/api/produtos?idProduto=abc"),
     ["produtos"],
   );
   expect(String(fetch.mock.calls[0][0])).toBe(
@@ -30,7 +33,7 @@ it("preserva resposta vazia 204", async () => {
     vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
   );
   const result = await forwardCatalog(
-    new Request(
+    browserRequest(
       "http://localhost/api/produtos/11111111-1111-4111-8111-111111111111",
       { method: "DELETE" },
     ),
@@ -47,7 +50,7 @@ it.each([
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   expect(
-    (await forwardCatalog(new Request("http://localhost/api/usuarios"), path))
+    (await forwardCatalog(browserRequest("http://localhost/api/usuarios"), path))
       .status,
   ).toBe(404);
   expect(fetch).not.toHaveBeenCalled();
@@ -56,7 +59,7 @@ it("não permite PUT de vínculo", async () =>
   expect(
     (
       await forwardCatalog(
-        new Request("http://localhost/api/produtos-loja/id", { method: "PUT" }),
+        browserRequest("http://localhost/api/produtos-loja/id", { method: "PUT" }),
         ["produtos-loja", "11111111-1111-4111-8111-111111111111"],
       )
     ).status,
@@ -65,7 +68,7 @@ it("retorna erro tratável quando backend está indisponível", async () => {
   vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
   expect(
     (
-      await forwardCatalog(new Request("http://localhost/api/produtos"), [
+      await forwardCatalog(browserRequest("http://localhost/api/produtos"), [
         "produtos",
       ])
     ).status,
@@ -83,7 +86,7 @@ it.each([
   vi.stubGlobal("fetch", fetch);
   const query = `?idProduto=${inventoryId}&idLoja=${inventoryId}`;
   const result = await forwardCatalog(
-    new Request(`http://localhost/api/${path.join("/")}${query}`),
+    browserRequest(`http://localhost/api/${path.join("/")}${query}`),
     path,
   );
   expect(result.status).toBe(200);
@@ -103,7 +106,7 @@ it.each([
   expect(
     (
       await forwardCatalog(
-        new Request(`http://localhost/api/estoques/saldo${query}`),
+        browserRequest(`http://localhost/api/estoques/saldo${query}`),
         ["estoques", "saldo"],
       )
     ).status,
@@ -119,7 +122,7 @@ it.each(["estoques", "movimentacoes-estoque"])(
       if (resource === "estoques" && id === "saldo") continue;
       expect(
         (
-          await forwardCatalog(new Request("http://localhost/api"), [
+          await forwardCatalog(browserRequest("http://localhost/api"), [
             resource,
             id,
           ])
@@ -133,7 +136,7 @@ it.each(["estoques", "movimentacoes-estoque"])(
         ...(resource === "estoques" ? [[resource, "saldo"]] : []),
       ]) {
         const result = await forwardCatalog(
-          new Request("http://localhost/api", { method }),
+          browserRequest("http://localhost/api", { method }),
           path,
         );
         expect(result.status).toBe(405);
@@ -163,7 +166,7 @@ it.each(["fornecedores", "compras"])(
         expect(
           (
             await forwardCatalog(
-              new Request("http://localhost/api", { method }),
+              browserRequest("http://localhost/api", { method }),
               path,
             )
           ).status,
@@ -177,7 +180,7 @@ it("bloqueia exclusão, transições e recebimentos de compras sem consultar ups
   expect(
     (
       await forwardCatalog(
-        new Request("http://localhost/api", { method: "DELETE" }),
+        browserRequest("http://localhost/api", { method: "DELETE" }),
         ["compras", inventoryId],
       )
     ).status,
@@ -191,7 +194,7 @@ it("bloqueia exclusão, transições e recebimentos de compras sem consultar ups
     expect(
       (
         await forwardCatalog(
-          new Request("http://localhost/api", { method: "POST" }),
+          browserRequest("http://localhost/api", { method: "POST" }),
           path,
         )
       ).status,
@@ -215,7 +218,7 @@ it.each([
   expect(
     (
       await forwardCatalog(
-        new Request(`http://localhost/api/${path.join("/")}`, { method }),
+        browserRequest(`http://localhost/api/${path.join("/")}`, { method }),
         path,
       )
     ).status,
@@ -225,7 +228,6 @@ it.each([
 it.each([
   ["vendas", "PUT"],
   ["vendas", "DELETE"],
-  ["usuarios", "POST"],
   ["usuarios", "PUT"],
   ["usuarios", "DELETE"],
 ])("etapa 4 bloqueia %s %s", async (resource, method) => {
@@ -235,7 +237,7 @@ it.each([
   expect(
     (
       await forwardCatalog(
-        new Request("http://localhost/api/", { method }),
+        browserRequest("http://localhost/api/", { method }),
         path,
       )
     ).status,
@@ -246,23 +248,22 @@ it.each([
   ["vendas", "invalido"],
   ["vendas", inventoryId, "concluir"],
   ["clientes", "x"],
-  ["usuarios", inventoryId],
 ])("etapa 4 bloqueia caminho %s", async (...path) => {
   expect(
-    (await forwardCatalog(new Request("http://localhost/api/"), path)).status,
+    (await forwardCatalog(browserRequest("http://localhost/api/"), path)).status,
   ).toBe(404);
 });
 it("recebimentos: encaminha chave somente na criação e exige versão na exclusão", async () => {
   const fetch = vi.fn().mockImplementation(() => Promise.resolve(Response.json({ id:inventoryId }))); vi.stubGlobal("fetch",fetch);
-  const create = await forwardCatalog(new Request("http://localhost/api/recebimentos-compras", { method:"POST",headers:{ "Idempotency-Key":inventoryId },body:"{}" }),["recebimentos-compras"]);
+  const create = await forwardCatalog(browserRequest("http://localhost/api/recebimentos-compras", { method:"POST",headers:{ "Idempotency-Key":inventoryId },body:"{}" }),["recebimentos-compras"]);
   expect(create.status).toBe(200); expect(fetch.mock.calls[0][1].headers["Idempotency-Key"]).toBe(inventoryId);
-  expect((await forwardCatalog(new Request("http://localhost/api/recebimentos-compras", { method:"POST",body:"{}" }),["recebimentos-compras"])).status).toBe(400);
-  expect((await forwardCatalog(new Request("http://localhost/api/recebimentos-compras/x", { method:"DELETE" }),["recebimentos-compras",inventoryId])).status).toBe(400);
-  expect((await forwardCatalog(new Request("http://localhost/api/recebimentos-compras/x?versao=2", { method:"DELETE" }),["recebimentos-compras",inventoryId])).status).toBe(200);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/recebimentos-compras", { method:"POST",body:"{}" }),["recebimentos-compras"])).status).toBe(400);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/recebimentos-compras/x", { method:"DELETE" }),["recebimentos-compras",inventoryId])).status).toBe(400);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/recebimentos-compras/x?versao=2", { method:"DELETE" }),["recebimentos-compras",inventoryId])).status).toBe(200);
 });
 it("recebimentos: conclusão estreita, sem liberar ações em outras APIs",async () => {
   vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({})));
-  expect((await forwardCatalog(new Request("http://localhost/api/r",{method:"POST",body:"{}"}),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(200);
-  expect((await forwardCatalog(new Request("http://localhost/api/r"),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(405);
-  expect((await forwardCatalog(new Request("http://localhost/api/r",{method:"POST"}),["compras",inventoryId,"concluir"])).status).toBe(404);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST",body:"{}"}),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(200);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r"),["recebimentos-compras",inventoryId,"concluir"])).status).toBe(405);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST"}),["compras",inventoryId,"concluir"])).status).toBe(404);
 });

@@ -1,0 +1,16 @@
+# Release coordenada — autenticação
+
+Este é um checklist para execução posterior pelo responsável pelo ambiente. A implementação trabalha em branches de feature; não publica nem migra bancos compartilhados.
+
+1. Confirmar os commits revisados de backend/frontend e CI `validate`/`integration` do **fork pessoal**. Status Vercel é evidência separada e não substitui CI. Manter a integração nativa Vercel/Git; não adicionar workflow de deploy.
+2. Reservar janela coordenada: frontend antigo sem autenticação não funciona com a API protegida. Fazer backup restaurável e executar os preflights V1/V2 do backend e `scripts/auth-preflight.sh` somente leitura. Reconciliar manualmente todos os IDs com colisão de e-mail. Não mesclar contas automaticamente.
+3. Aplicar Flyway V3 no backend aprovado, mantendo `ddl-auto=validate`. Conferir invalidação de credenciais legadas, `cargo_legado`, contas não revisadas, ausência de atribuições implícitas e tabelas de sessão/tentativas. IDs/referências históricos devem permanecer.
+4. Em terminal privado, executar o comando `bootstrap-admin` do README do backend sem HTTP. Informar senha temporária individual; confirmar que uma segunda execução é recusada quando há administrador ativo. Entrar e substituir a senha. Revisar as contas existentes, seus cargos e lojas antes de resetá-las e liberá-las.
+5. Configurar `BACKEND_API_URL` somente no servidor Next e `FRONTEND_ORIGINS` com origens HTTPS exatas, separadas por vírgula. No backend, manter `SESSION_COOKIE_SECURE=true` fora do desenvolvimento local e proteger a conexão ao PostgreSQL de sessões. Não colocar senha/token em variável `NEXT_PUBLIC_*`, navegador ou logs.
+6. Publicar os commits aprovados pelo processo normal existente. Verificar cookie host-only `SESSION`, HttpOnly, SameSite=Lax e Secure, giro no login e remoção no logout; CSRF em login/logout/escritas; nenhuma credencial no storage.
+7. Verificar anonimamente GET direto da API e pelo proxy: ambos 401. Sem cookie, páginas protegidas redirecionam para login. Validar administrador, gerente/funcionário com uma única loja, coleção sem filtro e IDs de outra loja (404), operação proibida (403), ausência de lojas e navegação/CSV compatíveis com permissões.
+8. Verificar troca obrigatória, mensagens genéricas, bloqueio persistido (cinco falhas/15 minutos), revogação por senha/permissões/desativação, 30 minutos de inatividade/12 horas absolutas, e último administrador sob concorrência.
+9. Verificar autoria preservada na edição, modificador separado e confirmador real em recebimento/movimentos. Repetir recebimento com mesma chave; confirmar escopo de ator/loja e ausência de duplicação de estoque. Confirmar persistência após reinício.
+10. Testar desktop/mobile, recuperação da mesma conta após expiração, isolamento entre contas/ambientes, descarte explícito no logout e revalidação das lojas ao restaurar. Cópias anônimas v1 não são importadas.
+
+Rollback exige decisão coordenada: o backend anterior não é compatível com a política de credenciais de V3. Nunca recuperar senhas em texto puro ou desligar autenticação como fallback. Restaurar backup apenas pelo processo operacional aprovado e após avaliar os documentos criados depois da migração.

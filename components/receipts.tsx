@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useBuscarCompraPorId } from "@/generated/sdk/hooks/useBuscarCompraPorId";
 import { useBuscarRecebimentoCompraPorId, buscarRecebimentoCompraPorIdQueryKey } from "@/generated/sdk/hooks/useBuscarRecebimentoCompraPorId";
 import { useListarRecebimentosCompra } from "@/generated/sdk/hooks/useListarRecebimentosCompra";
-import { useListarUsuarios } from "@/generated/sdk/hooks/useListarUsuarios";
+import { useOperator, useIdentity } from "./auth";
 import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
 import { criarRecebimentoCompra } from "@/generated/sdk/clients/criarRecebimentoCompra";
@@ -17,11 +17,11 @@ import type { CompraResponseDTO } from "@/generated/sdk/types/CompraResponseDTO"
 import type { RecebimentoCompraResponseDTO } from "@/generated/sdk/types/RecebimentoCompraResponseDTO";
 import { Heading, Loading, Empty, ErrorNotice } from "./feedback";
 import { Button } from "./ui/button";
-import { Input, Select, Textarea } from "./ui/input";
+import { Input, Textarea } from "./ui/input";
 import { Panel } from "./ui/panel";
 import { Table, TableRow, TableHead, TableCell } from "./ui/table";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
-import { MissingSelection, selectedExists, useDocumentRecovery } from "./document-recovery";
+import { selectedExists, useDocumentRecovery } from "./document-recovery";
 import { refreshCatalog } from "@/lib/queries";
 import { ambiguousSave } from "@/lib/recovery";
 import { timestamp, quantity, inventoryLink } from "@/lib/inventory";
@@ -66,7 +66,7 @@ function ReceiptWithPurchase({ receipt: r, edit, unavailable, reloadReceipt }: {
   </>;
 }
 function ReceiptDetail({ purchase: c, receipt: r, unavailable, reload }: { purchase: CompraResponseDTO; receipt: RecebimentoCompraResponseDTO; unavailable: boolean; reload: () => Promise<void> }) {
-  const stores = useListarLojas(), products = useListarProdutos(), users = useListarUsuarios(), client = useQueryClient(), router = useRouter();
+  const stores = useListarLojas(), products = useListarProdutos(), client = useQueryClient(), router = useRouter();
   const [review,setReview] = useState<"confirm" | "delete" | null>(null), [busy,setBusy] = useState(false), [error,setError] = useState<unknown>(), [saved,setSaved] = useState(false), [refreshFailed,setRefreshFailed] = useState(false);
   const store = stores.data?.find(s => s.id === c.idLoja)?.nomeFantasia || c.idLoja;
   async function perform() {
@@ -92,7 +92,7 @@ function ReceiptDetail({ purchase: c, receipt: r, unavailable, reload }: { purch
     <Heading eyebrow="COMPRAS" title="Detalhes do recebimento" description="A confirmação registra a entrada na loja da compra." />
     {!!error && <ErrorNotice error={error} />}
     {saved && <p role="status">Operação concluída. {refreshFailed && "Não foi possível atualizar a tela."} <Link href={`/compras/${r.idCompra}`}>Ver compra salva</Link></p>}
-    <Panel className="space-y-3 p-5"><p>Status: {receiptStatus(r.status)}</p><p>Loja de destino: {store}</p><p>Operador: {users.data?.find(u => u.id === r.idUsuario)?.nome || r.idUsuario}</p><p>Data do recebimento: {timestamp(r.dataRecebimento)}</p><p>Observação: {r.observacao || "—"}</p><p>Versão: {r.versao}</p>{r.concluidoEm && <p>Concluído em: {timestamp(r.concluidoEm)}</p>}<Link href={`/compras/${r.idCompra}`}>Ver compra</Link></Panel>
+    <Panel className="space-y-3 p-5"><p>Status: {receiptStatus(r.status)}</p><p>Loja de destino: {store}</p><p>Operador: {r.nomeUsuario || r.idUsuario}</p><p>Última alteração: {r.nomeModificador || "—"}</p>{r.nomeConfirmador && <p>Confirmado por: {r.nomeConfirmador}</p>}<p>Data do recebimento: {timestamp(r.dataRecebimento)}</p><p>Observação: {r.observacao || "—"}</p><p>Versão: {r.versao}</p>{r.concluidoEm && <p>Concluído em: {timestamp(r.concluidoEm)}</p>}<Link href={`/compras/${r.idCompra}`}>Ver compra</Link></Panel>
     <ReceiptItems receipt={r} name={productName} />
     {r.status === "RASCUNHO" ? <div className="my-5 flex flex-wrap gap-3">
       <Button asChild variant="outline"><Link href={`/recebimentos/${r.id}/editar`}>Editar rascunho</Link></Button>
@@ -107,9 +107,11 @@ function ReceiptItems({ receipt, name }: { receipt: RecebimentoCompraResponseDTO
   return <Table><thead><TableRow>{["PRODUTO", "QUANTIDADE", "OBSERVAÇÃO"].map(t => <TableHead key={t}>{t}</TableHead>)}</TableRow></thead><tbody>{receipt.itens?.map(i => <TableRow key={i.id}><TableCell>{name(i.idProduto)}</TableCell><TableCell>{quantity(i.quantidade)}</TableCell><TableCell>{i.observacao || "—"}</TableCell></TableRow>)}</tbody></Table>;
 }
 export function ReceiptEditor({ purchase: c, receipt: r, unavailable = false, reload }: { purchase: CompraResponseDTO; receipt?: RecebimentoCompraResponseDTO; unavailable?: boolean; reload: () => Promise<void> }) {
-  const users = useListarUsuarios(fresh), products = useListarProdutos(), stores = useListarLojas(), client = useQueryClient(), router = useRouter();
-  const [draft,setDraft] = useState(() => receiptValues(c,r)), [busy,setBusy] = useState(false), [error,setError] = useState<unknown>(), [savedLink,setSavedLink] = useState(""), [refreshFailed,setRefreshFailed] = useState(false), [conflicted,setConflicted] = useState(false);
-  const recovery = useDocumentRecovery({ context: r ? `receipt:${r.id}` : `receipt:new:${c.id}`, initial: receiptValues(c,r), values: draft, setValues: setDraft, schema: receiptDraftSchema, baseline: r ? String(r.versao) : "", applicable: !unavailable && (!r || r.status === "RASCUNHO") });
+  const users = useOperator(), products = useListarProdutos(), stores = useListarLojas(), client = useQueryClient(), router = useRouter();
+  const user = useIdentity();
+  const initial = { ...receiptValues(c,r), idUsuario: user?.id || "" };
+  const [draft,setDraft] = useState(() => initial), [busy,setBusy] = useState(false), [error,setError] = useState<unknown>(), [savedLink,setSavedLink] = useState(""), [refreshFailed,setRefreshFailed] = useState(false), [conflicted,setConflicted] = useState(false);
+  const recovery = useDocumentRecovery({ context: r ? `receipt:${r.id}` : `receipt:new:${c.id}`, initial, values: draft, setValues: setDraft, schema: receiptDraftSchema, baseline: r ? String(r.versao) : "", applicable: !unavailable && (!r || r.status === "RASCUNHO") });
   const changed = !!r && r.versao !== draft.baseVersion;
   const locked = unavailable || busy || recovery.blocked || !!savedLink || (!draft.pending && !canReceive(c)) || (!!r && r.status !== "RASCUNHO");
   const operatorValid = !!draft.idUsuario && selectedExists(draft.idUsuario,users.data) && users.isSuccess && !users.isFetching;
@@ -154,7 +156,7 @@ export function ReceiptEditor({ purchase: c, receipt: r, unavailable = false, re
     {draft.pending && !savedLink && <p role="alert">Há uma solicitação salva para repetição segura. O reenvio usará a mesma chave e os mesmos dados, inclusive após perda de resposta.</p>}
     <form onSubmit={e => { e.preventDefault(); void send(); }} noValidate aria-busy={busy}>
       <fieldset disabled={locked || !!draft.pending || changed || conflicted} className="space-y-5">
-        <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1"><label>Operador *<Select aria-label="Operador *" value={draft.idUsuario} onChange={e => setDraft({ ...draft,idUsuario:e.target.value })}><option value="">Selecione…</option><MissingSelection value={draft.idUsuario} rows={users.data} />{users.data?.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}</Select><small>Seleção interna de operador; não é autenticação.</small></label><label>Data do recebimento<Input type="datetime-local" step="1" value={draft.dataRecebimento} onChange={e => setDraft({ ...draft,dataRecebimento:e.target.value })} /><small>Horário de São Paulo. Em branco, usa a data do servidor.</small></label><label>Observação<Textarea maxLength={255} value={draft.observacao} onChange={e => setDraft({ ...draft,observacao:e.target.value })} /></label></Panel>
+        <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1"><p>Operador: {user?.nome}</p><label>Data do recebimento<Input type="datetime-local" step="1" value={draft.dataRecebimento} onChange={e => setDraft({ ...draft,dataRecebimento:e.target.value })} /><small>Horário de São Paulo. Em branco, usa a data do servidor.</small></label><label>Observação<Textarea maxLength={255} value={draft.observacao} onChange={e => setDraft({ ...draft,observacao:e.target.value })} /></label></Panel>
         <Button type="button" variant="outline" onClick={() => setDraft({ ...draft, itens:draft.itens.map(i => { const item = c.itens?.find(x => x.id === i.idItemCompra); const pending = item ? outstanding(item) : 0; return { ...i, selecionado:pending > 0, quantidade:pending > 0 ? formatQuantityInput(pending) : "" }; }) })}>Preencher pendentes</Button>
         {draft.itens.map((i,index) => { const ordered = c.itens?.find(x => x.id === i.idItemCompra); return <Panel key={i.idItemCompra} className="space-y-3 p-5" aria-label={`Item ${index+1}`}><label className="flex gap-3"><input type="checkbox" checked={i.selecionado} onChange={e => patch(index,"selecionado",e.target.checked)} />{products.data?.find(p => p.id === i.idProduto)?.nome || i.idProduto}</label><p>Pedida: {quantity(ordered?.quantidade)} · Recebida: {quantity(ordered?.quantidadeRecebida)} · Pendente: {quantity(ordered ? outstanding(ordered) : undefined)}</p><label>Quantidade a receber<Input inputMode="decimal" value={i.quantidade} onChange={e => patch(index,"quantidade",e.target.value)} /><small>Até três casas decimais.</small></label><label>Observação do item<Textarea maxLength={255} value={i.observacao} onChange={e => patch(index,"observacao",e.target.value)} /></label></Panel>; })}
       </fieldset>

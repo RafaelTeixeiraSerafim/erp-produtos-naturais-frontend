@@ -18,7 +18,7 @@ const result = () => ({
   isError: false,
 });
 vi.mock("@/generated/sdk/hooks/useListarClientes", () => ({
-  useListarClientes: () => result(),
+  useListarClientes: () => ({ ...result(), data: state.empty ? [] : result().data, isSuccess: !state.lookupError, isError: state.lookupError }),
 }));
 vi.mock("@/generated/sdk/hooks/useListarLojas", () => ({
   useListarLojas: () => result(),
@@ -70,7 +70,7 @@ function mount(record = false) {
   return client;
 }
 function fill() {
-  for (const label of ["Cliente *", "Loja *", "Operador *", "Produto *"])
+  for (const label of ["Cliente *", "Loja *", "Produto *"])
     fireEvent.change(screen.getByLabelText(label), { target: { value: id } });
   fireEvent.change(screen.getByLabelText(/Quantidade/), {
     target: { value: "1,125" },
@@ -115,7 +115,7 @@ it("salva DTO gerado, invalida queries e navega para consulta", async () => {
   expect(state.create.mock.calls[0][0].body).not.toHaveProperty("status");
 });
 it.each(["empty", "lookupError"] as const)(
-  "bloqueia gravação sem operadores: %s",
+  "bloqueia gravação sem clientes disponíveis: %s",
   (key) => {
     state[key] = true;
     mount();

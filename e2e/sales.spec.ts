@@ -1,11 +1,11 @@
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./auth-fixture";
 const id = (n: number) =>
   `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 type Row = Record<string, unknown>;
 async function setup(page: Page, empty = false) {
   const db: Record<string, Row[]> = {
     clientes: [{ id: id(1), nome: "Ana", dataNascimento: "2000-02-29" }],
-    lojas: [{ id: id(2), nomeFantasia: "Centro" }],
+    lojas: empty ? [] : [{ id: id(2), nomeFantasia: "Centro" }],
     usuarios: empty ? [] : [{ id: id(3), nome: "Operador" }],
     produtos: [{ id: id(4), nome: "Aveia" }],
     vendas: [],
@@ -13,6 +13,7 @@ async function setup(page: Page, empty = false) {
   const writes: Row[] = [];
   let count = 100;
   await page.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname.startsWith("/api/auth/")) return route.fallback();
     const req = route.request();
     const [resource, key] = new URL(req.url()).pathname
       .replace("/api/", "")
@@ -111,7 +112,6 @@ test("venda: seleções obrigatórias, precisão, vários itens, arredondamento 
   );
   await page.getByLabel("Cliente *", { exact: true }).selectOption(id(1));
   await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
-  await page.getByLabel("Operador *", { exact: true }).selectOption(id(3));
   const fill = async (n: number) => {
     const item = page.getByLabel(`Item ${n}`, { exact: true });
     await item.getByLabel("Produto").selectOption(id(4));
@@ -143,7 +143,7 @@ test("venda: seleções obrigatórias, precisão, vários itens, arredondamento 
     page.getByRole("button", { name: /Editar|Excluir|Concluir|Cancelar/ }),
   ).toHaveCount(0);
 });
-test("operadores ausentes bloqueiam gravação com explicação e links", async ({
+test("lojas ausentes bloqueiam gravação com explicação e links", async ({
   page,
 }) => {
   await setup(page, true);
@@ -152,7 +152,7 @@ test("operadores ausentes bloqueiam gravação com explicação e links", async 
     page.getByRole("button", { name: "Salvar venda aberta" }),
   ).toBeDisabled();
   await expect(
-    page.getByText("Sem operadores", { exact: false }),
+    page.getByText("Solicite a um administrador", { exact: false }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Cadastrar cliente" }),

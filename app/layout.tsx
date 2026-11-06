@@ -1,3 +1,4 @@
+import { serverIdentity } from "@/lib/server-auth";
 import { createHash } from "node:crypto";
 import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
@@ -9,11 +10,12 @@ export const metadata: Metadata = {
   title: { default: "Vila Verde · Catálogo", template: "%s · Vila Verde" },
   description: "Gestão do catálogo de produtos naturais da Vila Verde.",
 };
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await serverIdentity();
   return (
     <html lang="pt-BR" className="[color-scheme:light]">
       <head>
@@ -26,7 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background font-sans text-sm leading-normal text-foreground">
-        <Providers>
+        <Providers identity={user}>
           <Shell>{children}</Shell>
         </Providers>
       </body>

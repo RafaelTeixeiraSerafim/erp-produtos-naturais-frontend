@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./auth-fixture";
 import { readFile } from "node:fs/promises";
 const id = (n:number) => `00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 async function setup(page: Page) {

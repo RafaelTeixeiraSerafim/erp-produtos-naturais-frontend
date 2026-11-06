@@ -3,6 +3,21 @@
 * Do not edit manually.
 */
 
+export const usuarioRequestDTOCargoEnum = {
+  ADMIN: 'ADMIN',
+  GER: 'GER',
+  FUNC: 'FUNC',
+} as const;
+
+export type UsuarioRequestDTOCargoEnumKey = (typeof usuarioRequestDTOCargoEnum)[keyof typeof usuarioRequestDTOCargoEnum];
+
+export const usuarioRequestDTOStatusEnum = {
+  ATIVO: 'ATIVO',
+  INATIVO: 'INATIVO',
+} as const;
+
+export type UsuarioRequestDTOStatusEnumKey = (typeof usuarioRequestDTOStatusEnum)[keyof typeof usuarioRequestDTOStatusEnum];
+
 export type UsuarioRequestDTO = {
   /**
    * @minLength 1
@@ -12,14 +27,18 @@ export type UsuarioRequestDTO = {
   /**
    * @description
    * Format: `email`
-   * @minLength 1
+   * @minLength 0
+   * @maxLength 254
    * @type string
    */
   email: string;
   /**
-   * @minLength 1
-   * @type string
+   * @minLength 12
+   * @maxLength 72
+   * @type string | undefined
    */
-  senha: string;
-  cargo?: string;
+  senha?: string;
+  cargo: UsuarioRequestDTOCargoEnumKey;
+  status: UsuarioRequestDTOStatusEnumKey;
+  lojas: string[];
 };

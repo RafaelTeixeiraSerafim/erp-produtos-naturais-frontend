@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListarVendas } from "@/generated/sdk/hooks/useListarVendas";
 import { useBuscarVendaPorId } from "@/generated/sdk/hooks/useBuscarVendaPorId";
-import { useListarUsuarios } from "@/generated/sdk/hooks/useListarUsuarios";
+import { useOperator, useIdentity, useCan } from "./auth";
 import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
@@ -40,7 +40,7 @@ const inventoryHint =
   "Registrar uma venda aberta não conclui o checkout nem baixa o estoque. Vendas salvas são somente leitura.";
 function useLookups(fresh = false) {
   const options = fresh ? { query: { refetchOnMount: "always" as const, staleTime: 0 } } : {};
-  const users = useListarUsuarios(options),
+  const users = useOperator(),
     units = useListarUnidadesMedida(options),
     customers = useListarClientes(options),
     stores = useListarLojas(options),
@@ -384,8 +384,11 @@ export function SaleEditor() {
   const lookups = useLookups(true),
     client = useQueryClient(),
     router = useRouter();
-  const [draft, setDraft] = useState(draftValues);
-  const recovery = useDocumentRecovery({ context: "sale:new", initial: draftValues(), values: draft, setValues: setDraft, schema: saleDraftSchema });
+  const user = useIdentity();
+  const canManageStores = useCan("stores.manage"), canWriteCatalog = useCan("catalog.write");
+  const initial = { ...draftValues(), idUsuario: user?.id || "" };
+  const [draft, setDraft] = useState(initial);
+  const recovery = useDocumentRecovery({ context: "sale:new", initial, values: draft, setValues: setDraft, schema: saleDraftSchema });
   const [savedLink, setSavedLink] = useState("");
   const [postSaveError, setPostSaveError] = useState(false);
   const [uncertain, setUncertain] = useState(false);
@@ -453,14 +456,14 @@ export function SaleEditor() {
 
       <div className="mb-5 flex flex-wrap gap-4">
         <Link href="/clientes">Cadastrar cliente</Link>
-        <Link href="/lojas">Cadastrar loja</Link>
-        <Link href="/produtos/novo">Cadastrar produto</Link>
+        {canManageStores && <Link href="/lojas">Cadastrar loja</Link>}
+        {canWriteCatalog && <Link href="/produtos/novo">Cadastrar produto</Link>}
       </div>
       {!prerequisites && (
         <p role="status" className="mb-4">
           Para salvar, é necessário carregar e cadastrar pelo menos um cliente,
-          uma loja, um produto e um operador existente. Sem operadores, não é
-          possível salvar; solicite o cadastro ao responsável pelo ambiente.
+          uma loja atribuída e um produto. Solicite a um administrador a atribuição
+          de lojas ou o cadastro dos pré-requisitos quando necessário.
         </p>
       )}
       {!!error && <ErrorNotice error={error} />}
@@ -517,29 +520,7 @@ export function SaleEditor() {
                 Horário de São Paulo. Em branco, usa a data do servidor.
               </small>
             </label>
-            <label>
-              Operador *
-              <Select
-                aria-label="Operador *"
-                required
-                value={draft.idUsuario}
-                onChange={(e) =>
-                  setDraft({ ...draft, idUsuario: e.target.value })
-                }
-              >
-                <option value="">Selecione…</option>
-                <MissingSelection value={draft.idUsuario} rows={lookups.users.data} />
-                {lookups.users.data?.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nome}
-                  </option>
-                ))}
-              </Select>
-              <small>
-                A seleção registra a responsabilidade nesta demonstração; não é
-                autenticação.
-              </small>
-            </label>
+            <p>Operador: {user?.nome}</p>
           </Panel>
           {draft.itens.map((item, index) => {
             function change(key: keyof typeof item, value: string) {

@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
 import { Table, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { useCan } from "./auth";
 import Link from "next/link";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
@@ -39,6 +40,7 @@ import { DeleteDialog } from "@/components/delete-dialog";
 import { selectProducts } from "@/lib/report-selectors";
 import { ExportCsv } from "./export-csv";
 export function ProductList() {
+  const canWrite = useCan("catalog.write");
   const query = useListarProdutos(),
     categories = useListarCategorias();
   const params = useSearchParams(),
@@ -70,7 +72,7 @@ export function ProductList() {
       <Heading
         title="Produtos"
         description="Organize seu catálogo e cuide de cada detalhe dos seus produtos."
-        action={
+        action={canWrite &&
           <Button asChild>
             <Link href="/produtos/novo">
               <Plus size={17} />
@@ -265,6 +267,7 @@ export function ProductList() {
                           <ArrowUpRight size={16} />
                         </Link>
                       </Button>
+                      {canWrite && <>
                       <Button asChild variant="ghost" size="icon">
                         <Link
                           aria-label={`Editar ${row.nome}`}
@@ -280,7 +283,7 @@ export function ProductList() {
                         onClick={() => setRemove(row)}
                       >
                         <Trash2 size={15} />
-                      </Button>
+                      </Button></>}
                     </div>
                   </TableCell>
                 </TableRow>

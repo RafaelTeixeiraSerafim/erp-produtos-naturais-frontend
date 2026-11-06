@@ -18,12 +18,7 @@ export function salesSeed({ base, inventory, sql }) {
   }
   return {
     async seed() {
-      operator = await api("usuarios", "POST", {
-        nome: prefix,
-        email: `${prefix}@example.test`,
-        senha: randomUUID(),
-        cargo: "FUNCIONARIO",
-      });
+      operator = await api("auth/me");
       const customer = await api("clientes", "POST", {
         nome: prefix,
         dataNascimento: "2000-02-29",
@@ -72,12 +67,11 @@ export function salesSeed({ base, inventory, sql }) {
       await sql(
         `UPDATE venda SET status = 'CONCLUIDA' WHERE id = '${negative.id}'`,
       );
-      const updated = await api(`vendas/${negative.id}`, "PUT", body);
-      assert.equal(updated.status, "CONCLUIDA");
-      await api(`vendas/${negative.id}`, "DELETE");
-      console.log(
-        "Vendas: subtotal agregado 0,01, ausência de snapshots/observação, estoque inalterado; IDs ausentes HTTP 500; preço negativo aceito; PUT/DELETE de CONCLUIDA aceitos.",
-      );
+      for (const method of ["PUT","DELETE"]) {
+        const denied=await fetch(`${base}/api/vendas/${negative.id}`,{method,headers:{"Content-Type":"application/json"},body:method==="PUT" ? JSON.stringify(body):undefined});
+        assert.equal(denied.status,403);
+      }
+      console.log("Vendas: persistência e totais preservados; edição e exclusão negadas diretamente pelo backend.");
       // Mixed report statuses are inserted before browser suites, only in the owned DB.
       const reports = [];
       for (let i = 0; i < 25; i++) {
@@ -97,10 +91,13 @@ export function salesSeed({ base, inventory, sql }) {
       const sales = (await api("vendas")).filter(
         (v) => ids.has(v.idCliente) || v.idUsuario === operator?.id,
       );
-      for (const sale of sales) await api(`vendas/${sale.id}`, "DELETE");
+      for (const sale of sales) {
+        assert.match(sale.id,/^[0-9a-f-]{36}$/i);
+        await sql(`DELETE FROM produto_venda WHERE id_venda='${sale.id}'; DELETE FROM venda WHERE id='${sale.id}'`);
+      }
       for (const customer of customers)
         await api(`clientes/${customer.id}`, "DELETE");
-      if (operator) await api(`usuarios/${operator.id}`, "DELETE");
+
       console.log(
         `Limpeza vendas: ${sales.length} vendas, ${customers.length} clientes e operador removidos.`,
       );

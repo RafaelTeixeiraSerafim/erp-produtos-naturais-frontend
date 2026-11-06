@@ -12,7 +12,7 @@ export const saleDraftSchema = z.object({
   itens: z.array(z.object({ ...item, precoUnitario: text }).strict()),
 }).strict();
 export const lifetime = 7 * 24 * 60 * 60 * 1000;
-export const recoveryKey = (environment: string, context: string) => `vila:recovery:v1:${environment}:${context}`;
+export const recoveryKey = (environment: string, user: string, context: string) => `vila:recovery:v2:${environment}:${user}:${context}`;
 export function purchaseFingerprint(row: CompraResponseDTO) {
   return JSON.stringify({ status: row.status, idUsuario: row.idUsuario, ...draftValues(row) });
 }

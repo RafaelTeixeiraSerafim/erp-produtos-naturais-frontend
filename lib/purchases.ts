@@ -91,7 +91,6 @@ export function purchasePayload(
   return {
     idFornecedor: draft.idFornecedor,
     idLoja: draft.idLoja,
-    ...(existing?.idUsuario ? { idUsuario: existing.idUsuario } : {}),
     ...(dataCompra
       ? {
           dataCompra:

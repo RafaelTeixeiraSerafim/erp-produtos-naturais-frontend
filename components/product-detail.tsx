@@ -8,6 +8,7 @@ import {
 import { Notice, NoticeDescription } from "@/components/ui/notice";
 import { Table, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Select } from "@/components/ui/input";
+import { useCan } from "./auth";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -61,6 +62,7 @@ function Relationships({
   resource: Relationship;
   storeId: string;
 }) {
+  const canWrite = useCan("catalog.write");
   const skus = useListarProdutosSku(
     { query: { idProduto: id } },
     { query: { enabled: resource === "skus" } },
@@ -137,8 +139,9 @@ function Relationships({
             <PanelDescription>{labels.description}</PanelDescription>
           </div>
           <Button
+            hidden={!canWrite}
             className="mobile:px-[11px] mobile:py-2 mobile:text-[11px]"
-            disabled={cannotAdd}
+            disabled={cannotAdd || !canWrite}
             onClick={() => {
               setSuccess("");
               setEdit(null);
@@ -238,6 +241,7 @@ function Relationships({
                         <Button
                           variant="ghost"
                           size="icon"
+                          hidden={!canWrite}
                           aria-label={`Editar ${resource === "skus" ? row.sku : "preço"}`}
                           onClick={() => setEdit(row)}
                         >
@@ -247,6 +251,7 @@ function Relationships({
                       <Button
                         variant="ghost"
                         size="icon"
+                        hidden={!canWrite}
                         aria-label={
                           resource === "assignments"
                             ? `Desvincular ${storeName(row)}`
@@ -322,6 +327,7 @@ function Relationships({
   );
 }
 export function ProductDetail({ id }: { id: string }) {
+  const canWrite = useCan("catalog.write");
   const query = useBuscarProdutoPorId({ path: { id } });
   const stores = useListarLojas();
   const [storeId, setStoreId] = useState(""),
@@ -350,7 +356,7 @@ export function ProductDetail({ id }: { id: string }) {
               <Link href={`/estoque?idProduto=${id}`}>Consultar estoque</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href={`/produtos/${id}/editar`}>
+              <Link hidden={!canWrite} href={`/produtos/${id}/editar`}>
                 <Pencil size={16} />
                 Editar produto
               </Link>

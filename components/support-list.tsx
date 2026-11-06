@@ -1,4 +1,5 @@
 "use client";
+import { useCan } from "./auth";
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { calendarDateLabel } from "@/lib/validation";
 import {
@@ -40,6 +41,8 @@ type Row = {
   [key: string]: unknown;
 };
 export function SupportList({ resource }: { resource: SupportResource }) {
+  const canWrite = useCan(resource === "stores" ? "stores.manage" : resource === "customers" ? "customers.write" : resource === "suppliers" ? "suppliers.write" : "catalog.write");
+  const canDelete = useCan(resource === "customers" ? "catalog.write" : resource === "stores" ? "stores.manage" : resource === "suppliers" ? "suppliers.write" : "catalog.write");
   const customers = useListarClientes({
     query: { enabled: resource === "customers" },
   });
@@ -122,7 +125,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                   ? "Cadastre os fornecedores da Vila Verde."
                   : "Cadastre as lojas que fazem parte da Vila Verde."
         }
-        action={
+        action={canWrite &&
           <Button
             onClick={() => {
               setSuccess("");
@@ -258,6 +261,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        hidden={!canWrite}
                         aria-label={`Editar ${row.nome || row.nomeFantasia}`}
                         onClick={() => setEdit(row)}
                       >
@@ -266,6 +270,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        hidden={!canDelete}
                         aria-label={`Excluir ${row.nome || row.nomeFantasia}`}
                         onClick={() => setRemove(row)}
                       >

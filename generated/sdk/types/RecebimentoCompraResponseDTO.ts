@@ -34,6 +34,21 @@ export type RecebimentoCompraResponseDTO = {
    * @type string | undefined
    */
   idUsuario?: string;
+  nomeUsuario?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  nomeModificador?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idConfirmador?: string;
+  nomeConfirmador?: string;
   status?: RecebimentoCompraResponseDTOStatusEnumKey;
   /**
    * @description

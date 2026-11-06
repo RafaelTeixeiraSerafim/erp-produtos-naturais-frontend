@@ -39,6 +39,14 @@ export type CompraResponseDTO = {
    * @type string | undefined
    */
   idUsuario?: string;
+  nomeUsuario?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idModificador?: string;
+  nomeModificador?: string;
   /**
    * @description
    * Format: `date-time`

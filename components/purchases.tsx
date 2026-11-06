@@ -1,4 +1,5 @@
 "use client";
+import { useCan } from "./auth";
 import Link from "next/link";
 import { ReceiptList } from "./receipts";
 import { canReceive, outstanding } from "@/lib/receipts";
@@ -328,6 +329,8 @@ export function PurchaseRecord({
             row.idLoja ||
             "—"}
         </p>
+        <p>Operador: {row.nomeUsuario || row.idUsuario || "—"}</p>
+        <p>Última alteração: {row.nomeModificador || "—"}</p>
         <p>Data: {timestamp(row.dataCompra)}</p>
         <p>Status: {purchaseStatus(row.status)}</p>
         <p>Observação: {row.observacao || "—"}</p>
@@ -383,6 +386,7 @@ function UnavailablePurchaseRecovery({ id }: { id: string }) {
   return recovery.ui;
 }
 export function PurchaseEditor({ initial, verificationError = false }: { initial?: CompraResponseDTO; verificationError?: boolean }) {
+  const canManageStores = useCan("stores.manage");
   const lookups = useLookups(true),
     client = useQueryClient(),
     router = useRouter();
@@ -485,7 +489,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
 
       <div className="mb-5 flex flex-wrap gap-4">
         <Link href="/fornecedores">Cadastrar fornecedor</Link>
-        <Link href="/lojas">Cadastrar loja</Link>
+        {canManageStores && <Link href="/lojas">Cadastrar loja</Link>}
         <Link href="/produtos/novo">Cadastrar produto</Link>
       </div>
       {!prerequisites && (

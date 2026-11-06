@@ -1,4 +1,5 @@
 // Run only against a disposable, local novaVersao backend. Never use shared Render.
+import { authenticatedSession } from "./session.mjs";
 import assert from "node:assert/strict";
 if (process.env.CATALOG_DISPOSABLE !== "1")
   throw new Error("Defina CATALOG_DISPOSABLE=1 somente após confirmar que o backend e o banco são descartáveis; uma URL loopback não garante isso.");
@@ -7,6 +8,8 @@ if (!["localhost", "127.0.0.1", "[::1]"].includes(base.hostname))
   throw new Error(
     "O smoke test aceita somente um servidor local e descartável.",
   );
+const session = await authenticatedSession(base,process.env.INTEGRATION_ADMIN_EMAIL,process.env.INTEGRATION_ADMIN_PASSWORD);
+const fetch = session.fetch;
 const created = [];
 async function api(resource, { method = "GET", body } = {}) {
   const response = await fetch(new URL(`/api/${resource}`, base), {

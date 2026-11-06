@@ -1,4 +1,5 @@
 "use client";
+import { useIdentity } from "./auth";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { z } from "zod";
@@ -10,6 +11,7 @@ export function useDocumentRecovery<T>({ context, initial, values, setValues, sc
   context: string; initial: T; values: T; setValues: (value: T) => void; schema: z.ZodType<T>;
   baseline?: string; applicable?: boolean;
 }) {
+  const user = useIdentity();
   const router = useRouter();
   const [original] = useState(initial);
   const [originalBaseline, setOriginalBaseline] = useState(baseline);
@@ -68,8 +70,8 @@ export function useDocumentRecovery<T>({ context, initial, values, setValues, sc
   useEffect(() => {
     const s = state.current;
     const environment = document.querySelector('meta[name="recovery-environment"]')?.getAttribute("content");
-    if (!environment) { fail(); setReady(true); return; }
-    s.key = recoveryKey(environment, context);
+    if (!environment || !user) { fail(); setReady(true); return; }
+    s.key = recoveryKey(environment, user.id, context);
     try {
       s.seen = localStorage.getItem(s.key);
       try {
@@ -87,9 +89,15 @@ export function useDocumentRecovery<T>({ context, initial, values, setValues, sc
       try { checkExternal(); } catch { fail(); }
     };
     const exit = () => flush();
+    const logout = () => { s.committed = true; s.dirty = false; };
+    const expired = () => { flush(); s.blocked = true; s.committed = true; };
+    const accountStorage = (e: StorageEvent) => { if (e.key === `vila:logout:${environment}:${user.id}`) { logout(); location.assign("/login"); } };
+    window.addEventListener("auth-logout", logout);
+    window.addEventListener("auth-expired", expired);
+    window.addEventListener("storage", accountStorage);
     window.addEventListener("storage", storage);
     window.addEventListener("pagehide", exit);
-    return () => { flush(); window.removeEventListener("storage", storage); window.removeEventListener("pagehide", exit); };
+    return () => { flush(); window.removeEventListener("auth-logout", logout); window.removeEventListener("auth-expired", expired); window.removeEventListener("storage", accountStorage); window.removeEventListener("storage", storage); window.removeEventListener("pagehide", exit); };
     // The editor is keyed by document context; current form data is read through state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context]);
@@ -117,7 +125,15 @@ export function useDocumentRecovery<T>({ context, initial, values, setValues, sc
   }, [dirty]);
   function decide(restore: boolean) {
     try { if (checkExternal()) return; } catch { fail(); return; }
-    if (restore && pending && applicable && pending.baseline === baseline) { setValues(pending.values); setMessage("Recuperação salva neste navegador"); }
+    if (restore && pending && applicable && pending.baseline === baseline) { const restored = pending.values;
+      if (restored && typeof restored === "object") {
+        if ("idUsuario" in restored) Object.assign(restored, { idUsuario: user?.id || "" });
+        if ("pending" in restored && restored.pending && typeof restored.pending === "object" && "body" in restored.pending) {
+          const body = restored.pending.body;
+          if (body && typeof body === "object" && "idUsuario" in body && body.idUsuario !== user?.id) { setMessage("Operador da cópia incompatível. Revise o rascunho antes de enviar."); return; }
+        }
+      }
+      setValues(restored); setMessage("Recuperação salva neste navegador"); }
     else if (restore && !pending && applicable) setValues(original);
     else if (!restore && !clear(true)) return;
     state.current.blocked = false; setPending(null); setConflict(false);

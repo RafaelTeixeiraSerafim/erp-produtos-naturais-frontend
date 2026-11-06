@@ -1,4 +1,4 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./auth-fixture";
 import { readFile } from "node:fs/promises";
 test("visão geral e CSVs confrontados com registros reais conhecidos",async ({page,request}) => {
   if(process.env.CATALOG_DISPOSABLE !== "1" || !process.env.SALES_FIXTURE || !process.env.PURCHASES_FIXTURE) throw new Error("Use npm run test:integration.");

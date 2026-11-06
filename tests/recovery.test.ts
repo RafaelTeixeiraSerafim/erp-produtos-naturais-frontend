@@ -18,7 +18,7 @@ it("rejects expired, future, malformed, incompatible and invalid records", () =>
   expect(() => decodeRecovery(JSON.stringify(valid), purchaseDraftSchema, now + lifetime)).toThrow();
 });
 it("isolates environments and document contexts", () => {
-  expect(new Set([recoveryKey("a", "purchase:new"), recoveryKey("b", "purchase:new"), recoveryKey("a", "purchase:id"), recoveryKey("a", "sale:new")]).size).toBe(4);
+  expect(new Set([recoveryKey("a", "user", "purchase:new"), recoveryKey("b", "user", "purchase:new"), recoveryKey("a", "user", "purchase:id"), recoveryKey("a", "user", "sale:new")]).size).toBe(4);
 });
 it("purchase baseline covers editable fields, status, operator and item identities", () => {
   const row = { status: "RASCUNHO" as const, observacao: "a", itens: [{ id: "one", quantidade: 1 }] };

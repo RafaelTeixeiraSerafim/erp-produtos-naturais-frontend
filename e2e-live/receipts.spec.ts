@@ -1,7 +1,7 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./auth-fixture";
 test("recebimento real: compra, recuperação, rascunho parcial, confirmação, saldo e conclusão final", async ({ page, request }) => {
   if (process.env.CATALOG_DISPOSABLE !== "1") throw new Error("Use npm run test:integration.");
-  const f=JSON.parse(process.env.PURCHASES_FIXTURE!), sales=JSON.parse(process.env.SALES_FIXTURE!);
+  const f=JSON.parse(process.env.PURCHASES_FIXTURE!);
   const before=await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json();
   const balance=(v:Record<string,number>) => v.quantidadeAtual ?? v.saldo ?? v.quantidade ?? 0;
   await page.goto("/compras/nova");
@@ -17,7 +17,6 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await page.getByRole("checkbox").check();
   await page.getByLabel("Quantidade a receber").fill("4");
   await page.getByLabel("Observação do item").fill(purchaseId!);
-  await page.getByLabel("Operador *").selectOption(sales.operator);
   await page.getByLabel("Data do recebimento").fill("2026-11-05T09:30:01");
   await expect(page.getByText("Recuperação salva neste navegador",{exact:true})).toBeVisible();
   await page.reload(); await page.getByRole("button",{name:"Restaurar",exact:true}).click();
@@ -33,8 +32,7 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await page.getByRole("button",{name:"Salvar rascunho"}).click(); await expect(page).toHaveURL(partialUrl);
   const draft=await (await request.get(`/api/recebimentos-compras/${receiptId}`)).json(); expect(draft.itens).toHaveLength(1);
   // A separate saved draft can be deleted without changing balances or the original draft.
-  await page.goto(purchaseUrl); await page.getByRole("link",{name:"Novo recebimento"}).click();
-  await page.getByLabel("Operador *").selectOption(sales.operator); await page.getByRole("checkbox").check(); await page.getByLabel("Quantidade a receber").fill("1");
+  await page.goto(purchaseUrl); await page.getByRole("link",{name:"Novo recebimento"}).click(); await page.getByRole("checkbox").check(); await page.getByLabel("Quantidade a receber").fill("1");
   await page.getByRole("button",{name:"Salvar rascunho"}).click(); await expect(page).toHaveURL(/\/recebimentos\/[0-9a-f-]{36}$/);
   await page.getByRole("button",{name:"Excluir rascunho"}).click(); await page.getByRole("button",{name:"Confirmar exclusão"}).click(); await expect(page).toHaveURL(purchaseUrl);
   expect(await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json()).toEqual(before);
@@ -55,8 +53,7 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await movement.getByRole("button",{name:"Ver detalhes"}).click(); await expect(page.getByRole("link",{name:"Ver recebimento"})).toHaveAttribute("href",`/recebimentos/${receiptId}`); await page.keyboard.press("Escape");
   await page.goto(purchaseUrl); await expect(page.getByText("Status: Parcialmente recebida",{exact:true})).toBeVisible();
   await page.getByRole("link",{name:"Novo recebimento"}).click();
-  await page.getByRole("button",{name:"Preencher pendentes"}).click(); await expect(page.getByLabel("Quantidade a receber")).toHaveValue("6");
-  await page.getByLabel("Operador *").selectOption(sales.operator); await page.getByRole("button",{name:"Salvar rascunho"}).click();
+  await page.getByRole("button",{name:"Preencher pendentes"}).click(); await expect(page.getByLabel("Quantidade a receber")).toHaveValue("6"); await page.getByRole("button",{name:"Salvar rascunho"}).click();
   await expect(page).toHaveURL(/\/recebimentos\/[0-9a-f-]{36}$/);
   await page.getByRole("button",{name:"Concluir recebimento"}).click(); await page.getByRole("button",{name:"Confirmar entrada"}).click();
   await expect(page.getByText("Status: Concluído",{exact:true})).toBeVisible();

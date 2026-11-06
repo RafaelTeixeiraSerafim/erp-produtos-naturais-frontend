@@ -1,4 +1,4 @@
-import { test,expect,type Page } from "playwright/test";
+import { test,expect,type Page } from "./auth-fixture";
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 async function setup(page:Page) {
   const purchase={id:id(1),idLoja:id(2),status:"RASCUNHO",itens:[{id:id(3),idProduto:id(4),quantidade:10,quantidadeRecebida:0}]};
@@ -30,7 +30,6 @@ async function setup(page:Page) {
   return {purchase,operations,receipt:()=>receipt,change:()=>{receipt={...receipt,versao:receipt.versao+1,observacao:"Outra aba"};},lose:()=>{loseResponse=true;},fail:()=>{failRefresh=true;}};
 }
 async function fill(page:Page) {
-  await page.getByLabel("Operador *").selectOption(id(6));
   await page.getByRole("checkbox").check();await page.getByLabel("Quantidade a receber").fill("3");
 }
 test("resultado incerto preserva chave e payload após reload e repete exatamente",async({page})=>{

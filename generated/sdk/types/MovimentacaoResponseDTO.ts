@@ -50,6 +50,7 @@ export type MovimentacaoResponseDTO = {
    * @type string | undefined
    */
   idUsuario?: string;
+  nomeUsuario?: string;
   /**
    * @description
    * Format: `uuid`

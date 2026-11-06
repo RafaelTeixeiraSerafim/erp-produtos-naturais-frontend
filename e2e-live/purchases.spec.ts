@@ -1,4 +1,4 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./auth-fixture";
 test("compras reais: fornecedor e rascunho com vários itens, edição e reload", async ({
   page,
   request,

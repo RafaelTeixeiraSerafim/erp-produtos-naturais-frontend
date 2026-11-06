@@ -60,7 +60,7 @@ const initial = {
   id,
   idFornecedor: id,
   idLoja: id,
-  idUsuario: id,
+
   status: "RASCUNHO" as const,
   itens: [
     {
@@ -136,7 +136,7 @@ it("PUT completo invalida listas e detalhe antes de navegar ao total salvo", asy
   expect(state.update.mock.calls[0][0]).toMatchObject({
     path: { id },
     body: {
-      idUsuario: id,
+
       status: "RASCUNHO",
       itens: [{ id, quantidade: 1.125, custoUnitario: 2.3456, desconto: 0.1 }],
     },
@@ -218,7 +218,7 @@ it("gravação confirmada com refresh falho limpa recuperação e impede reenvio
 });
 
 it("compra desaparecida mantém cópia local em consulta sem permitir aplicação", () => {
-  const key = recoveryKey("test-backend", `purchase:${id}`);
+  const key = recoveryKey("test-backend", "11111111-1111-4111-8111-111111111111", `purchase:${id}`);
   localStorage.setItem(key, JSON.stringify({ version: 1, updatedAt: Date.now(), revision: "saved", baseline: purchaseFingerprint(initial), values: { ...draftValues(initial), observacao: "Referência offline" } }));
   state.recordMissing = true;
   state.recordError = true;

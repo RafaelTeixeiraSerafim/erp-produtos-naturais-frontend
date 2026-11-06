@@ -1,3 +1,4 @@
+import { sessionHeader, sessionCookie } from "./auth";
 const resources = new Set([
   "clientes",
   "vendas",
@@ -18,26 +19,31 @@ const resources = new Set([
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function forwardCatalog(request: Request, path: string[]) {
   const [resource, id] = path;
+  const auth = resource === "auth" && path.length === 2 && ["csrf", "login", "me", "logout", "alterar-senha"].includes(id);
+  const reset = resource === "usuarios" && path.length === 3 && path[2] === "senha-temporaria";
+  if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
+    const origins = (process.env.FRONTEND_ORIGINS || new URL(request.url).origin).split(",").map(o => o.trim());
+    if (!origins.includes(request.headers.get("origin") || "")) return Response.json({ message: "Origem não permitida." }, { status: 403 });
+  }
   const inventory =
     resource === "estoques" || resource === "movimentacoes-estoque";
   const receipt = resource === "recebimentos-compras";
   const conclude = receipt && path.length === 3 && path[2] === "concluir";
   const balance = resource === "estoques" && id === "saldo";
   if (
-    !resources.has(resource) ||
-    (resource === "usuarios" && path.length !== 1) ||
-    (path.length > 2 && !conclude) ||
-    (id && !balance && !uuid.test(id))
+    (!auth && !resources.has(resource)) ||
+    (path.length > 2 && !conclude && !reset) ||
+    (id && !auth && !balance && !uuid.test(id))
   )
     return Response.json(
       { message: "Recurso não encontrado." },
       { status: 404, headers: { "Cache-Control": "no-store" } },
     );
   const allowed =
-    receipt
+    auth ? [id === "csrf" || id === "me" ? "GET" : "POST"] : reset ? ["POST"] : receipt
       ? conclude ? ["POST"] : id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
       : resource === "usuarios"
-      ? ["GET"]
+      ? id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
       : resource === "vendas"
         ? id
           ? ["GET"]
@@ -93,6 +99,8 @@ export async function forwardCatalog(request: Request, path: string[]) {
       signal: AbortSignal.timeout(15000),
       headers: {
         Accept: "application/json",
+        ...(sessionHeader(request.headers.get("cookie")) ? { Cookie: sessionHeader(request.headers.get("cookie")) } : {}),
+        ...(request.headers.get("x-csrf-token") ? { "X-CSRF-TOKEN": request.headers.get("x-csrf-token")! } : {}),
         ...(receipt && !id && request.method === "POST" ? { "Idempotency-Key": request.headers.get("Idempotency-Key")! } : {}),
         ...(request.method === "POST" || request.method === "PUT"
           ? { "Content-Type": "application/json" }
@@ -103,17 +111,23 @@ export async function forwardCatalog(request: Request, path: string[]) {
           ? await request.text()
           : undefined,
     });
+    const responseHeaders = new Headers({ "Content-Type": result.headers.get("content-type") || "application/json", "Cache-Control": "no-store" });
+    // Never relay upstream Domain, Path or unrelated cookies.
+    for (const cookie of result.headers.getSetCookie()) {
+      const pair = cookie.split(";", 1)[0];
+      if (!pair.startsWith(`${sessionCookie}=`)) continue;
+      const host = new URL(request.headers.get("host") ? `http://${request.headers.get("host")}` : request.url).hostname;
+      const secure = !["localhost", "127.0.0.1", "[::1]"].includes(host);
+      const deleted = /(?:^|;)\s*max-age=0(?:;|$)/i.test(cookie) || pair === `${sessionCookie}=`;
+      responseHeaders.append("Set-Cookie", `${pair}; Path=/; HttpOnly; SameSite=Lax${secure ? "; Secure" : ""}${deleted ? "; Max-Age=0" : ""}`);
+    }
     return new Response(
       result.status === 204 || result.status === 304
         ? null
         : await result.arrayBuffer(),
       {
         status: result.status,
-        headers: {
-          "Content-Type":
-            result.headers.get("content-type") || "application/json",
-          "Cache-Control": "no-store",
-        },
+        headers: responseHeaders,
       },
     );
   } catch {

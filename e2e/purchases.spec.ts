@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./auth-fixture";
 const id = (n: number) =>
   `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 type Row = Record<string, unknown>;
@@ -28,6 +28,7 @@ async function setup(page: Page, empty = false) {
   let count = 100;
   const writes: Row[] = [];
   await page.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname.startsWith("/api/auth/")) return route.fallback();
     const req = route.request(),
       [resource, key] = new URL(req.url()).pathname
         .replace("/api/", "")

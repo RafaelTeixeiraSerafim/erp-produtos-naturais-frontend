@@ -107,7 +107,7 @@ it("limita itens e soma à precisão numeric(14,2)", () => {
   expect(() => preview([large, large])).toThrow(/compra/);
   expect(() => preview([{ ...large, custoUnitario: "11" }])).toThrow(/item/);
 });
-it("monta criação e PUT completo, preservando usuário e IDs sem derivar preços", () => {
+it("monta criação e PUT completo, preservando IDs e deixando operador ao servidor sem derivar preços", () => {
   expect(purchasePayload(draft())).toEqual({
     idFornecedor: id,
     idLoja: id,
@@ -126,7 +126,7 @@ it("monta criação e PUT completo, preservando usuário e IDs sem derivar preç
     id,
     idFornecedor: id,
     idLoja: id,
-    idUsuario: id,
+
     status: "RASCUNHO" as const,
     dataCompra: "2026-11-05T02:59:59Z",
     itens: [
@@ -140,7 +140,7 @@ it("monta criação e PUT completo, preservando usuário e IDs sem derivar preç
     ],
   };
   const body = purchasePayload(draftValues(row), row);
-  expect(body.idUsuario).toBe(id);
+  expect(body.idUsuario).toBeUndefined();
   expect(body.itens[0].id).toBe(id);
   expect(body.dataCompra).toBe(row.dataCompra);
   expect(purchaseLocalDate(row.dataCompra)).toBe("2026-11-04T23:59:59");

@@ -8,7 +8,7 @@ import { useDocumentRecovery } from "@/components/document-recovery";
 import { draftValues } from "@/lib/purchases";
 import { purchaseDraftSchema, recoveryKey } from "@/lib/recovery";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
-const key = recoveryKey("test-backend", "purchase:new");
+const key = recoveryKey("test-backend", "11111111-1111-4111-8111-111111111111", "purchase:new");
 function copy(baseline = "", text = "1,") {
   return JSON.stringify({ version: 1, updatedAt: Date.now(), revision: Math.random().toString(), baseline, values: { ...draftValues(), observacao: text } });
 }

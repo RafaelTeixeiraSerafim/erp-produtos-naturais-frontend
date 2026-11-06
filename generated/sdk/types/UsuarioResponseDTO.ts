@@ -3,6 +3,14 @@
 * Do not edit manually.
 */
 
+export const usuarioResponseDTOCargoEnum = {
+  ADMIN: 'ADMIN',
+  GER: 'GER',
+  FUNC: 'FUNC',
+} as const;
+
+export type UsuarioResponseDTOCargoEnumKey = (typeof usuarioResponseDTOCargoEnum)[keyof typeof usuarioResponseDTOCargoEnum];
+
 export const usuarioResponseDTOStatusEnum = {
   ATIVO: 'ATIVO',
   INATIVO: 'INATIVO',
@@ -19,7 +27,7 @@ export type UsuarioResponseDTO = {
   id?: string;
   nome?: string;
   email?: string;
-  cargo?: string;
+  cargo?: UsuarioResponseDTOCargoEnumKey;
   status?: UsuarioResponseDTOStatusEnumKey;
   /**
    * @description
@@ -27,4 +35,7 @@ export type UsuarioResponseDTO = {
    * @type string | undefined
    */
   criadoEm?: string;
+  lojas?: string[];
+  alterarSenha?: boolean;
+  revisado?: boolean;
 };

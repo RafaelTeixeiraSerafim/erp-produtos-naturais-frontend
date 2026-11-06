@@ -80,12 +80,12 @@ export function purchasesSeed({ base, sql, inventory }) {
       });
       assert.equal(
         deletion.status,
-        409,
+        403,
         "Registrar mudança no comportamento de exclusão com dependentes",
       );
       assert.equal((await api(`compras/${saved.id}`)).itens.length, 1);
       console.log(
-        "Compras reais: totais, reload, substituição de IDs e estoque inalterado; DELETE com itens reproduziu HTTP 409.",
+        "Compras reais: totais, reload, substituição de IDs e estoque inalterado; DELETE negado diretamente pelo backend (403).",
       );
       const reports = [];
       for (let i = 0; i < 25; i++) {
@@ -111,7 +111,7 @@ export function purchasesSeed({ base, sql, inventory }) {
         assert.match(purchase.id, /^[0-9a-f-]{36}$/i);
         // Reset only owned report fixtures so the normal deletion guard permits cleanup.
         await sql(`BEGIN; UPDATE compra SET status = 'RASCUNHO' WHERE id = '${purchase.id}'; DELETE FROM item_compra WHERE id_compra = '${purchase.id}'; COMMIT;`);
-        await api(`compras/${purchase.id}`, "DELETE");
+        await sql(`DELETE FROM item_compra WHERE id_compra='${purchase.id}'; DELETE FROM compra WHERE id='${purchase.id}'`);
       }
       for (const id of ids) await api(`fornecedores/${id}`, "DELETE");
       console.log(

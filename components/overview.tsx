@@ -1,4 +1,5 @@
 "use client";
+import { useCan } from "./auth";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -34,12 +35,13 @@ function Recent({ rows, path, label }: { rows: { id?: string; date?: string; sta
   return <><h3 className="mt-5 mb-2 font-semibold">Cinco registros mais recentes</h3>{!rows.length ? <p className="text-sm">Nenhum documento no período.</p> : <Table><thead><TableRow>{["Documento", "Data", "Status", "Total salvo"].map(h => <TableHead key={h}>{h}</TableHead>)}</TableRow></thead><tbody>{rows.slice(0,5).map((r,i) => { const cents = moneyCents(r.valorTotal); return <TableRow key={r.id || i}><TableCell>{r.id ? <Link className="text-primary underline" href={`${path}/${r.id}`}>{r.id}</Link> : "Sem ID"}</TableCell><TableCell>{timestamp(r.date)}</TableCell><TableCell>{label(r.status)}</TableCell><TableCell>{cents === undefined ? "Total indisponível" : centsLabel(cents)}</TableCell></TableRow>; })}</tbody></Table>}</>;
 }
 export function Overview() {
+  const canPurchase = useCan("purchases.read");
   const params = useSearchParams();
   const [now] = useState(() => new Date());
   const preset = params.get("periodo") || (params.has("inicio") || params.has("fim") ? "personalizado" : "mes");
   const defaults = periodDates(preset, now);
   const start = params.get("inicio") ?? defaults.inicio, end = params.get("fim") ?? defaults.fim, store = params.get("idLoja") || "";
-  const products = useListarProdutos(), stocks = useListarEstoques({ query: { idLoja: store || undefined } }), sales = useListarVendas({ query: { idLoja: store || undefined } }), purchases = useListarCompras(), stores = useListarLojas();
+  const products = useListarProdutos(), stocks = useListarEstoques({ query: { idLoja: store || undefined } }), sales = useListarVendas({ query: { idLoja: store || undefined } }), purchases = useListarCompras({ query: { enabled: canPurchase } }), stores = useListarLojas();
   const valid = validDateRange(start, end);
   // Materialize defaults so reloads and copied URLs preserve the exact period.
   useEffect(() => {
@@ -58,7 +60,7 @@ export function Overview() {
   const saleRows = selectDocuments(sales.data || [], filters, "sales"), purchaseRows = selectDocuments(purchases.data || [], filters, "purchases");
   const stockRows = (stocks.data || []).filter(r => !store || r.idLoja === store);
   return <>
-    <Heading eyebrow="INÍCIO" title="Visão geral" description="Catálogo, estoque atual e documentos salvos por status." action={<Button disabled={[products, stocks, sales, purchases, stores].some(q => q.isFetching)} onClick={() => { for (const q of [products, stocks, sales, purchases, stores]) void q.refetch(); }}>Atualizar</Button>} />
+    <Heading eyebrow="INÍCIO" title="Visão geral" description="Catálogo, estoque atual e documentos salvos por status." action={<Button disabled={[products, stocks, sales, purchases, stores].some(q => q.isFetching)} onClick={() => { for (const q of [products, stocks, sales, ...(canPurchase ? [purchases] : []), stores]) void q.refetch(); }}>Atualizar</Button>} />
     <p className="mb-5 text-sm text-muted">As seções usam consultas separadas e não representam uma fotografia transacional. Valores salvos de vendas abertas e compras em rascunho não representam receita ou despesa concluída.</p>
     <Panel className="mb-6 grid grid-cols-4 gap-4 p-5 compact:grid-cols-2 mobile:grid-cols-1">
       <label>Loja<Select aria-label="Loja" value={store} onChange={e => control("idLoja", e.target.value)}><option value="">Todas as lojas</option>{store && !stores.data?.some(r => r.id === store) && <option value={store}>{store}</option>}{stores.data?.map(r => <option key={r.id} value={r.id}>{r.nomeFantasia || r.id}</option>)}</Select></label>
@@ -77,8 +79,8 @@ export function Overview() {
     <Section title="Vendas no período" scope="Totais salvos por status, filtrados por loja e data da venda em America/Sao_Paulo." query={sales}>
       {valid && <><Summary rows={summarize(saleRows, Object.keys(salesStatuses))} path="/vendas" filters={filters} label={saleStatus} /><Recent rows={saleRows.map(r => ({...r, date: r.dataVenda}))} path="/vendas" label={saleStatus} /></>}
     </Section>
-    <Section title="Compras no período" scope="Totais salvos por status, filtrados por loja e data da compra em America/Sao_Paulo." query={purchases}>
+    {canPurchase && <Section title="Compras no período" scope="Totais salvos por status, filtrados por loja e data da compra em America/Sao_Paulo." query={purchases}>
       {valid && <><Summary rows={summarize(purchaseRows, Object.keys(purchaseStatuses))} path="/compras" filters={filters} label={purchaseStatus} /><Recent rows={purchaseRows.map(r => ({...r, date: r.dataCompra}))} path="/compras" label={purchaseStatus} /></>}
-    </Section>
+    </Section>}
   </>;
 }

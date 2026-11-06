@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./auth-fixture";
 const uid = (n: number) =>
   `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 type Row = Record<string, unknown>;
@@ -16,6 +16,7 @@ async function mockCatalog(page: Page, seed: Database = {}) {
   };
   let count = 100;
   await page.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname.startsWith("/api/auth/")) return route.fallback();
     const req = route.request(),
       url = new URL(req.url()),
       [resource, id] = url.pathname.replace("/api/", "").split("/");

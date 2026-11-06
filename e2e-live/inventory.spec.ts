@@ -1,4 +1,4 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./auth-fixture";
 test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, request }) => {
   if (process.env.CATALOG_DISPOSABLE !== "1" || !process.env.INVENTORY_FIXTURE) throw new Error("Execute npm run test:integration com fixture descartável.");
   const fixture = JSON.parse(process.env.INVENTORY_FIXTURE) as { product: string; otherProduct: string; store: string; otherStore: string };

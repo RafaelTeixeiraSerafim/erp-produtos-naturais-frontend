@@ -1,6 +1,20 @@
 # Handoff para o agente planejador — Vila Verde
 
-Atualização: 05/11/2026. Estado atual: etapa 7 concluída, frontend na `main` do fork pessoal e publicação pela integração nativa da Vercel. [Registro de lacunas do backend](BACKEND_GAPS.md).
+Atualização: 05/11/2026. Etapa 8 implementada nas branches `stage8-auth` de frontend e backend; validação final/CI em andamento. A seção abaixo é a referência atual; o restante preserva o histórico das entregas anteriores.
+
+## Etapa 8 — autenticação
+
+- Frontend no fork pessoal `RafaelTeixeiraSerafim/erp-produtos-naturais-frontend`, branch de feature destinada a `main`. Backend em checkout isolado `../backend-stage8`, branch derivada de `novaVersao` com recebimento. O checkout original mantém `application.properties` modificado pelo usuário.
+- `cargoUsuario` foi comparada e adaptada, sem merge integral: enum/ideia de UserDetails aproveitados; loader nulo, ausência de `@Service`, `findByUuid`, authorities, validação/persistência do enum, permitAll e senha em texto puro corrigidos. A branch antecedia as garantias de recebimento.
+- BCrypt custo 12, Spring Session JDBC, rotação no login, CSRF em login/logout/escritas, 30 minutos ociosos/12 horas absolutas, revogação por versão persistida e remoção de sessões; limite persistido de cinco falhas/15 minutos por e-mail normalizado.
+- V3 preserva IDs/referências, guarda `cargo_legado`, invalida credenciais antigas, exige revisão/reset e não concede lojas/privilégios. Colisões normalizadas interrompem a migração com IDs. Preflight somente leitura e bootstrap em terminal sem HTTP/sem senha padrão; proteção concorrente do último ADMIN ativo.
+- API/Next validam perfis e lojas, inclusive coleções sem filtro, detalhes, gravações, histórico e replay. IDs fora de escopo dão 404 e operações proibidas 403. Catálogo/clientes/fornecedores são compartilhados na organização. Sem tenant novo. Fluxos sem suporte continuam negados diretamente pela API.
+- Login, troca de senha obrigatória, logout e `/usuarios`; proxy host-only/HttpOnly/SameSite=Lax/Secure; CSRF em memória; `FRONTEND_ORIGINS` precisa conter a origem pública exata. Navegação e consultas/exportações por permissões. Operador vem do principal; autores preservados, modificadores/confirmadores separados e nomes retornados nos documentos.
+- Recuperação v2 por ambiente + ID do usuário, sem importar anônimos; expiração conserva cópia; logout confirmado apaga cópias e cache da conta, inclusive coordenação entre abas; restauração revalida seleções e substitui operador.
+- Testes reais agora fazem bootstrap somente dentro do ambiente descartável e autenticam todas as suítes; exclusões de limpeza que passaram a ser proibidas usam SQL exclusivamente nesse banco pertencente ao runner. Nenhuma rota da aplicação executa SQL de limpeza.
+- Sem workflow de deploy alternativo, migração de banco compartilhado, merge em `main` ou publicação manual. O [checklist de release](STAGE8_RELEASE.md) cobre a ativação coordenada.
+- Evidência final, commits fixados e links de CI serão registrados ao concluir a validação. BG-011/BG-020 aguardam aceite completo antes do encerramento.
+
 
 ## Estado atual para continuidade
 

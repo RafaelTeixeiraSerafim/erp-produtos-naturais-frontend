@@ -2,6 +2,23 @@
 
 Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas abertas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
 
+
+## Etapa 8 — login, contas e permissões
+
+O sistema exige autenticação. Use `/login` com uma conta revisada pelo administrador; não existe cadastro público. Contas novas/resetadas devem trocar a senha em `/alterar-senha` e entrar novamente. O destino interno solicitado antes do login é preservado; destinos externos são recusados. `/usuarios` gerencia identidade, cargo (`ADMIN`, `GER`, `FUNC`), lojas, ativação/desativação e senha temporária. Somente ADMIN acessa essa tela. O primeiro administrador é criado pelo comando local do README do backend, sem endpoint público ou senha padrão.
+
+O backend valida sessões, permissões, lojas e operadores diretamente, mesmo sem o frontend. ADMIN gerencia tudo; GER gerencia catálogo, fornecedores, clientes e compras/recebimentos das lojas atribuídas; FUNC lê catálogo, cria/edita clientes, registra vendas abertas e consulta estoque das lojas atribuídas. Visão geral e CSVs respeitam o mesmo escopo; seções proibidas não são consultadas. A ausência de lojas tem explicação na tela. Vendas PUT/DELETE, checkout, ajustes e transferências continuam indisponíveis.
+
+O proxy encaminha apenas `SESSION`, `X-CSRF-TOKEN` e os headers aprovados, incluindo `Idempotency-Key` nos recebimentos. Reescreve o cookie como host-only, HttpOnly, SameSite=Lax, Secure fora de localhost e preserva giro/remoção. Senhas/tokens não são armazenados no browser; CSRF fica em memória e é renovado após login/logout. **Configure `FRONTEND_ORIGINS`** com as origens públicas exatas autorizadas a escrever (separadas por vírgula), além de `BACKEND_API_URL` somente no servidor. O listener interno do Next pode usar outro hostname; não use sua origem interna como substituto da origem pública. Não use `*` nem `NEXT_PUBLIC_*` para credenciais.
+
+Sessões JDBC expiram após 30 minutos de inatividade ou 12 horas desde o login. Troca/reset de senha, desativação e alterações administrativas revogam sessões. Falhas de login usam mensagem genérica e limite persistido de cinco tentativas em 15 minutos por e-mail normalizado (429 durante o bloqueio). 401 interrompe gravações e leva ao login; 403 informa falta de permissão sem encerrar a sessão.
+
+Recuperação usa namespace v2 por ambiente **e usuário**, sem importar cópias anônimas v1. Expiração preserva o rascunho para a mesma conta; outra conta não o restaura. Ao restaurar, as lojas são revalidadas e o operador é substituído pela identidade atual. Sair exige confirmação, interrompe escritores em outras abas, descarta as cópias dessa conta e limpa o cache antes de invalidar a sessão. Edições preservam o autor original e mostram o modificador; recebimento/movimentos registram o confirmador real.
+
+A migração V3 invalida todas as credenciais legadas, preserva IDs/referências e mantém o cargo anterior para revisão, sem conceder privilégios ou lojas automaticamente. Colisões de e-mail normalizado interrompem a migração com relatório para reconciliação. Consulte o [checklist de release coordenada](docs/STAGE8_RELEASE.md). Esta implementação não migra bancos compartilhados, publica release ou altera `main`. A publicação continua pela integração nativa Vercel/Git.
+
+Os testes de browser com fixtures usam um backend local de autenticação separado, com guardas reais do Next e build de produção na porta 3200. `test:integration` cria PostgreSQL/backend/frontend próprios, faz bootstrap só no classpath de teste, autentica todas as suítes reais e também verifica 401 anônimo direto/pelo proxy e persistência após reinício. O token/credencial desse ambiente descartável não é reutilizado na aplicação publicada.
+
 ## Estado da implementação
 
 Visão geral, catálogo, estoque, fornecedores/compras, clientes/vendas abertas, recebimentos com confirmação e CSVs implementados, com estilos em utilitários Tailwind e componentes reutilizáveis. O resumo para continuidade está em [docs/PLANNER_HANDOFF.md](docs/PLANNER_HANDOFF.md). As limitações verificadas do backend estão em [docs/BACKEND_GAPS.md](docs/BACKEND_GAPS.md).
@@ -36,7 +53,7 @@ O navegador chama o mesmo domínio em `/api`. O Route Handler encaminha os recur
 
 ## Backend e SDK
 
-Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, commit **`f335d525ea6ed107cd00824031ded904020967fe`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
+Integração de referência: [`Zayma1/erp-produtos-naturais-backend`](https://github.com/Zayma1/erp-produtos-naturais-backend), branch **`novaVersao`**, commit **`556e48209f824737d4a42e53d722a07e9f73e259`**. A branch `main` não tem a API usada aqui. A origem do SDK completo, incluindo `.kubb`, está documentada em [generated/PROVENANCE.md](generated/PROVENANCE.md).
 
 O SDK completo foi regenerado a partir do contrato local do backend de recebimento. `components/providers.tsx` sobrescreve sua origem padrão antes dos componentes consumidores. Como as URLs geradas já começam em `/api`, `baseURL` deve ser vazio para chamadas de mesma origem. Não importe clientes em novos pontos sem usar essa configuração.
 
@@ -62,7 +79,7 @@ As portas loopback **8081** (backend) e **3100** (frontend de produção) precis
 
 Logs sem a senha temporária ficam em `integration-artifacts/`; relatório e traces de falha ficam em `playwright-live-report/` e `test-results/live/`. A CI possui um job separado com esses mesmos pré-requisitos e publica os artefatos em falhas.
 
-O backend usa Flyway V1/V2 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
+O backend usa Flyway V1/V2/V3 e `ddl-auto=validate`, com credenciais PostgreSQL por ambiente. A integração reinicia o processo e compara recebimentos completos, compras, estoque e movimentos antes/depois. Bancos existentes exigem backup, preflight e baseline explícito conforme o README do backend; esta implementação não migra bancos compartilhados.
 
 ## Fluxo
 
@@ -76,7 +93,7 @@ As abas fazem operações independentes: uma falha não apaga o que já foi salv
 
 Busca, ordenação e paginação (20 registros) são locais porque a API retorna arrays. Os controles ficam nos parâmetros da URL; produtos também têm filtros de categoria e status. Cadastros de apoio usam modais, e produtos usam páginas completas. Exclusões exigem confirmação e nunca fazem cascata. Erros de integridade permanecem visíveis; formulários mantêm o conteúdo após falhas e bloqueiam novo envio enquanto salvam.
 
-Sem autenticação, destinada a desenvolvimento/demonstração interna. Autenticação, gestão de usuários, checkout de vendas, aprovação/cancelamento de compras, reversão, ajustes/transferências e hospedagem estão fora do escopo.
+Autenticação por sessão e gestão de usuários estão descritas na etapa 8 abaixo. Checkout de vendas, aprovação/cancelamento de compras, reversão e ajustes/transferências continuam fora do escopo.
 
 ## Consulta de estoque (etapa 2)
 
@@ -135,7 +152,7 @@ Validação local da etapa 3: lint, tipos, 82 testes unitários/de componentes, 
 
 `/clientes` oferece cadastro, busca, ordenação, paginação, edição e exclusão confirmada, com CPF/nascimento opcionais. Nascimento é data civil, sem conversão de fuso. “Ver vendas” abre o filtro por cliente.
 
-`/vendas` lista registros em todos os status com filtros restauráveis na URL (cliente, loja, status e intervalo inclusivo de datas em São Paulo), ordenação e 20 registros por página. `/vendas/nova` exige cliente, loja, operador já existente e itens do catálogo. A seleção de operador registra responsabilidade na demonstração; não autentica ninguém. Sem operadores, a gravação fica bloqueada; a aplicação não oferece gestão de usuários.
+`/vendas` lista registros em todos os status com filtros restauráveis na URL (cliente, loja, status e intervalo inclusivo de datas em São Paulo), ordenação e 20 registros por página. `/vendas/nova` exige cliente, loja, operador já existente e itens do catálogo. O operador é o usuário autenticado. As lojas disponíveis são as atribuídas à conta; somente administradores gerenciam contas.
 
 Preços são informados manualmente, com até duas casas; quantidades têm até três. Descontos monetários não podem exceder o bruto. A prévia usa inteiros escalados e HALF_UP, arredondando a soma dos brutos antes de descontar; pode diferir da soma das prévias dos itens. Nenhum preço de validade, vínculo com loja ou saldo é escolhido como restrição automática.
 
@@ -181,7 +198,7 @@ Sucesso confirmado apaga a recuperação e impede reenvio antes de atualizar con
 
 ## Recebimento de compras — etapa 7
 
-Em Compras → Recebimentos consulte rascunhos e confirmações; o detalhe da compra mostra histórico e quantidades pedidas/recebidas/pendentes. “Novo recebimento” abre `/compras/[id]/recebimentos/novo`; selecione itens, quantidades parciais e um operador existente. Quantidades começam vazias; “Preencher pendentes” é uma ação explícita. Operador é identificação interna, sem autenticação.
+Em Compras → Recebimentos consulte rascunhos e confirmações; o detalhe da compra mostra histórico e quantidades pedidas/recebidas/pendentes. “Novo recebimento” abre `/compras/[id]/recebimentos/novo`; selecione itens e quantidades parciais. Quantidades começam vazias; “Preencher pendentes” é uma ação explícita. O operador é a identidade autenticada; a confirmação registra o confirmador real.
 
 “Salvar rascunho” não reserva quantidades nem altera estoque. O detalhe em `/recebimentos/[id]` permite editar ou excluir rascunho com confirmação. “Concluir recebimento” exige revisão das quantidades e da loja de destino. A confirmação grava entrada, movimentos, quantidades recebidas e status parcial/recebida em uma única transação. Confirmados ficam somente leitura, com horário da conclusão e links para compra/saldos/movimentos. O histórico de estoque inclui link ao recebimento.
 
@@ -189,6 +206,6 @@ Edições e exclusões exigem versão. Conflitos recarregam dados autoritativos 
 
 Antes de criar, o navegador guarda uma chave UUID e o payload exato. Após resultado incerto, inclusive reload, “Repetir envio salvo” repete a mesma operação. O backend mantém chave/hash/identidade e tombstone após exclusão. Sucesso limpa recuperação e bloqueia repetição, mesmo se atualizar a tela falhar. A confirmação é idempotente pelo estado do servidor; o navegador nunca calcula efeitos de estoque.
 
-O frontend invalida todas as queries de API relacionadas após sucesso. O backend impede edição de compra com qualquer recebimento; excluir todos os rascunhos libera uma compra ainda editável. Autenticação, reversão, devoluções, checkout, aprovação e valoração permanecem fora da etapa.
+O frontend invalida todas as queries de API relacionadas após sucesso. O backend impede edição de compra com qualquer recebimento; excluir todos os rascunhos libera uma compra ainda editável. Na etapa 7, autenticação permanecia pendente; a etapa 8 abaixo adiciona a proteção dos fluxos. Reversão, devoluções, checkout, aprovação e valoração continuam fora do escopo.
 
 Validação da etapa 7: 16 testes PostgreSQL, 156 testes frontend, regressão desktop/mobile, 12 cenários reais e persistência após reinício passaram localmente. CI backend: [execução final](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42082561351). A entrega frontend passou nos jobs validate/integration da [CI original de `f77fa68`](https://github.com/BrunoCGhisi/erp-produtos-naturais-frontend/actions/runs/42084313779). BG-003/BG-004 foram encerradas; demais avanços são restritos ao recebimento e estão detalhados no handoff.

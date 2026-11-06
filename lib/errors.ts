@@ -14,6 +14,8 @@ export function errorMessage(error: unknown): string {
       }
     | undefined;
   const status = e?.status || e?.response?.status;
+  if (status === 401) return "Sessão expirada. Entre novamente para continuar.";
+  if (status === 403) return "Acesso negado. Você não tem permissão para esta operação.";
   const data = e?.data || e?.response?.data;
   if (status && [400, 404, 409, 422, 502].includes(status)) {
     const fields = data?.errors || data?.fieldErrors;
