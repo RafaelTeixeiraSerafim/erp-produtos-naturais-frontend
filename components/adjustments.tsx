@@ -245,7 +245,7 @@ function AdjustmentItems({ row }: { row: AjusteResponseDTO }) {
       <tbody>
         {row.itens?.map((i) => (
           <TableRow key={i.id}>
-            <TableCell>{i.produtoNome || i.idProduto}</TableCell>
+            <TableCell>{row.status === "CONCLUIDO" ? <Link href={`/estoque/movimentacoes?idAjusteEstoque=${row.id}&idProduto=${i.idProduto}`}>{i.produtoNome || i.idProduto}</Link> : i.produtoNome || i.idProduto}</TableCell>
             <TableCell>{i.tipo}</TableCell><TableCell>{quantity(i.quantidade)}</TableCell>
             <TableCell>
               {i.unidadeSigla || "Histórico indisponível"}
@@ -309,7 +309,7 @@ export function AdjustmentRecord({ id }: { id: string }) {
         )}
       </Panel>
       <AdjustmentItems row={r} />
-      {r.status === "CONCLUIDO" && <Link href="/estoque/movimentacoes">Consultar movimentos do ajuste</Link>}
+      {r.status === "CONCLUIDO" && <Link href={`/estoque/movimentacoes?idAjusteEstoque=${r.id}`}>Consultar movimentos do ajuste</Link>}
       <AdjustmentActions
         row={r}
         unavailable={query.isError || query.isFetching}

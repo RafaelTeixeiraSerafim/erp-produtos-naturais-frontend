@@ -27,7 +27,7 @@ export function selectDocuments<T extends CompraResponseDTO | VendaResponseDTO>(
     });
 }
 export function selectInventory(stocks: EstoqueResponseDTO[], movements: MovimentacaoResponseDTO[], history: boolean, f: Filters, productName: (id?: string, fallback?: string) => string, storeName: (id?: string, fallback?: string) => string) {
-  const source = history ? movements.filter(r => matchesIds(r, f.idProduto || "", f.idLoja || "") && (!f.tipo || r.tipo === f.tipo) && inDateRange(r.dataMovimentacao, f.inicio || "", f.fim || ""))
+  const source = history ? movements.filter(r => (!f.idAjusteEstoque || r.idAjusteEstoque === f.idAjusteEstoque) && matchesIds(r, f.idProduto || "", f.idLoja || "") && (!f.tipo || r.tipo === f.tipo) && inDateRange(r.dataMovimentacao, f.inicio || "", f.fim || ""))
     : stocks.filter(r => matchesIds(r, f.idProduto || "", f.idLoja || "") && productName(r.idProduto, r.nomeProduto).toLocaleLowerCase("pt-BR").includes((f.busca || "").toLocaleLowerCase("pt-BR")) && matchesQuantity(r.quantidadeAtual, f.quantidade || ""));
   const sort = f.ordem || (history ? "data-desc" : "nome-asc");
   return source.map(r => ({ ...r, name: productName(r.idProduto, "nomeProduto" in r ? r.nomeProduto : undefined), storeName: storeName(r.idLoja, "nomeLoja" in r ? r.nomeLoja : undefined), date: "dataMovimentacao" in r ? r.dataMovimentacao : "atualizadoEm" in r ? r.atualizadoEm : undefined, amount: "quantidadeAtual" in r ? r.quantidadeAtual : "quantidade" in r ? r.quantidade : undefined }))
