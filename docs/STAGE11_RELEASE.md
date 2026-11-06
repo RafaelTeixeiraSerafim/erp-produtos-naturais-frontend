@@ -18,3 +18,5 @@ Não inclui contagem física, aprovação por segundo operador, estoque negativo
 estorno ou valoração. Sem merge ou deployment.
 
 Contrato e evidências: [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
+
+Aceite: [backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42272982970) e [frontend validate/integration](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42277458746) aprovados.

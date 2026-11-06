@@ -379,5 +379,4 @@ Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de 
 ## Etapa 11
 
 Implementação e roteiro: [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).
-Manter os registros de aceitação anteriores; BG-001/BG-002 só serão encerrados
-para ajustes após CI e integração da branch atual aprovados.
+Manter os registros de aceitação anteriores; BG-001/BG-002 têm a parcela de ajustes encerrada na branch da etapa 11 com CI e integração aprovados. Nenhuma integração das branches ou implantação foi realizada.

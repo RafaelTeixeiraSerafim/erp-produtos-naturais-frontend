@@ -9,3 +9,5 @@
 - Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID na criação de ajustes.
 - `scripts/integration.mjs` fixa o SHA acima.
 - Evidências anteriores permanecem nos registros das etapas 9/10; evidência desta etapa em `docs/STAGE11_ADJUSTMENTS.md`.
+
+- [CI backend aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42272982970); [CI consumidor validate/integration aprovado](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42277458746) no frontend `58fbd20`.

@@ -44,6 +44,8 @@ O frontend usa a integração nativa Vercel/Git. A leitura pública observada em
 <a id="bg-001"></a>
 ## BG-001 — Funções de conclusão de estoque sem migração versionada
 
+**Atualização da etapa 11 (ajustes): resolvida na branch `stage11-adjustments`.** Backend `bdd39f3` substitui a função ausente por lógica transacional e entrega itens, snapshots e auditoria. [CI backend aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42272982970) e [frontend validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42277458746), incluindo ajuste misto, falta, cancelamento, replay, concorrência e persistência após reinício. A resolução refere-se às branches da etapa 11, sem merge ou implantação.
+
 - **Tipo:** Capacidade ausente.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
 - **Situação:** Confirmado por inspeção; execução de conclusão não ensaiada.
@@ -58,6 +60,9 @@ O frontend usa a integração nativa Vercel/Git. A leitura pública observada em
 
 <a id="bg-002"></a>
 ## BG-002 — Detalhes de ajustes e transferências sem itens
+
+**Atualização da etapa 11 (ajustes): resolvida na branch `stage11-adjustments`.** Backend `bdd39f3` substitui a função ausente por lógica transacional e entrega itens, snapshots e auditoria. [CI backend aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42272982970) e [frontend validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42277458746), incluindo ajuste misto, falta, cancelamento, replay, concorrência e persistência após reinício. A resolução refere-se às branches da etapa 11, sem merge ou implantação.
+
 
 - **Tipo:** Inconsistência de contrato.
 - **Commit inspecionado:** `e0f312e611d56ab73a4a8e3d5832f8b8874ff362`.
@@ -392,8 +397,8 @@ Frontend validado: `e78b80880d90cf3029fd405bef4b62aebd86a8b5`, branch `stage10-t
 
 Aceite: 53 testes backend executados (54 registrados, um bootstrap exclusivo de integração ignorado), 170 testes unitários/componentes frontend, 106 cenários de navegador, build e 26 cenários reais desktop/mobile, com persistência após reiniciar o backend. Esta evidência encerra somente as parcelas de transferências de BG-001/BG-002. As parcelas de ajustes e as demais lacunas abertas não foram encerradas por inferência. As branches seguem sem integração, implantação ou migração compartilhada.
 
-### Etapa 11 — ajustes (em validação)
+### Etapa 11 — ajustes (aceita na branch)
 
 Substituída a função SQL ausente por confirmação transacional, com versão,
 escopo, idempotência, auditoria e snapshots. A parcela de ajustes de BG-001 e
-BG-002 permanece aberta até aprovação das evidências finais da etapa 11.
+BG-002 está encerrada nesta branch; evidências em [STAGE11_ADJUSTMENTS.md](STAGE11_ADJUSTMENTS.md).

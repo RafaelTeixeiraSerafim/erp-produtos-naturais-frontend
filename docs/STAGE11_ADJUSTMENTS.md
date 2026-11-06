@@ -26,3 +26,11 @@ persistido antes/depois do reinício incluem ajustes. Evidências finais abaixo.
 
 Fora do escopo: contagem física, aprovação por segunda pessoa, overrides,
 estornos, devoluções, valoração e migração de banco compartilhado.
+
+## Aceite em 06/11/2026
+
+- Backend `bdd39f3b08c0c0e535e8b5e1c1ebb23c28b21ea4`: [CI PostgreSQL aprovado](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42272982970), 61 testes aprovados e um bootstrap ignorado conforme configuração, incluindo seis testes de ajustes e 12 de migração.
+- Frontend `58fbd20`: [validate e integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42277458746): lint, TypeScript, 171 testes unitários, 106 cenários de interface, build de produção, smoke e 28 cenários reais desktop/mobile.
+- Integração local completa aprovada, incluindo saldos exatos, movimentos, repetição, falta, cancelamento, ajuste misto e comparação dos documentos/saldos/movimentos após reinício do backend.
+- Produtos de ajustes isolados das fixtures de regressão; limpeza restrita ao PostgreSQL descartável criado pelo runner.
+- BG-001/BG-002: parcela restante de ajustes encerrada nesta branch. Nenhuma evidência implica migração do banco compartilhado ou implantação.
