@@ -26,7 +26,7 @@ export function AuthForm({ change = false }: { change?: boolean }) {
     } catch (e) { setError((e as Error).message); setBusy(false); }
   }}>
     <h1 className="text-2xl font-semibold">{change ? "Alterar senha" : "Entrar na Vila Verde"}</h1>
-    {change ? <p>Substitua sua senha temporária para acessar o sistema. Depois, entre com a nova senha.</p> : <label className="block">E-mail<Input type="email" autoComplete="username" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>}
+    {change ? <p>Substitua sua senha temporária para acessar o sistema. Depois, entre com a nova senha.</p> : <label className="block">E-mail ou usuário<Input type="text" autoComplete="username" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>}
     <label className="block">{change ? "Senha atual" : "Senha"}<Input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></label>
     {change && <label className="block">Nova senha<Input type="password" autoComplete="new-password" required minLength={12} maxLength={72} value={next} onChange={e => setNext(e.target.value)} /><small>Use ao menos 12 caracteres (até 72 bytes).</small></label>}
     {error && <p role="alert">{error}</p>}

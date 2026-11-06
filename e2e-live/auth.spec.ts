@@ -8,10 +8,10 @@ test("real account administration, forced change, assigned stores and session lo
   await page.getByRole("checkbox",{name:store.nomeFantasia,exact:true}).check();await page.getByLabel("Senha temporária",{exact:true}).fill(temporary);await page.getByRole("button",{name:"Salvar conta"}).click();await expect(page.getByRole("button",{name:`Editar ${name}`})).toBeVisible();
   const context=await browser.newContext({baseURL:"http://127.0.0.1:3100",storageState:{cookies:[],origins:[]}});const person=await context.newPage();
   try {
-    await person.goto("/login?returnTo=%2Festoque");await person.getByLabel("E-mail",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(temporary);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/alterar-senha/);
+    await person.goto("/login?returnTo=%2Festoque");await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(temporary);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/alterar-senha/);
     expect((await context.request.get("/api/estoques")).status()).toBe(403);
     await person.getByLabel("Senha atual",{exact:true}).fill(temporary);await person.getByLabel("Nova senha",{exact:false}).fill(permanent);await person.getByRole("button",{name:"Salvar nova senha"}).click();await expect(person).toHaveURL(/\/login/);
-    await person.getByLabel("E-mail",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(permanent);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/estoque$/);
+    await person.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await person.getByLabel("Senha",{exact:true}).fill(permanent);await person.getByRole("button",{name:"Entrar",exact:true}).click();await expect(person).toHaveURL(/\/estoque$/);
     await expect(person.getByRole("link",{name:"Usuários",exact:true})).toHaveCount(0);await expect(person.getByRole("link",{name:"Pedidos",exact:true})).toHaveCount(0);
     const allowed=await(await context.request.get("/api/lojas")).json();expect(allowed.map((s:{id:string})=>s.id)).toEqual([fixture.store]);
     expect((await context.request.get("/api/compras")).status()).toBe(403);expect((await person.goto("/usuarios"))?.status()).toBe(403);

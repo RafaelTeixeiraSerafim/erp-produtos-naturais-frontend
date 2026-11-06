@@ -1,10 +1,10 @@
 import { test, expect } from "playwright/test";
 async function login(page: import("playwright/test").Page, email = "admin@example.test") {
-  await page.goto("/login");await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Senha",{exact:true}).fill("Fixture-password-123");await page.getByRole("button",{name:"Entrar",exact:true}).click();
+  await page.goto("/login");await page.getByLabel("E-mail ou usuário",{exact:true}).fill(email);await page.getByLabel("Senha",{exact:true}).fill("Fixture-password-123");await page.getByRole("button",{name:"Entrar",exact:true}).click();
 }
 test("anonymous pages redirect, failed login stays generic and internal return destination is preserved",async({page})=>{
   await page.goto("/vendas/nova");await expect(page).toHaveURL(/\/login\?returnTo=/);
-  await page.getByLabel("E-mail").fill("admin@example.test");await page.getByLabel("Senha",{exact:true}).fill("wrong");await page.getByRole("button",{name:"Entrar",exact:true}).click();await expect(page.getByText("E-mail ou senha inválidos.", { exact: true })).toBeVisible();
+  await page.getByLabel("E-mail ou usuário").fill("admin@example.test");await page.getByLabel("Senha",{exact:true}).fill("wrong");await page.getByRole("button",{name:"Entrar",exact:true}).click();await expect(page.getByText("E-mail ou senha inválidos.", { exact: true })).toBeVisible();
   await page.getByLabel("Senha",{exact:true}).fill("Fixture-password-123");await page.getByRole("button",{name:"Entrar",exact:true}).click();await expect(page).toHaveURL(/\/vendas\/nova$/);
 });
 test("temporary password blocks business access until replacement",async({page})=>{
@@ -30,7 +30,7 @@ test("admin creates an account and logout clears only their recovery",async({pag
   await page.goto("/produtos");await expect(page).toHaveURL(/\/login\?/);
 });
 test("external return destination is rejected",async({page})=>{
-  await page.goto("/login?returnTo=https://evil.example");await page.getByLabel("E-mail").fill("admin@example.test");await page.getByLabel("Senha",{exact:true}).fill("Fixture-password-123");await page.getByRole("button",{name:"Entrar",exact:true}).click();await expect(page).toHaveURL(/\/visao-geral/);
+  await page.goto("/login?returnTo=https://evil.example");await page.getByLabel("E-mail ou usuário").fill("admin@example.test");await page.getByLabel("Senha",{exact:true}).fill("Fixture-password-123");await page.getByRole("button",{name:"Entrar",exact:true}).click();await expect(page).toHaveURL(/\/visao-geral/);
 });
 
 test("session expiry preserves the account's draft and another account cannot restore it",async({page,context})=>{
@@ -46,4 +46,12 @@ test("session expiry preserves the account's draft and another account cannot re
   await page.unroute("**/api/compras");
   await login(page,"other@example.test");await expect(page).toHaveURL(/\/visao-geral/);await page.goto("/compras/nova");await expect(page.getByRole("button",{name:"Restaurar",exact:true})).toHaveCount(0);await expect(page.getByRole("textbox",{name:"Observação",exact:true})).toHaveValue("");
   await context.clearCookies();await page.goto("/login");await login(page);await expect(page).toHaveURL(/\/visao-geral/);await page.goto("/compras/nova");await page.getByRole("button",{name:"Restaurar",exact:true}).click();await expect(page.getByRole("textbox",{name:"Observação",exact:true})).toHaveValue("Rascunho privado da primeira conta");
+});
+
+test("default admin username accepts the temporary admin password",async({page})=>{
+  await page.goto("/login");
+  await page.getByLabel("E-mail ou usuário",{exact:true}).fill("admin");
+  await page.getByLabel("Senha",{exact:true}).fill("admin");
+  await page.getByRole("button",{name:"Entrar",exact:true}).click();
+  await expect(page).toHaveURL(/\/alterar-senha/);
 });

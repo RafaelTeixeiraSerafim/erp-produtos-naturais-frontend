@@ -14,8 +14,9 @@ http.createServer(async (req,res) => {
   const send = (status, data) => { res.writeHead(status,{"Content-Type":"application/json","Cache-Control":"no-store"});res.end(status===204 ? undefined : JSON.stringify(data)); };
   if (path === "/api/auth/csrf") return send(200,{token:"fixture-csrf",headerName:"X-CSRF-TOKEN"});
   if (path === "/api/auth/login") {
-    if (body.senha !== "Fixture-password-123") return send(401,{message:"E-mail ou senha inválidos."});
-    const key = body.email === "func@example.test" ? "fixture-func" : body.email === "ger@example.test" ? "fixture-manager" : body.email === "temporary@example.test" ? "fixture-temporary" : body.email === "other@example.test" ? "fixture-other" : "fixture-admin";
+    const defaultLogin=body.email === "admin" && body.senha === "admin";
+    if (!defaultLogin && body.senha !== "Fixture-password-123") return send(401,{message:"E-mail ou senha inválidos."});
+    const key = defaultLogin ? "fixture-temporary" : body.email === "func@example.test" ? "fixture-func" : body.email === "ger@example.test" ? "fixture-manager" : body.email === "temporary@example.test" ? "fixture-temporary" : body.email === "other@example.test" ? "fixture-other" : "fixture-admin";
     const next = crypto.randomUUID(); sessions.set(next,seeds.get(key));res.setHeader("Set-Cookie",`SESSION=${next}; Path=/; HttpOnly`);return send(200,sessions.get(next));
   }
   if (!user) return send(401,{message:"Autenticação necessária"});
