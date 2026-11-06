@@ -671,6 +671,7 @@ export function TransferEditor({
               <label key={key}>
                 {key === "idLojaOrigem" ? "Origem *" : "Destino *"}
                 <Select
+                  aria-label={key === "idLojaOrigem" ? "Origem *" : "Destino *"}
                   value={draft[key]}
                   onChange={(e) =>
                     setDraft({ ...draft, [key]: e.target.value })
@@ -719,6 +720,7 @@ export function TransferEditor({
                 <label>
                   Produto *
                   <Select
+                    aria-label="Produto *"
                     value={i.idProduto}
                     onChange={(e) =>
                       setDraft({

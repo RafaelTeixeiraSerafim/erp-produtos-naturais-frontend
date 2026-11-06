@@ -37,6 +37,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
     "recebimentos-compras",
     {
       idCompra: purchase.id,
+      idUsuario: f.operator,
       status: "RASCUNHO",
       itens: [
         {
