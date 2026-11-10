@@ -15,17 +15,13 @@ describe("validações do catálogo", () => {
       productPayload({
         nome: "Aveia",
         idCategoria: product,
-        idUnidadeMedida: store,
-        descricao: "Integral",
-        tipoVenda: "PESO",
-        status: "INATIVO",
+          descricao: "Integral",
+          status: "INATIVO",
       }),
     ).toEqual({
       nome: "Aveia",
       idCategoria: product,
-      idUnidadeMedida: store,
       descricao: "Integral",
-      tipoVenda: "PESO",
       status: "INATIVO",
     });
     expect(
@@ -50,14 +46,14 @@ describe("validações do catálogo", () => {
   );
   it("serializa a validade em ISO com offset UTC e preserva o instante", () => {
     const dto = pricePayload({
-      idProduto: product,
+      idProdutoSku: product,
       idLoja: store,
       preco: "12,90",
       dataInicio: "2026-11-03T12:00:00-03:00",
       dataFim: "2026-11-04T12:00:00-03:00",
     });
     expect(dto).toMatchObject({
-      idProduto: product,
+      idProdutoSku: product,
       idLoja: store,
       preco: 12.9,
       dataInicio: "2026-11-03T15:00:00.000Z",
@@ -68,7 +64,7 @@ describe("validações do catálogo", () => {
     for (const dataFim of ["2026-11-02T12:00", "inválida"])
       expect(
         priceSchema.safeParse({
-          idProduto: product,
+          idProdutoSku: product,
           idLoja: store,
           preco: "0,00",
           dataInicio: "2026-11-03T12:00",
@@ -79,7 +75,7 @@ describe("validações do catálogo", () => {
   it("mantém datas opcionais ausentes", () =>
     expect(
       pricePayload({
-        idProduto: product,
+        idProdutoSku: product,
         idLoja: store,
         preco: "0",
         dataInicio: "",
@@ -93,7 +89,9 @@ describe("validações do catálogo", () => {
       status: "ATIVO",
       ean13: "",
       dun14: "",
-      descricaoApresentacao: "",
+      descricaoApresentacao: "Pacote 200 g",
+      idUnidadeMedida:store,
+      tipoVenda:"UNIDADE",
       idLoja: store,
       preco: 20,
     });

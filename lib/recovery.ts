@@ -2,14 +2,14 @@ import { z } from "zod";
 import type { CompraResponseDTO } from "@/generated/sdk/types/CompraResponseDTO";
 import { draftValues } from "./purchases";
 const text = z.string();
-const item = { idProduto: text, quantidade: text, desconto: text };
+const item = { idProdutoSku: text, quantidade: text, desconto: text };
 export const purchaseDraftSchema = z.object({
   idFornecedor: text, idLoja: text, dataCompra: text, observacao: text,
   itens: z.array(z.object({ ...item, id: text.optional(), custoUnitario: text }).strict()),
 }).strict();
 export const saleDraftSchema = z.object({
   idCliente: text, idUsuario: text, idLoja: text, dataVenda: text, observacao: text.optional(), baseVersion: z.number().int().nonnegative().optional(),
-  pending: z.object({ key:z.uuid(), body:z.object({ idCliente:z.uuid(), idUsuario:z.uuid().optional(), idLoja:z.uuid(), dataVenda:text.optional(), observacao:text.optional(), itens:z.array(z.object({ id:z.uuid().optional(), idProduto:z.uuid(), quantidade:z.number(), precoUnitario:z.number(), desconto:z.number().optional() }).strict()) }).strict() }).strict().optional(),
+  pending: z.object({ key:z.uuid(), body:z.object({ idCliente:z.uuid(), idUsuario:z.uuid().optional(), idLoja:z.uuid(), dataVenda:text.optional(), observacao:text.optional(), itens:z.array(z.object({ id:z.uuid().optional(), idProdutoSku:z.uuid(), quantidade:z.number(), precoUnitario:z.number(), desconto:z.number().optional() }).strict()) }).strict() }).strict().optional(),
   itens: z.array(z.object({ ...item, id:text.optional(), precoUnitario: text }).strict()),
 }).strict();
 export const lifetime = 7 * 24 * 60 * 60 * 1000;

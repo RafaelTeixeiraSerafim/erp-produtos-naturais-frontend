@@ -9,7 +9,7 @@ import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tansta
 import { excluirPrecoProdutoLoja } from '../clients/excluirPrecoProdutoLoja'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
 
-export const excluirPrecoProdutoLojaMutationKey = () => [{ url: '/api/produtos-precos-loja/:id' }] as const
+export const excluirPrecoProdutoLojaMutationKey = () => [{ url: '/api/skus-precos-loja/:id' }] as const
 
 export function excluirPrecoProdutoLojaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = excluirPrecoProdutoLojaMutationKey()
@@ -22,7 +22,7 @@ export function excluirPrecoProdutoLojaMutationOptions<TContext = unknown>(confi
 }
 
 /**
- * {@link /api/produtos-precos-loja/:id}
+ * {@link /api/skus-precos-loja/:id}
  */
 export function useExcluirPrecoProdutoLoja<TContext>(options: {
   mutation?: UseMutationOptions<ExcluirPrecoProdutoLojaStatus204, ResponseErrorConfig<Error>, ExcluirPrecoProdutoLojaOptions, TContext> & { client?: QueryClient },

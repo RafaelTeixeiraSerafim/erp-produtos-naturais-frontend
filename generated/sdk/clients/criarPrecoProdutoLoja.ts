@@ -8,10 +8,10 @@ import type { CriarPrecoProdutoLojaOptions, CriarPrecoProdutoLojaResponses } fro
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * {@link /api/produtos-precos-loja}
+ * {@link /api/skus-precos-loja}
  */
 export function criarPrecoProdutoLoja<ThrowOnError extends boolean = true>(options: Options<CriarPrecoProdutoLojaOptions, ThrowOnError>): Unwrappable<RequestResult<CriarPrecoProdutoLojaResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/api/produtos-precos-loja', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<CriarPrecoProdutoLojaResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/api/skus-precos-loja', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<CriarPrecoProdutoLojaResponses, ThrowOnError>>)
 }

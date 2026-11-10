@@ -3,13 +3,15 @@ test("devoluções reais: recebimento, venda, condições mistas, fornecedor, co
   const f=JSON.parse(process.env.SALES_FIXTURE!),p=JSON.parse(process.env.PURCHASES_FIXTURE!);
   const get=async(path:string)=>{const r=await request.get(`/api/${path}`);expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
   const post=async(path:string,data:unknown,key?:string)=>{const r=await request.post(`/api/${path}`,{data,headers:key?{"Idempotency-Key":key}:{}});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
-  const template=await get(`produtos/${f.product}`);
-  const product=await post("produtos",{nome:`Devolução integração ${crypto.randomUUID()}`,idCategoria:template.idCategoria,idUnidadeMedida:template.idUnidadeMedida,tipoVenda:"PESO",status:"ATIVO"});
-  const balance=async()=>Number((await get(`estoques/saldo?idProduto=${product.id}&idLoja=${f.store}`)).quantidadeAtual);
-  const purchase=await post("compras",{idFornecedor:p.supplier,idLoja:f.store,status:"RASCUNHO",itens:[{idProduto:product.id,quantidade:20,custoUnitario:2,desconto:0}]});
-  const receipt=await post("recebimentos-compras",{idCompra:purchase.id,idUsuario:f.operator,status:"RASCUNHO",itens:[{idItemCompra:purchase.itens[0].id,idProduto:product.id,quantidade:20}]},crypto.randomUUID());
+  const template=await get(`produtos-sku/${f.product}`);
+  const parent=await get(`produtos/${template.idProduto}`);
+  const grouping=await post("produtos",{nome:`Devolução integração ${crypto.randomUUID()}`,idCategoria:parent.idCategoria,status:"ATIVO"});
+  const product=await post("produtos-sku",{idProduto:grouping.id,sku:crypto.randomUUID(),descricaoApresentacao:"Granel",idUnidadeMedida:template.idUnidadeMedida,tipoVenda:"PESO",status:"ATIVO"});
+  const balance=async()=>Number((await get(`estoques/saldo?idProdutoSku=${product.id}&idLoja=${f.store}`)).quantidadeAtual);
+  const purchase=await post("compras",{idFornecedor:p.supplier,idLoja:f.store,status:"RASCUNHO",itens:[{idProdutoSku:product.id,quantidade:20,custoUnitario:2,desconto:0}]});
+  const receipt=await post("recebimentos-compras",{idCompra:purchase.id,idUsuario:f.operator,status:"RASCUNHO",itens:[{idItemCompra:purchase.itens[0].id,idProdutoSku:product.id,quantidade:20}]},crypto.randomUUID());
   await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});expect(await balance()).toBe(20);
-  const sale=await post("vendas",{idCliente:f.customer,idLoja:f.store,itens:[{idProduto:product.id,quantidade:10,precoUnitario:3,desconto:0}]},crypto.randomUUID());await post(`vendas/${sale.id}/concluir`,{versao:sale.versao});expect(await balance()).toBe(10);
+  const sale=await post("vendas",{idCliente:f.customer,idLoja:f.store,itens:[{idProdutoSku:product.id,quantidade:10,precoUnitario:3,desconto:0}]},crypto.randomUUID());await post(`vendas/${sale.id}/concluir`,{versao:sale.versao});expect(await balance()).toBe(10);
   await page.goto(`/vendas/${sale.id}`);await page.getByRole("link",{name:"Nova devolução",exact:true}).click();
   await expect(page.getByLabel("Quantidade a devolver")).toHaveValue("");
   await page.getByRole("textbox",{name:"Motivo *",exact:true}).fill("Avaria integrada");await page.getByLabel("Quantidade a devolver").fill("2,125");await page.getByRole("button",{name:"Adicionar outra condição"}).click();
@@ -22,7 +24,7 @@ test("devoluções reais: recebimento, venda, condições mistas, fornecedor, co
   const afterSale=await get(`vendas/${sale.id}`);expect(afterSale.valorTotal).toBe(30);expect(afterSale.status).toBe("CONCLUIDA");expect(afterSale.itens[0].quantidadeDevolvida).toBe(4);expect(afterSale.itens[0].quantidadeDevolvivel).toBe(6);
   await page.getByRole("link",{name:"Consultar movimentos da devolução"}).click();await expect(page.getByRole("row").filter({hasText:"Devolução"})).toHaveCount(1);await page.getByRole("button",{name:"Ver detalhes"}).click();await expect(page.getByRole("link",{name:"Ver devolução de cliente"})).toHaveAttribute("href",`/vendas/devolucoes/${id}`);await page.keyboard.press("Escape");
   // Draft editing conflicts preserve typed values and require a fresh review.
-  const body={idVenda:sale.id,motivo:"Rascunho",itens:[{idItemVenda:sale.itens[0].id,idProduto:product.id,quantidade:1,retornaAoEstoque:true}]};
+  const body={idVenda:sale.id,motivo:"Rascunho",itens:[{idItemVenda:sale.itens[0].id,idProdutoSku:product.id,quantidade:1,retornaAoEstoque:true}]};
   const key=crypto.randomUUID(),draft=await post("devolucoes-clientes",body,key);expect((await post("devolucoes-clientes",body,key)).id).toBe(draft.id);
   await page.goto(`/vendas/devolucoes/${draft.id}/editar`);await page.getByRole("textbox",{name:"Motivo *",exact:true}).fill("Meu valor preservado");
   const edited=await request.put(`/api/devolucoes-clientes/${draft.id}`,{data:{...body,versao:draft.versao,motivo:"Outra aba",itens:[{...body.itens[0],id:draft.itens[0].id}]}});expect(edited.ok()).toBeTruthy();
@@ -32,6 +34,6 @@ test("devoluções reais: recebimento, venda, condições mistas, fornecedor, co
   await page.getByRole("button",{name:"Revisar devolução",exact:true}).click();await expect(page.getByRole("dialog")).toContainText("Saída: −3,125");await page.getByRole("button",{name:"Confirmar devolução",exact:true}).click();await expect(page.getByText(/Confirmada por/)).toBeVisible();expect(await balance()).toBe(9);
   await post(`devolucoes-fornecedores/${supplierId}/concluir`,{versao:0});expect(await balance()).toBe(9);const afterPurchase=await get(`compras/${purchase.id}`);expect(afterPurchase.status).toBe("RECEBIDA");expect(afterPurchase.valorTotal).toBe(40);expect(afterPurchase.itens[0].quantidadeRecebida).toBe(20);expect(afterPurchase.itens[0].quantidadeDevolvivel).toBe(16.875);
   movements=await get("movimentacoes-estoque");expect(movements.filter((m:{idDevolucaoFornecedor?:string})=>m.idDevolucaoFornecedor===supplierId)).toHaveLength(1);
-  const excessive=await post("devolucoes-fornecedores",{idCompra:purchase.id,motivo:"Falta",itens:[{idItemCompra:purchase.itens[0].id,idProduto:product.id,quantidade:10}]},crypto.randomUUID());const shortage=await request.post(`/api/devolucoes-fornecedores/${excessive.id}/concluir`,{data:{versao:0}});expect(shortage.status()).toBe(409);expect(await balance()).toBe(9);await post(`devolucoes-fornecedores/${excessive.id}/cancelar`,{versao:0,motivo:"Sem saldo"});
+  const excessive=await post("devolucoes-fornecedores",{idCompra:purchase.id,motivo:"Falta",itens:[{idItemCompra:purchase.itens[0].id,idProdutoSku:product.id,quantidade:10}]},crypto.randomUUID());const shortage=await request.post(`/api/devolucoes-fornecedores/${excessive.id}/concluir`,{data:{versao:0}});expect(shortage.status()).toBe(409);expect(await balance()).toBe(9);await post(`devolucoes-fornecedores/${excessive.id}/cancelar`,{versao:0,motivo:"Sem saldo"});
   await page.goto("/compras/devolucoes?status=CONCLUIDA&ordem=asc");await page.reload();await expect(page.getByRole("combobox",{name:"Status",exact:true})).toHaveValue("CONCLUIDA");await expect(page.getByRole("combobox",{name:"Ordenar por data",exact:true})).toHaveValue("asc");
 });

@@ -17,11 +17,11 @@ it("mantém filtros, status e mensagem JSON sem cache", async () => {
     );
   vi.stubGlobal("fetch", fetch);
   const result = await forwardCatalog(
-    browserRequest("http://localhost/api/produtos?idProduto=abc"),
+    browserRequest("http://localhost/api/produtos?idProdutoSku=abc"),
     ["produtos"],
   );
   expect(String(fetch.mock.calls[0][0])).toBe(
-    "http://localhost:9090/api/produtos?idProduto=abc",
+    "http://localhost:9090/api/produtos?idProdutoSku=abc",
   );
   expect(fetch.mock.calls[0][1].cache).toBe("no-store");
   expect(result.status).toBe(409);
@@ -59,8 +59,8 @@ it("não permite PUT de vínculo", async () =>
   expect(
     (
       await forwardCatalog(
-        browserRequest("http://localhost/api/produtos-loja/id", { method: "PUT" }),
-        ["produtos-loja", "11111111-1111-4111-8111-111111111111"],
+        browserRequest("http://localhost/api/skus-loja/id", { method: "PUT" }),
+        ["skus-loja", "11111111-1111-4111-8111-111111111111"],
       )
     ).status,
   ).toBe(405));
@@ -84,7 +84,7 @@ it.each([
 ])("encaminha GET de estoque %s", async (...path) => {
   const fetch = vi.fn().mockResolvedValue(Response.json({ ok: true }));
   vi.stubGlobal("fetch", fetch);
-  const query = `?idProduto=${inventoryId}&idLoja=${inventoryId}`;
+  const query = `?idProdutoSku=${inventoryId}&idLoja=${inventoryId}`;
   const result = await forwardCatalog(
     browserRequest(`http://localhost/api/${path.join("/")}${query}`),
     path,
@@ -96,10 +96,10 @@ it.each([
 });
 it.each([
   "",
-  "?idProduto=abc&idLoja=abc",
-  `?idProduto=${inventoryId}`,
+  "?idProdutoSku=abc&idLoja=abc",
+  `?idProdutoSku=${inventoryId}`,
   `?idLoja=${inventoryId}`,
-  `?idProduto=${inventoryId}&idLoja=${inventoryId}&idLoja=${inventoryId}`,
+  `?idProdutoSku=${inventoryId}&idLoja=${inventoryId}&idLoja=${inventoryId}`,
 ])("exige parâmetros válidos no saldo %s", async (query) => {
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);

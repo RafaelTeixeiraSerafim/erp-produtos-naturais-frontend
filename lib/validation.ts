@@ -6,9 +6,7 @@ export const uuid = z.string().uuid("Selecione um registro válido.");
 export const productSchema = z.object({
   nome: required,
   idCategoria: uuid,
-  idUnidadeMedida: uuid,
   descricao: z.string(),
-  tipoVenda: z.enum(["UNIDADE", "PESO"]),
   status: z.enum(["ATIVO", "INATIVO"]),
 });
 export const skuSchema = z.object({
@@ -21,7 +19,9 @@ export const skuSchema = z.object({
   dun14: z
     .string()
     .refine((v) => !v || /^\d{14}$/.test(v), "Informe 14 dígitos."),
-  descricaoApresentacao: z.string(),
+  descricaoApresentacao: required,
+  idUnidadeMedida: uuid,
+  tipoVenda: z.enum(["UNIDADE", "PESO"]),
 });
 export const storeSchema = z.object({
   nomeFantasia: required,
@@ -35,7 +35,7 @@ export const storeSchema = z.object({
 });
 export const categorySchema = z.object({ nome: required });
 export const unitSchema = z.object({ nome: required, sigla: required });
-export const assignmentSchema = z.object({ idProduto: uuid, idLoja: uuid });
+export const assignmentSchema = z.object({ idProdutoSku: uuid, idLoja: uuid });
 export function parseMoney(value: string): number {
   const v = value.trim();
   if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(v))
@@ -52,7 +52,7 @@ export function parseMoney(value: string): number {
 }
 export const priceSchema = z
   .object({
-    idProduto: uuid,
+    idProdutoSku: uuid,
     idLoja: uuid,
     preco: required.refine((v) => {
       try {

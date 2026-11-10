@@ -431,3 +431,10 @@ e 30 cenários reais desktop/mobile, com persistência após reinício,
 [validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
 A parcela de devoluções de BG-001 está encerrada na versão integrada; reconciliação de
 históricos, acertos financeiros e demais itens diferidos não foram implementados.
+
+<a id="bg-023"></a>
+## BG-023 — Produto/SKU na identidade comercial
+
+Diagnóstico no backend integrado `f38a335`: SKU armazenava identificadores opcionais de venda, enquanto estoque, preços, vínculos e documentos usavam produto. Variantes do mesmo produto compartilhavam indevidamente sua unidade comercial.
+
+Implementação da etapa 13 em `stage13-sku-variants`: unidade/tipo/apresentação obrigatórios no SKU, estoque e vínculos por SKU + loja, contratos comerciais com `idProdutoSku` obrigatório, snapshots históricos e herança por item de origem. V8 exige reset de desenvolvimento; V1–V7 preservadas, sem mapeamento presumido. Frontend, SDK integral e fixtures acompanham o contrato. A resolução e suas evidências finais estão em [STAGE13_RELEASE.md](STAGE13_RELEASE.md); este registro não afirma aplicação em produção. Preços automáticos (BG-012) e concorrência/idempotência de compras (BG-021/BG-022) permanecem fora desta correção.

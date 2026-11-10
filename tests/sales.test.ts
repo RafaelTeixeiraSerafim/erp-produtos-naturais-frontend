@@ -9,7 +9,7 @@ import {
 import { customerSchema, calendarDateLabel } from "@/lib/validation";
 const id = "11111111-1111-4111-8111-111111111111";
 const item = {
-  idProduto: id,
+  idProdutoSku: id,
   quantidade: "0,001",
   precoUnitario: "5",
   desconto: "0",
@@ -96,7 +96,7 @@ it("exige cliente, operador, loja, produto e itens", () => {
     idUsuario: id,
     idLoja: id,
     itens: [
-      { idProduto: id, quantidade: 0.001, precoUnitario: 5, desconto: 0 },
+      { idProdutoSku: id, quantidade: 0.001, precoUnitario: 5, desconto: 0 },
     ],
   });
   expect(
@@ -105,6 +105,6 @@ it("exige cliente, operador, loja, produto e itens", () => {
 });
 
 it("envia observação, versão e identidades dos itens sem alterar os totais salvos", () => {
-  const payload=salePayload({...draftValues(),idCliente:id,idLoja:id,idUsuario:id,observacao:"Conferir entrega",baseVersion:4,itens:[{...blankItem(),id,idProduto:id,quantidade:"1,125",precoUnitario:"2,35",desconto:"0,01"}]});
+  const payload=salePayload({...draftValues(),idCliente:id,idLoja:id,idUsuario:id,observacao:"Conferir entrega",baseVersion:4,itens:[{...blankItem(),id,idProdutoSku:id,quantidade:"1,125",precoUnitario:"2,35",desconto:"0,01"}]});
   expect(payload.versao).toBe(4);expect(payload.observacao).toBe("Conferir entrega");expect(payload.itens[0].id).toBe(id);expect(payload).not.toHaveProperty("status");
 });

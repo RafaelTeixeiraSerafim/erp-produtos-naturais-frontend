@@ -20,11 +20,12 @@ async function setup(page: Page, empty = false) {
     produtos: empty
       ? []
       : [
-          { id: id(3), nome: "Aveia" },
-          { id: id(4), nome: "Castanha" },
+          { id: id(3), nome: "Aveia",status:"ATIVO" },
+          { id: id(4), nome: "Castanha",status:"ATIVO" },
         ],
     compras: [],
   };
+  db["produtos-sku"] = db.produtos.map(p=>({id:p.id,idProduto:p.id,nomeProduto:p.nome,sku:String(p.id),descricaoApresentacao:"Granel",tipoVenda:"PESO",status:"ATIVO"}));
   let count = 100;
   const writes: Row[] = [];
   await page.route("**/api/**", async (route) => {
@@ -69,7 +70,7 @@ async function setup(page: Page, empty = false) {
 }
 async function fillItem(page: Page, n: number, product = id(3)) {
   const row = page.getByLabel(`Item ${n}`, { exact: true });
-  await row.getByLabel("Produto").selectOption(product);
+  await row.getByLabel("SKU", {exact:false}).selectOption(product);
   await row.getByLabel("Quantidade").fill("1,125");
   await row.getByLabel("Custo unitário").fill("2,3456");
   await row.getByLabel("Desconto").fill("0,10");
@@ -255,7 +256,7 @@ test("compra fora de rascunho é somente leitura e status concorrente bloqueia n
     itens: [
       {
         id: id(101),
-        idProduto: id(3),
+        idProdutoSku: id(3),
         quantidade: 1,
         custoUnitario: 2,
         desconto: 0,
@@ -380,10 +381,11 @@ test("restauração mantém seleção ausente visível e impede envio", async ({
   await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
   await fillItem(page, 1);
   await expect(page.getByText("Recuperação salva neste navegador", { exact: true })).toBeVisible();
-  db.produtos = [{ id: id(4), nome: "Castanha" }];
+  db.produtos = [{ id: id(4), nome: "Castanha",status:"ATIVO" }];
+  db["produtos-sku"] = db["produtos-sku"].filter(s=>s.id!==id(3));
   await page.reload();
   await page.getByRole("button", { name: "Restaurar", exact: true }).click();
-  await expect(page.getByLabel("Produto *", { exact: true })).toHaveValue(id(3));
+  await expect(page.getByLabel("SKU *", { exact: true })).toHaveValue(id(3));
   await expect(page.getByRole("button", { name: "Salvar rascunho" })).toBeDisabled();
   await expect(page.locator('option:checked').filter({ hasText: 'Indisponível:' })).toHaveCount(1);
 });

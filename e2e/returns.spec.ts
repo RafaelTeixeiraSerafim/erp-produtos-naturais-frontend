@@ -1,14 +1,14 @@
 import { test,expect,type Page } from "./auth-fixture";
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 async function setup(page:Page) {
-  const source={id:id(1),idLoja:id(2),nomeLoja:"Centro",status:"CONCLUIDA",legado:false,itens:[{id:id(3),idProduto:id(4),nomeProduto:"Aveia",quantidade:10,quantidadeDevolvida:2,quantidadeDevolvivel:8}]};
-  let record={id:id(5),idVenda:id(1),idLoja:id(2),lojaNome:"Centro",status:"RASCUNHO",versao:0,motivo:"Teste",observacao:"",itens:[{id:id(6),idItemVenda:id(3),idProduto:id(4),nomeProduto:"Aveia",quantidade:1,retornaAoEstoque:true,observacao:"",unidadeSigla:"KG",unidadeOrigem:"VENDA"}]};
+  const source={id:id(1),idLoja:id(2),nomeLoja:"Centro",status:"CONCLUIDA",legado:false,itens:[{id:id(3),idProdutoSku:id(4),nomeProduto:"Aveia",quantidade:10,quantidadeDevolvida:2,quantidadeDevolvivel:8}]};
+  let record={id:id(5),idVenda:id(1),idLoja:id(2),lojaNome:"Centro",status:"RASCUNHO",versao:0,motivo:"Teste",observacao:"",itens:[{id:id(6),idItemVenda:id(3),idProdutoSku:id(4),nomeProduto:"Aveia",quantidade:1,retornaAoEstoque:true,observacao:"",unidadeSigla:"KG",unidadeOrigem:"VENDA"}]};
   const operations:{key:string;body:unknown}[]=[];let lose=false;
   await page.route("**/api/**",async route=>{
     const req=route.request(),parts=new URL(req.url()).pathname.slice(5).split("/"),resource=parts[0];
     if(resource==="auth")return route.continue();
     if(req.method()==="GET") {
-      const rows:Record<string,unknown>={vendas:parts[1]?source:[source],lojas:[{id:id(2),nomeFantasia:"Centro"}],produtos:[{id:id(4),nome:"Aveia"}],estoques:[{idProduto:id(4),idLoja:id(2),quantidadeAtual:7}],"devolucoes-clientes":parts[1]?record:[record]};
+      const rows:Record<string,unknown>={vendas:parts[1]?source:[source],lojas:[{id:id(2),nomeFantasia:"Centro"}],produtos:[{id:id(4),nome:"Aveia"}],estoques:[{idProdutoSku:id(4),idLoja:id(2),quantidadeAtual:7}],"devolucoes-clientes":parts[1]?record:[record]};
       return route.fulfill({json:rows[resource]||[]});
     }
     const body=req.postDataJSON();

@@ -13,7 +13,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "c87fe72a66ca2fe8aaf14bead7101c0e95e27267";
+const commit = "22ff8a5638325abc7bb7ceff770c741d97b74231";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
@@ -162,7 +162,7 @@ try {
   process.exitCode = 1;
 } finally {
   if (inventoryFixture) {
-    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_devolucao_cliente IS NOT NULL OR id_devolucao_fornecedor IS NOT NULL; DELETE FROM devolucao_cliente_idempotencia; DELETE FROM devolucao_fornecedor_idempotencia; DELETE FROM item_devolucao_cliente; DELETE FROM item_devolucao_fornecedor; DELETE FROM devolucao_cliente; DELETE FROM devolucao_fornecedor; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Ajuste integração %'); DELETE FROM produto WHERE nome LIKE 'Ajuste integração %'; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
+    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM movimentacao_estoque WHERE id_devolucao_cliente IS NOT NULL OR id_devolucao_fornecedor IS NOT NULL; DELETE FROM devolucao_cliente_idempotencia; DELETE FROM devolucao_fornecedor_idempotencia; DELETE FROM item_devolucao_cliente; DELETE FROM item_devolucao_fornecedor; DELETE FROM devolucao_cliente; DELETE FROM devolucao_fornecedor; DELETE FROM movimentacao_estoque WHERE id_ajuste_estoque IS NOT NULL; DELETE FROM ajuste_idempotencia; DELETE FROM item_ajuste_estoque; DELETE FROM ajuste_estoque; DELETE FROM estoque_produto WHERE id_produto_sku IN (SELECT s.id FROM produto_sku s JOIN produto p ON p.id=s.id_produto WHERE p.nome LIKE 'Ajuste integração %'); DELETE FROM produto_sku WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Ajuste integração %'); DELETE FROM produto WHERE nome LIKE 'Ajuste integração %'; DELETE FROM movimentacao_estoque WHERE id_transferencia IS NOT NULL; DELETE FROM transferencia_idempotencia; DELETE FROM item_transferencia; DELETE FROM transferencia_estoque; COMMIT;"],root,{},"transfers-cleanup.log"); }
     catch(error) {process.exitCode=1;console.error(`Falha na limpeza de transferências: ${error.message}`);}
   }
   if (purchasesFixture && salesFixture) {
@@ -182,7 +182,7 @@ try {
     catch (error) { process.exitCode = 1; console.error(`Falha na limpeza de compras: ${error.message}`); }
   }
   if (inventoryFixture) {
-    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM estoque_produto WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Devolução integração %'); DELETE FROM produto WHERE nome LIKE 'Devolução integração %'; COMMIT;"],root,{},"returns-products-cleanup.log"); } catch(error) {process.exitCode=1;console.error(`Falha na limpeza de produtos de devolução: ${error.message}`);}
+    try { await run("docker", ["exec",container,"psql","-U","catalog","-d","catalog","-v","ON_ERROR_STOP=1","-c","BEGIN; DELETE FROM estoque_produto WHERE id_produto_sku IN (SELECT s.id FROM produto_sku s JOIN produto p ON p.id=s.id_produto WHERE p.nome LIKE 'Devolução integração %' OR p.nome LIKE 'SKU integração %'); DELETE FROM produto_sku WHERE id_produto IN (SELECT id FROM produto WHERE nome LIKE 'Devolução integração %' OR nome LIKE 'SKU integração %'); DELETE FROM produto WHERE nome LIKE 'Devolução integração %' OR nome LIKE 'SKU integração %'; COMMIT;"],root,{},"returns-products-cleanup.log"); } catch(error) {process.exitCode=1;console.error(`Falha na limpeza de produtos de devolução: ${error.message}`);}
     try { await inventoryFixture.cleanup(); }
     catch (error) { process.exitCode = 1; console.error(`Falha na limpeza de estoque: ${error.message}`); }
   }

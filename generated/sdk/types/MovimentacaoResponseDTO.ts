@@ -34,6 +34,15 @@ export type MovimentacaoResponseDTO = {
    * Format: `uuid`
    * @type string | undefined
    */
+  idProdutoSku?: string;
+  skuCodigoSnapshot?: string;
+  skuApresentacaoSnapshot?: string;
+  unidadeSiglaSnapshot?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
   idLoja?: string;
   tipo?: MovimentacaoResponseDTOTipoEnumKey;
   quantidade?: number;

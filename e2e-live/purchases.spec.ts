@@ -39,7 +39,7 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
     discount: string,
   ) => {
     const row = page.getByLabel(`Item ${n}`, { exact: true });
-    await row.getByLabel("Produto").selectOption(product);
+    await row.getByLabel("SKU", {exact:false}).selectOption(product);
     await row.getByLabel("Quantidade").fill(q);
     await row.getByLabel("Custo unitário").fill(cost);
     await row.getByLabel("Desconto").fill(discount);
@@ -84,7 +84,7 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
   const response = await request.put(`/api/compras/${saved.id}`, { data: {
     idFornecedor: saved.idFornecedor, idLoja: saved.idLoja, idUsuario: saved.idUsuario,
     status: "RASCUNHO", observacao: "Alteração concorrente", dataCompra: saved.dataCompra,
-    itens: saved.itens.map((i: Record<string, unknown>) => ({ id: i.id, idProduto: i.idProduto, quantidade: i.quantidade, custoUnitario: i.custoUnitario, desconto: i.desconto })),
+    itens: saved.itens.map((i: Record<string, unknown>) => ({ id: i.id, idProdutoSku: i.idProdutoSku, quantidade: i.quantidade, custoUnitario: i.custoUnitario, desconto: i.desconto })),
   } });
   expect(response.ok()).toBeTruthy();
   await page.reload();

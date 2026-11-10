@@ -3,13 +3,6 @@
 * Do not edit manually.
 */
 
-export const produtoResponseDTOTipoVendaEnum = {
-  UNIDADE: 'UNIDADE',
-  PESO: 'PESO',
-} as const;
-
-export type ProdutoResponseDTOTipoVendaEnumKey = (typeof produtoResponseDTOTipoVendaEnum)[keyof typeof produtoResponseDTOTipoVendaEnum];
-
 export const produtoResponseDTOStatusEnum = {
   ATIVO: 'ATIVO',
   INATIVO: 'INATIVO',
@@ -32,14 +25,6 @@ export type ProdutoResponseDTO = {
    */
   idCategoria?: string;
   nomeCategoria?: string;
-  /**
-   * @description
-   * Format: `uuid`
-   * @type string | undefined
-   */
-  idUnidadeMedida?: string;
-  siglaUnidadeMedida?: string;
   descricao?: string;
-  tipoVenda?: ProdutoResponseDTOTipoVendaEnumKey;
   status?: ProdutoResponseDTOStatusEnumKey;
 };

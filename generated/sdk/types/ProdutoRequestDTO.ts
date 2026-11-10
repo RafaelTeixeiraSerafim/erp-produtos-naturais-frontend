@@ -3,13 +3,6 @@
 * Do not edit manually.
 */
 
-export const produtoRequestDTOTipoVendaEnum = {
-  UNIDADE: 'UNIDADE',
-  PESO: 'PESO',
-} as const;
-
-export type ProdutoRequestDTOTipoVendaEnumKey = (typeof produtoRequestDTOTipoVendaEnum)[keyof typeof produtoRequestDTOTipoVendaEnum];
-
 export const produtoRequestDTOStatusEnum = {
   ATIVO: 'ATIVO',
   INATIVO: 'INATIVO',
@@ -29,13 +22,6 @@ export type ProdutoRequestDTO = {
    * @type string
    */
   idCategoria: string;
-  /**
-   * @description
-   * Format: `uuid`
-   * @type string
-   */
-  idUnidadeMedida: string;
   descricao?: string;
-  tipoVenda?: ProdutoRequestDTOTipoVendaEnumKey;
   status?: ProdutoRequestDTOStatusEnumKey;
 };

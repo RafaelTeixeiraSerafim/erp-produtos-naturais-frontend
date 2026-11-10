@@ -4,7 +4,7 @@ import { uuid } from "./validation";
 import { inventoryInstant } from "./inventory";
 export type DraftItem = {
   id?: string;
-  idProduto: string;
+  idProdutoSku: string;
   quantidade: string;
   custoUnitario: string;
   desconto: string;
@@ -17,7 +17,7 @@ export type Draft = {
   itens: DraftItem[];
 };
 export const blankItem = (): DraftItem => ({
-  idProduto: "",
+  idProdutoSku: "",
   quantidade: "",
   custoUnitario: "",
   desconto: "0",
@@ -103,12 +103,12 @@ export function purchasePayload(
     status: "RASCUNHO",
     observacao: draft.observacao,
     itens: draft.itens.map((item) => {
-      if (!uuid.safeParse(item.idProduto).success)
+      if (!uuid.safeParse(item.idProdutoSku).success)
         throw new Error("Selecione um produto válido em cada item.");
       const { q, c, d } = itemCalculation(item);
       return {
         ...(item.id ? { id: item.id } : {}),
-        idProduto: item.idProduto,
+        idProdutoSku: item.idProdutoSku,
         quantidade: Number(q) / 1000,
         custoUnitario: Number(c) / 10000,
         desconto: Number(d) / 100,
@@ -146,7 +146,7 @@ export function draftValues(row?: CompraResponseDTO): Draft {
     itens: row
       ? (row.itens || []).map((i) => ({
           id: i.id,
-          idProduto: i.idProduto || "",
+          idProdutoSku: i.idProdutoSku || "",
           quantidade: format(i.quantidade, 3),
           custoUnitario: format(i.custoUnitario, 4),
           desconto: format(i.desconto ?? 0, 2),

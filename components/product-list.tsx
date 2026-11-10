@@ -119,7 +119,7 @@ export function ProductList() {
           </div>
         ))}
       </div>
-      <ExportCsv name="produtos" source={query} incomplete={!categories.isSuccess || filtered.some(r => !r.nomeCategoria || !r.siglaUnidadeMedida)} headers={["ID", "Nome", "Categoria", "Unidade", "Tipo de venda", "Status"]} rows={filtered.map(r => [r.id, r.nome, r.nomeCategoria || categories.data?.find(c => c.id === r.idCategoria)?.nome || r.idCategoria, r.siglaUnidadeMedida || r.idUnidadeMedida, r.tipoVenda === "PESO" ? "Peso" : r.tipoVenda === "UNIDADE" ? "Unidade" : r.tipoVenda, r.status === "ATIVO" ? "Ativo" : r.status === "INATIVO" ? "Inativo" : r.status])} />
+      <ExportCsv name="produtos" source={query} incomplete={!categories.isSuccess} headers={["ID", "Nome", "Categoria", "Status"]} rows={filtered.map(r => [r.id, r.nome, r.nomeCategoria || r.idCategoria, r.status])} />
       {success && (
         <p
           role="status"
@@ -208,7 +208,7 @@ export function ProductList() {
             description={
               search || category || status
                 ? "Ajuste os filtros para encontrar outros produtos."
-                : "Comece pelas categorias e unidades de medida. Depois, cadastre seu primeiro produto."
+                : "Comece pelas categorias. Depois, cadastre seu primeiro produto."
             }
           />
         ) : (
@@ -217,8 +217,6 @@ export function ProductList() {
               <TableRow>
                 <TableHead>PRODUTO</TableHead>
                 <TableHead>CATEGORIA</TableHead>
-                <TableHead>UNIDADE</TableHead>
-                <TableHead>TIPO DE VENDA</TableHead>
                 <TableHead>STATUS</TableHead>
                 <TableHead className="text-right">AÇÕES</TableHead>
               </TableRow>
@@ -249,10 +247,6 @@ export function ProductList() {
                       categories.data?.find((x) => x.id === row.idCategoria)
                         ?.nome ||
                       "—"}
-                  </TableCell>
-                  <TableCell>{row.siglaUnidadeMedida || "—"}</TableCell>
-                  <TableCell>
-                    {row.tipoVenda === "PESO" ? "Peso" : "Unidade"}
                   </TableCell>
                   <TableCell>
                     <Status value={row.status} />

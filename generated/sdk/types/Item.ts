@@ -29,6 +29,14 @@ export type Item = {
    * @type string | undefined
    */
   idProduto?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idProdutoSku?: string;
+  skuCodigoSnapshot?: string;
+  skuApresentacaoSnapshot?: string;
   produtoNome?: string;
   unidadeSigla?: string;
   tipo?: ItemTipoEnumKey;

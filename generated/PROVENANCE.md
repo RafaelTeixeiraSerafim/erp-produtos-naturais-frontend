@@ -1,18 +1,9 @@
-# SDK do backend
+# SDK da etapa 13
 
-- Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch integrada: `novaVersao`; origem `stage12-returns`, base `bdd39f3`.
-- Commit de código validado e fixado no runner: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`, contido em `novaVersao`.
-- Contrato: `openapi-stage12.json`, exportado por `ReturnsTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V7 descartável.
-- Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage12.json npm run sdk:generate`.
-- SDK inteiro copiado do backend, incluindo `.kubb`, sem edição manual de arquivos gerados.
-- Tipos distintos para itens de ajuste, devolução de cliente e devolução a fornecedor.
-- Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID somente na criação das APIs aprovadas, incluindo devoluções.
-- `scripts/integration.mjs` fixa o SHA acima.
-- Evidências anteriores permanecem nos registros das etapas 9–11; evidência desta etapa em `docs/STAGE12_RELEASE.md`.
-
-- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
-- [CI consumidor validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563) no frontend `b78cfbe`.
-
-Integração em 06/11/2026: frontend `main`, backend `novaVersao`. O contrato e
-o SDK permanecem os mesmos do aceite; mudanças documentais não exigem regeneração.
+- Backend: https://github.com/Zayma1/erp-produtos-naturais-backend, branch `stage13-sku-variants`, base `f38a335774b5f4b998514109e543932ed2cc8fe6`.
+- Commit de implementação: `22ff8a5638325abc7bb7ceff770c741d97b74231` (fixado no runner).
+- Contrato: `openapi-stage13.json`, exportado por `ReturnsTests.exportOpenApi`, com ADMIN autenticado em PostgreSQL V8 descartável.
+- SDK completo: `OPENAPI_FILE=openapi-stage13.json npm run sdk:generate`, usando Kubb e lockfile existentes; árvore completa copiada, incluindo `.kubb`, sem edição manual.
+- Produto agrupador; itens comerciais exigem `idProdutoSku`, com snapshots de código, apresentação e unidade.
+- Endpoints de vínculo/preço substituídos por `/api/skus-loja` e `/api/skus-precos-loja`; filtros de estoque/movimentos combinam produto e SKU.
+- Evidências: [aceite da etapa 13](../docs/STAGE13_RELEASE.md). Contrato anterior permanece no histórico Git.

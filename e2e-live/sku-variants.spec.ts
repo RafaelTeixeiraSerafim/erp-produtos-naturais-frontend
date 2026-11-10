@@ -1,0 +1,27 @@
+import {test,expect} from "./auth-fixture";
+test("SKU real: três variantes, escolha explícita, saldos isolados e ciclo comercial",async({page,request})=>{
+  const f=JSON.parse(process.env.SALES_FIXTURE!),p=JSON.parse(process.env.PURCHASES_FIXTURE!);
+  const get=async(path:string)=>(await request.get(`/api/${path}`)).json();
+  const post=async(path:string,data:unknown,key?:string)=>{const r=await request.post(`/api/${path}`,{data,headers:key?{"Idempotency-Key":key}:{}});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
+  const template=await get(`produtos-sku/${f.product}`),group=await get(`produtos/${template.idProduto}`);
+  const parent=await post("produtos",{nome:`SKU integração ${crypto.randomUUID()}`,idCategoria:group.idCategoria,status:"ATIVO"});
+  const units=await get("unidades-medida");
+  const each=await post("unidades-medida",{nome:`Unidade ${crypto.randomUUID()}`,sigla:"UN"});
+  const skus:{id:string;sku:string}[]=[];
+  for(const [presentation,type,unit] of [["Pacote 200 g","UNIDADE",each.id],["Pacote 500 g","UNIDADE",each.id],["Granel","PESO",units.find((u:{id:string})=>u.id===template.idUnidadeMedida).id]])skus.push(await post("produtos-sku",{idProduto:parent.id,sku:crypto.randomUUID(),descricaoApresentacao:presentation,idUnidadeMedida:unit,tipoVenda:type,status:"ATIVO"}));
+  const amounts=[2,100,3.125];
+  const buy=await post("compras",{idFornecedor:p.supplier,idLoja:f.store,itens:skus.map((s,n)=>({idProdutoSku:s.id,quantidade:amounts[n],custoUnitario:n+1,desconto:0}))});
+  const receipt=await post("recebimentos-compras",{idCompra:buy.id,status:"RASCUNHO",itens:buy.itens.map((i:{id:string;idProdutoSku:string;quantidade:number})=>({idItemCompra:i.id,idProdutoSku:i.idProdutoSku,quantidade:i.quantidade}))},crypto.randomUUID());await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});
+  const balances=async()=>Promise.all(skus.map(async s=>(await get(`estoques/saldo?idProdutoSku=${s.id}&idLoja=${f.store}`)).quantidadeAtual));
+  expect(await balances()).toEqual(amounts);
+  await page.goto("/vendas/nova");await expect(page.getByLabel("SKU *",{exact:true})).toHaveValue("");
+  await page.getByLabel("Buscar por produto, apresentação ou código").fill(skus[0].sku);
+  await expect(page.getByLabel("SKU *",{exact:true}).locator("option")).toHaveCount(2);
+  await page.getByLabel("SKU *",{exact:true}).selectOption(skus[0].id);
+  const saleBody=(q:number)=>({idCliente:f.customer,idLoja:f.store,itens:[{idProdutoSku:skus[0].id,quantidade:q,precoUnitario:5,desconto:0}]});
+  const fraction=await request.post("/api/vendas",{data:saleBody(0.125),headers:{"Idempotency-Key":crypto.randomUUID()}});expect(fraction.status()).toBe(400);
+  const shortage=await post("vendas",saleBody(3),crypto.randomUUID());expect((await request.post(`/api/vendas/${shortage.id}/concluir`,{data:{versao:0}})).status()).toBe(409);expect(await balances()).toEqual(amounts);
+  const key=crypto.randomUUID(),sale=await post("vendas",saleBody(1),key);expect((await post("vendas",saleBody(1),key)).id).toBe(sale.id);await post(`vendas/${sale.id}/concluir`,{versao:0});
+  const ret=await post("devolucoes-clientes",{idVenda:sale.id,motivo:"Retorno SKU",itens:[{idItemVenda:sale.itens[0].id,idProdutoSku:skus[0].id,quantidade:1,retornaAoEstoque:true}]},crypto.randomUUID());await post(`devolucoes-clientes/${ret.id}/concluir`,{versao:0});expect(await balances()).toEqual(amounts);
+  await page.goto(`/estoque?idProduto=${parent.id}&idProdutoSku=${skus[0].id}&idLoja=${f.store}`);await expect(page.locator("tbody tr")).toHaveCount(1);await expect(page.locator("tbody tr")).toContainText("Pacote 200 g");
+});

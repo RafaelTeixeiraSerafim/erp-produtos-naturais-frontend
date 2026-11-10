@@ -55,7 +55,6 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.goto("/produtos/novo");
     await page.getByLabel("Nome do produto").fill(name);
     await page.getByLabel("Categoria", { exact: false }).selectOption({ label: stamp });
-    await page.getByLabel("Unidade de medida").selectOption({ label: `${stamp} (lv)` });
     await page.getByLabel("Descrição", { exact: false }).fill("Produto real");
     await page.getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page).toHaveURL(/\/produtos\/[0-9a-f-]{36}$/);
@@ -63,6 +62,8 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Novo SKU" }).click();
     await page.getByRole("textbox", { name: "SKU", exact: true }).fill(sku);
+    await page.getByLabel("Unidade de medida").selectOption({ label: `${stamp} (lv)` });
+    await page.getByLabel("Descrição da apresentação").fill("Pacote real");
     await page.getByLabel("EAN-13").fill("7891234567890");
     await page.getByLabel("DUN-14").fill("17891234567890");
     await page.getByLabel("Descrição da apresentação").fill("Pacote real");
@@ -70,11 +71,14 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await expect(page.getByRole("cell", { name: sku, exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Novo SKU" }).click();
     await page.getByRole("textbox", { name: "SKU", exact: true }).fill(sku);
+    await page.getByLabel("Unidade de medida").selectOption({ label: `${stamp} (lv)` });
+    await page.getByLabel("Descrição da apresentação").fill("Pacote real");
     await page.getByRole("dialog").getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page.getByRole("alert")).toContainText("SKU já cadastrado");
     await expect(page.getByRole("textbox", { name: "SKU", exact: true })).toHaveValue(sku);
     await cancel(page);
     // A failed SKU save must not prevent an independent assignment save.
+    await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Lojas", exact: true }).click();
     await page.getByRole("button", { name: "Vincular loja", exact: true }).click();
     await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
@@ -83,10 +87,11 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.getByRole("button", { name: "Vincular loja", exact: true }).click();
     await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
     await page.getByRole("dialog").getByRole("button", { name: "Salvar", exact: true }).click();
-    await expect(page.getByRole("alert")).toContainText("Produto já vinculado a esta loja");
+    await expect(page.getByRole("alert")).toContainText("SKU já vinculado a esta loja");
     await expect(page.getByRole("dialog").getByLabel("Loja")).not.toHaveValue("");
     await cancel(page);
     // A failed assignment must not prevent an independent price save.
+    await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Preços", exact: true }).click();
     await page.getByRole("button", { name: "Novo preço" }).click();
     await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
@@ -113,8 +118,10 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await expect(page.getByText("Peso", { exact: true })).toBeVisible();
     await expect(page.getByText("Descrição editada", { exact: true })).toBeVisible();
     await expect(page.getByRole("cell", { name: sku, exact: true })).toBeVisible();
+    await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Lojas", exact: true }).click();
     await expect(page.getByRole("cell", { name: stamp, exact: true })).toBeVisible();
+    await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Preços", exact: true }).click();
     await expect(page.getByRole("cell", { name: /14,50/ })).toBeVisible();
     await page.getByRole("button", { name: "Editar preço", exact: true }).click();
@@ -135,7 +142,7 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     }
   } finally {
     await Promise.all([...pending]);
-    const order = ["produtos-precos-loja", "produtos-loja", "produtos-sku", "produtos", "lojas", "unidades-medida", "categorias"];
+    const order = ["skus-precos-loja", "skus-loja", "produtos-sku", "produtos", "lojas", "unidades-medida", "categorias"];
     created.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
     for (const [resource, id] of created) {
       try {

@@ -50,9 +50,7 @@ try {
   const product = await create("produtos", {
     nome: stamp,
     idCategoria: category.id,
-    idUnidadeMedida: unit.id,
     descricao: "Teste de integração local",
-    tipoVenda: "UNIDADE",
     status: "ATIVO",
   });
   const sku = await create("produtos-sku", {
@@ -62,10 +60,11 @@ try {
     ean13: "7891234567890",
     dun14: "17891234567890",
     descricaoApresentacao: "Pacote",
+    idUnidadeMedida:unit.id, tipoVenda:"UNIDADE",
   });
-  await create("produtos-loja", { idProduto: product.id, idLoja: store.id });
-  const price = await create("produtos-precos-loja", {
-    idProduto: product.id,
+  await create("skus-loja", { idProdutoSku: sku.id, idLoja: store.id });
+  const price = await create("skus-precos-loja", {
+    idProdutoSku: sku.id,
     idLoja: store.id,
     preco: 12.9,
     dataInicio: "2026-11-03T12:00:00-03:00",
@@ -79,13 +78,13 @@ try {
   );
   assert.ok(
     (
-      await api(`produtos-loja?idProduto=${product.id}&idLoja=${store.id}`)
+      await api(`skus-loja?idProduto=${product.id}&idLoja=${store.id}`)
     ).some((row) => row.idProduto === product.id && row.idLoja === store.id),
   );
   assert.ok(
     (
       await api(
-        `produtos-precos-loja?idProduto=${product.id}&idLoja=${store.id}`,
+        `skus-precos-loja?idProduto=${product.id}&idLoja=${store.id}`,
       )
     ).some((row) => row.id === price.id && row.preco === 12.9),
   );
@@ -94,14 +93,12 @@ try {
     body: {
       nome: `${stamp}-editado`,
       idCategoria: category.id,
-      idUnidadeMedida: unit.id,
-      descricao: "Atualizado",
-      tipoVenda: "PESO",
+        descricao: "Atualizado",
       status: "INATIVO",
     },
   });
   const reloaded = await api(`produtos/${product.id}`);
-  assert.equal(reloaded.tipoVenda, "PESO");
+  assert.equal(reloaded.tipoVenda, undefined);
   assert.equal(reloaded.status, "INATIVO");
   assert.equal(reloaded.nome, `${stamp}-editado`);
   console.log(

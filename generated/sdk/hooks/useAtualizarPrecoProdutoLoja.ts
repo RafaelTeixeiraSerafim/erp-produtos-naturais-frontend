@@ -9,7 +9,7 @@ import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tansta
 import { atualizarPrecoProdutoLoja } from '../clients/atualizarPrecoProdutoLoja'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
 
-export const atualizarPrecoProdutoLojaMutationKey = () => [{ url: '/api/produtos-precos-loja/:id' }] as const
+export const atualizarPrecoProdutoLojaMutationKey = () => [{ url: '/api/skus-precos-loja/:id' }] as const
 
 export function atualizarPrecoProdutoLojaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = atualizarPrecoProdutoLojaMutationKey()
@@ -22,7 +22,7 @@ export function atualizarPrecoProdutoLojaMutationOptions<TContext = unknown>(con
 }
 
 /**
- * {@link /api/produtos-precos-loja/:id}
+ * {@link /api/skus-precos-loja/:id}
  */
 export function useAtualizarPrecoProdutoLoja<TContext>(options: {
   mutation?: UseMutationOptions<AtualizarPrecoProdutoLojaStatus200, ResponseErrorConfig<Error>, AtualizarPrecoProdutoLojaOptions, TContext> & { client?: QueryClient },

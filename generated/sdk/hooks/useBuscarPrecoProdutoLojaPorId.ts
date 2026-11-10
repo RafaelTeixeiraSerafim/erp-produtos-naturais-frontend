@@ -9,7 +9,7 @@ import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from
 import { buscarPrecoProdutoLojaPorId } from '../clients/buscarPrecoProdutoLojaPorId'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const buscarPrecoProdutoLojaPorIdQueryKey = ({ path }: Omit<BuscarPrecoProdutoLojaPorIdOptions, 'headers'>) => [{ url: '/api/produtos-precos-loja/:id', params: path }] as const
+export const buscarPrecoProdutoLojaPorIdQueryKey = ({ path }: Omit<BuscarPrecoProdutoLojaPorIdOptions, 'headers'>) => [{ url: '/api/skus-precos-loja/:id', params: path }] as const
 
 type BuscarPrecoProdutoLojaPorIdQueryKey = ReturnType<typeof buscarPrecoProdutoLojaPorIdQueryKey>
 
@@ -24,7 +24,7 @@ export function buscarPrecoProdutoLojaPorIdQueryOptions({ path }: BuscarPrecoPro
 }
 
 /**
- * {@link /api/produtos-precos-loja/:id}
+ * {@link /api/skus-precos-loja/:id}
  */
 export function useBuscarPrecoProdutoLojaPorId<TData = BuscarPrecoProdutoLojaPorIdStatus200, TQueryData = BuscarPrecoProdutoLojaPorIdStatus200, TQueryKey extends QueryKey = BuscarPrecoProdutoLojaPorIdQueryKey>({ path }: { path: BuscarPrecoProdutoLojaPorIdOptions['path'] | (() => BuscarPrecoProdutoLojaPorIdOptions['path']) }, options: {
   query?: Partial<QueryObserverOptions<BuscarPrecoProdutoLojaPorIdStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },

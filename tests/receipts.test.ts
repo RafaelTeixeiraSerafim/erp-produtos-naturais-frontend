@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { receiptValues, receiptPayload, receiptDraftSchema, outstanding } from "@/lib/receipts";
 import { decodeRecovery } from "@/lib/recovery";
 const id = (n:number) => `00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
-const purchase = { id:id(1), idLoja:id(2), status:"RASCUNHO" as const, itens:[{ id:id(3), idProduto:id(4), quantidade:10, quantidadeRecebida:3 }] };
-const edited = { id:id(5), idCompra:id(1), status:"RASCUNHO" as const, versao:2, idUsuario:id(6), itens:[{ id:id(7), idItemCompra:id(3), idProduto:id(4), quantidade:2 }] };
+const purchase = { id:id(1), idLoja:id(2), status:"RASCUNHO" as const, itens:[{ id:id(3), idProdutoSku:id(4), quantidade:10, quantidadeRecebida:3 }] };
+const edited = { id:id(5), idCompra:id(1), status:"RASCUNHO" as const, versao:2, idUsuario:id(6), itens:[{ id:id(7), idItemCompra:id(3), idProdutoSku:id(4), quantidade:2 }] };
 const draft = () => ({ ...receiptValues(purchase), idUsuario:id(6), itens:receiptValues(purchase).itens.map(i => ({ ...i,selecionado:true,quantidade:"2,125" })) });
 describe("recebimentos",() => {
   it("inicia quantidades vazias sem selecionar operador ou linhas e usa pendentes",() => { const d=receiptValues(purchase); expect(d.idUsuario).toBe(""); expect(d.itens[0].quantidade).toBe(""); expect(d.itens[0].selecionado).toBe(false); expect(outstanding(purchase.itens[0])).toBe(7); });

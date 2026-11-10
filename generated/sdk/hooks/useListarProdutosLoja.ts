@@ -9,7 +9,7 @@ import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from
 import { listarProdutosLoja } from '../clients/listarProdutosLoja'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const listarProdutosLojaQueryKey = ({ query }: Omit<ListarProdutosLojaOptions, 'headers'> = {}) => [{ url: '/api/produtos-loja' }, ...(query ? [query] : [])] as const
+export const listarProdutosLojaQueryKey = ({ query }: Omit<ListarProdutosLojaOptions, 'headers'> = {}) => [{ url: '/api/skus-loja' }, ...(query ? [query] : [])] as const
 
 type ListarProdutosLojaQueryKey = ReturnType<typeof listarProdutosLojaQueryKey>
 
@@ -24,7 +24,7 @@ export function listarProdutosLojaQueryOptions({ query }: ListarProdutosLojaOpti
 }
 
 /**
- * {@link /api/produtos-loja}
+ * {@link /api/skus-loja}
  */
 export function useListarProdutosLoja<TData = ListarProdutosLojaStatus200, TQueryData = ListarProdutosLojaStatus200, TQueryKey extends QueryKey = ListarProdutosLojaQueryKey>({ query }: { query?: ListarProdutosLojaOptions['query'] | (() => ListarProdutosLojaOptions['query']) } = {}, options: {
   query?: Partial<QueryObserverOptions<ListarProdutosLojaStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },

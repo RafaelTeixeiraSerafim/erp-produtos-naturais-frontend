@@ -9,7 +9,7 @@ export type ProdutoLojaRequestDTO = {
    * Format: `uuid`
    * @type string
    */
-  idProduto: string;
+  idProdutoSku: string;
   /**
    * @description
    * Format: `uuid`

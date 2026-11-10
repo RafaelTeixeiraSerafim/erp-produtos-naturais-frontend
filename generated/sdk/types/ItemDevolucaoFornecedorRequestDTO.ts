@@ -21,7 +21,7 @@ export type ItemDevolucaoFornecedorRequestDTO = {
    * Format: `uuid`
    * @type string | undefined
    */
-  idProduto?: string;
+  idProdutoSku?: string;
   quantidade?: number;
   observacao?: string;
 };

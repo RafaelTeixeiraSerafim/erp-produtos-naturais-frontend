@@ -4,8 +4,9 @@ import { render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { Inventory } from "@/components/inventory";
 const state = vi.hoisted(() => ({ stockError: false, balanceError: false, rows: [] as object[] }));
-vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams("idProduto=produto&idLoja=loja&quantidade=zero&ordem=nome-desc"), useRouter: () => ({ replace: vi.fn() }), usePathname: () => "/estoque" }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams("idProduto=produto&idProdutoSku=sku&idLoja=loja&quantidade=zero&ordem=nome-desc"), useRouter: () => ({ replace: vi.fn() }), usePathname: () => "/estoque" }));
 const result = (data: unknown) => ({ data, isPending: false, isError: false, refetch: vi.fn(), dataUpdatedAt: 0 });
+vi.mock("@/lib/skus", () => ({useSkuCatalog: () => result(undefined)}));
 vi.mock("@/generated/sdk/hooks/useListarProdutos", () => ({ useListarProdutos: () => result(undefined) }));
 vi.mock("@/generated/sdk/hooks/useListarLojas", () => ({ useListarLojas: () => result(undefined) }));
 vi.mock("@/generated/sdk/hooks/useListarUnidadesMedida", () => ({ useListarUnidadesMedida: () => result(undefined) }));
@@ -22,9 +23,9 @@ it("restaura filtros e distingue ausência de registro de saldo zero", () => {
   expect(screen.getByText("Sem registro de estoque")).toBeVisible();
 });
 it("mantém linhas com IDs quando faltam consultas de nomes e o saldo falha", () => {
-  state.balanceError = true; state.rows = [{ id: "estoque", idProduto: "produto", idLoja: "loja", quantidadeAtual: 0 }];
+  state.balanceError = true; state.rows = [{ id: "estoque", idProduto: "produto", idProdutoSku:"sku", idLoja: "loja", quantidadeAtual: 0 }];
   render(<Inventory />);
-  expect(screen.getByRole("link", { name: /^produto$/ })).toHaveAttribute("href", "/produtos/produto");
+  expect(screen.getByRole("link", { name: /^produto · sku$/ })).toHaveAttribute("href", "/produtos/produto");
   expect(screen.queryByText("Sem registro de estoque")).not.toBeInTheDocument();
   expect(screen.getByLabelText("Saldo exato")).not.toHaveTextContent("0");
 });

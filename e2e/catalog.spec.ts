@@ -10,8 +10,8 @@ async function mockCatalog(page: Page, seed: Database = {}) {
     "unidades-medida": [],
     lojas: [],
     "produtos-sku": [],
-    "produtos-loja": [],
-    "produtos-precos-loja": [],
+    "skus-loja": [],
+    "skus-precos-loja": [],
     ...seed,
   };
   let count = 100;
@@ -46,14 +46,14 @@ async function mockCatalog(page: Page, seed: Database = {}) {
           json: { message: "SKU já cadastrado." },
         });
       if (
-        resource === "produtos-loja" &&
-        rows.some((x) => x.idProduto === v.idProduto && x.idLoja === v.idLoja)
+        resource === "skus-loja" &&
+        rows.some((x) => x.idProdutoSku === v.idProdutoSku && x.idLoja === v.idLoja)
       )
         return route.fulfill({
           status: 409,
           json: { message: "Produto já vinculado à loja." },
         });
-      const row = { ...v, id: uid(count++) };
+      const row = { ...v, ...(v.idProdutoSku ? {idProduto:db["produtos-sku"].find(s=>s.id===v.idProdutoSku)?.idProduto}:{}), id: uid(count++) };
       rows.push(row);
       return route.fulfill({ status: 201, json: row });
     }
@@ -64,7 +64,8 @@ async function mockCatalog(page: Page, seed: Database = {}) {
           status: 404,
           json: { message: "Não encontrado" },
         });
-      rows[index] = { ...body(), id };
+      const v=body();
+      rows[index] = { ...v, ...(v.idProdutoSku ? {idProduto:db["produtos-sku"].find(s=>s.id===v.idProdutoSku)?.idProduto}:{}), id };
       return route.fulfill({ json: rows[index] });
     }
     if (req.method() === "DELETE") {
@@ -104,7 +105,6 @@ const category = { id: uid(1), nome: "Grãos" },
     nomeCategoria: "Grãos",
     idUnidadeMedida: uid(2),
     siglaUnidadeMedida: "kg",
-    tipoVenda: "UNIDADE",
     status: "ATIVO",
     descricao: "",
   };
@@ -113,6 +113,7 @@ const seed = () => ({
   "unidades-medida": [{ ...unit }],
   lojas: [{ ...store }],
   produtos: [{ ...product }],
+  "produtos-sku":[{id:uid(5),idProduto:product.id,sku:"SEED",descricaoApresentacao:"Granel",idUnidadeMedida:unit.id,tipoVenda:"PESO",status:"ATIVO"}],
 });
 async function navigate(page: Page, path: string) {
   await page.goto(path);
@@ -157,25 +158,24 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   await page
     .getByLabel("Categoria", { exact: false })
     .selectOption({ label: "Grãos" });
-  await page
-    .getByLabel("Unidade de medida")
-    .selectOption({ label: "Quilograma (kg)" });
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Aveia integral", exact: true }),
   ).toBeVisible();
   expect(db.produtos[0]).toMatchObject({
     status: "ATIVO",
-    tipoVenda: "UNIDADE",
   });
   await page.getByRole("button", { name: "Novo SKU" }).click();
   await page.getByRole("textbox", { name: "SKU", exact: true }).fill("AVE-01");
+  await page.getByLabel("Descrição da apresentação").fill("Granel");
+  await page.getByLabel("Unidade de medida").selectOption({label:"Quilograma (kg)"});
   await page.getByLabel("EAN-13").fill("7891234567890");
   await saveDialog(page);
   await expect(
     page.getByRole("cell", { name: "AVE-01", exact: true }),
   ).toBeVisible();
   expect(db["produtos-sku"][0]).not.toHaveProperty("idLoja");
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Lojas", exact: true }).click();
   await page
     .getByRole("button", { name: "Vincular loja", exact: true })
@@ -185,6 +185,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
     .getByLabel("Loja")
     .selectOption({ label: "Loja Centro" });
   await saveDialog(page);
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Preços" }).click();
   await page.getByRole("button", { name: "Novo preço" }).click();
   await page
@@ -196,7 +197,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   await page.getByLabel("Fim da validade").fill("2026-11-10T12:00");
   await saveDialog(page);
   await expect(page.getByRole("cell", { name: /12,90/ })).toBeVisible();
-  expect(db["produtos-precos-loja"][0].dataInicio).toMatch(/Z$/);
+  expect(db["skus-precos-loja"][0].dataInicio).toMatch(/Z$/);
   await page.getByRole("button", { name: "Editar preço", exact: true }).click();
   await page.getByLabel("Preço (R$)").fill("14,50");
   await saveDialog(page);
@@ -207,6 +208,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   await expect(page).toHaveURL(new RegExp(`/produtos/${db.produtos[0].id}$`));
   await page.reload();
   await expect(page.getByText("Inativo", { exact: true })).toBeVisible();
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Preços" }).click();
   await expect(page.getByRole("cell", { name: /14,50/ })).toBeVisible();
   await page
@@ -217,6 +219,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
     .getByRole("button", { name: "Excluir", exact: true })
     .click();
   await expect(page.getByText("Nenhum preço cadastrado")).toBeVisible();
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Lojas", exact: true }).click();
   await page.getByRole("button", { name: "Desvincular Loja Centro" }).click();
   await page
@@ -249,6 +252,8 @@ test("SKU duplicado mantém os dados e o modal aberto", async ({ page }) => {
   await navigate(page, `/produtos/${product.id}`);
   await page.getByRole("button", { name: "Novo SKU" }).click();
   await page.getByRole("textbox", { name: "SKU", exact: true }).fill("AVE-01");
+  await page.getByLabel("Descrição da apresentação").fill("Granel");
+  await page.getByLabel("Unidade de medida").selectOption({label:"Quilograma (kg)"});
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Salvar", exact: true })
@@ -263,9 +268,10 @@ test("vínculo duplicado exibe erro e permite tentar novamente", async ({
 }) => {
   await mockCatalog(page, {
     ...seed(),
-    "produtos-loja": [{ id: uid(6), idProduto: product.id, idLoja: store.id }],
+    "skus-loja": [{ id: uid(6), idProdutoSku:uid(5), idProduto: product.id, idLoja: store.id }],
   });
   await navigate(page, `/produtos/${product.id}`);
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Lojas", exact: true }).click();
   await page
     .getByRole("button", { name: "Vincular loja", exact: true })
@@ -360,13 +366,14 @@ test("filtra relações pelo produto e pela loja mesmo se a API retornar tudo", 
 }) => {
   await mockCatalog(page, {
     ...seed(),
-    "produtos-precos-loja": [
-      { id: uid(8), idProduto: product.id, idLoja: store.id, preco: 10 },
-      { id: uid(9), idProduto: uid(99), idLoja: store.id, preco: 99 },
-      { id: uid(10), idProduto: product.id, idLoja: uid(98), preco: 88 },
+    "skus-precos-loja": [
+      { id: uid(8), idProdutoSku:uid(5), idProduto: product.id, idLoja: store.id, preco: 10 },
+      { id: uid(9), idProdutoSku:uid(55), idProduto: uid(99), idLoja: store.id, preco: 99 },
+      { id: uid(10), idProdutoSku:uid(5), idProduto: product.id, idLoja: uid(98), preco: 88 },
     ],
   });
   await navigate(page, `/produtos/${product.id}`);
+  await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
   await page.getByRole("tab", { name: "Preços" }).click();
   await page.getByLabel("Filtrar por loja").selectOption(store.id);
   await expect(page.getByRole("cell", { name: /10,00/ })).toBeVisible();

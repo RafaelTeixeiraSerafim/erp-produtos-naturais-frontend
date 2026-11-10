@@ -6,16 +6,17 @@ async function mock(page: Page) {
     const url = new URL(route.request().url());
     const resource = url.pathname.split("/")[2];
     state.requests.push(url.pathname + url.search);
-    const stocks = Array.from({ length: 25 }, (_, i) => ({ id: id(i + 100), idProduto: id(i + 1), idLoja: id(i % 2 + 50), quantidadeAtual: i === 0 ? state.amount : i === 1 ? 0 : -0.125, atualizadoEm: "2026-11-04T03:00:00Z" }));
+    const stocks = Array.from({ length: 25 }, (_, i) => ({ id: id(i + 100), idProduto: id(i + 1), idProdutoSku:id(i+1), idLoja: id(i % 2 + 50), quantidadeAtual: i === 0 ? state.amount : i === 1 ? 0 : -0.125, atualizadoEm: "2026-11-04T03:00:00Z" }));
     const lookups: Record<string, unknown> = {
       produtos: stocks.map((s, i) => ({ id: s.idProduto, nome: `Produto ${String(i).padStart(2, "0")}`, idUnidadeMedida: id(70) })),
+      "produtos-sku":stocks.map((s,i)=>({id:s.idProdutoSku,idProduto:s.idProduto,nomeProduto:`Produto ${String(i).padStart(2,"0")}`,sku:`SKU${i}`,descricaoApresentacao:"Granel",idUnidadeMedida:id(70),siglaUnidadeMedida:"kg",tipoVenda:"PESO",status:"ATIVO"})),
       lojas: [{ id: id(50), nomeFantasia: "Centro" }, { id: id(51), nomeFantasia: "Bairro" }],
       "unidades-medida": [{ id: id(70), sigla: "kg" }],
     };
     if (lookups[resource]) return route.fulfill({ status: state.lookupOffline ? 502 : 200, json: state.lookupOffline ? { message: "Consulta indisponível" } : lookups[resource] });
     state.calls++;
     if (state.offline) return route.fulfill({ status: 502, json: { message: "Estoque indisponível" } });
-    if (url.pathname.endsWith("/saldo")) return route.fulfill({ json: { quantidadeAtual: url.searchParams.get("idProduto") === id(1) && url.searchParams.get("idLoja") === id(50) ? state.amount : 0 } });
+    if (url.pathname.endsWith("/saldo")) return route.fulfill({ json: { quantidadeAtual: url.searchParams.get("idProdutoSku") === id(1) && url.searchParams.get("idLoja") === id(50) ? state.amount : 0 } });
     return route.fulfill({ json: state.empty ? [] : resource === "estoques" ? stocks : stocks.map((s, i) => ({ ...s, quantidade: s.quantidadeAtual, tipo: "AJUSTE_ENTRADA", observacao: `Observação completa ${i}`, idUsuario: id(80), dataMovimentacao: ["2026-11-04T02:59:59Z", "2026-11-04T03:00:00Z", "2026-11-05T02:59:59Z", "2026-11-05T03:00:00Z"][i % 4] })) });
   });
   return state;
@@ -30,7 +31,7 @@ test("saldos: paginação, filtros locais, URL, links, saldo exato e atualizaç�
   await expect(page.getByText("Página 2 de 2", { exact: false })).toBeVisible();
   await page.getByLabel("Buscar por nome").fill("Produto 00");
   await expect(page).not.toHaveURL(/pagina=/);
-  await expect(page.getByRole("link", { name: "Produto 00", exact: true })).toHaveAttribute("href", `/produtos/${id(1)}`);
+  await expect(page.getByRole("link", { name: /^Produto 00/ })).toHaveAttribute("href", `/produtos/${id(1)}`);
   await page.getByLabel("Buscar por nome").fill("");
   await page.getByLabel("Quantidade", { exact: true }).selectOption("zero");
   await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -39,11 +40,11 @@ test("saldos: paginação, filtros locais, URL, links, saldo exato e atualizaç�
   await page.getByLabel("Quantidade", { exact: true }).selectOption("");
   await page.getByLabel("Ordenar", { exact: true }).selectOption("nome-desc");
   await expect(page.locator("tbody tr").first()).toContainText("Produto 24");
-  await page.getByLabel("Produto", { exact: true }).selectOption(id(1));
+  await page.getByLabel("SKU", { exact: true }).selectOption(id(1));
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await page.getByLabel("Loja", { exact: true }).selectOption(id(50));
   await expect(page.getByLabel("Saldo exato")).toContainText("1.234,567");
-  expect(state.requests).toContain(`/api/estoques?idProduto=${id(1)}`);
+  expect(state.requests).toContain(`/api/estoques?idProdutoSku=${id(1)}`);
   const calls = state.calls;
   state.amount = 1234.125;
   await page.getByRole("button", { name: "Atualizar", exact: true }).click();
@@ -51,7 +52,7 @@ test("saldos: paginação, filtros locais, URL, links, saldo exato e atualizaç�
   await expect(page.getByLabel("Saldo exato")).toContainText("1.234,125");
   await expect(page.getByRole("status")).toContainText("Última atualização bem-sucedida");
   await page.getByRole("cell").getByRole("link", { name: "Ver movimentações" }).click();
-  await expect(page).toHaveURL(new RegExp(`movimentacoes.*idProduto=${id(1)}.*idLoja=${id(50)}`));
+  await expect(page).toHaveURL(new RegExp(`movimentacoes.*idLoja=${id(50)}.*idProdutoSku=${id(1)}`));
   await page.reload();
   await expect(page.getByLabel("Produto", { exact: true })).toHaveValue(id(1));
   await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -78,7 +79,7 @@ test("movimentações: loja isolada, datas inclusivas, tipo e detalhes", async (
 });
 test("zero, ausência, falha e retry preservam resultados independentes", async ({ page }) => {
   const state = await mock(page);
-  await page.goto(`/estoque?idProduto=${id(2)}&idLoja=${id(51)}`);
+  await page.goto(`/estoque?idProdutoSku=${id(2)}&idLoja=${id(51)}`);
   await expect(page.getByRole("cell", { name: "0", exact: true })).toBeVisible();
   await expect(page.getByText("Sem registro de estoque")).toHaveCount(0);
   await page.getByLabel("Loja", { exact: true }).selectOption(id(50));
@@ -107,5 +108,5 @@ test("falha inicial recuperável e IDs com lookup indisponível", async ({ page 
   await expect(page.getByRole("region").getByRole("alert")).toContainText("Estoque indisponível");
   state.offline = false;
   await page.getByRole("region").getByRole("button", { name: "Tentar novamente" }).click();
-  await expect(page.getByRole("link", { name: id(1), exact: true })).toBeVisible();
+  await expect(page.locator(`a[href="/produtos/${id(1)}"]`)).toBeVisible();
 });

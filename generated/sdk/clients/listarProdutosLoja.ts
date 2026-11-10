@@ -8,10 +8,10 @@ import type { ListarProdutosLojaOptions, ListarProdutosLojaResponses } from '../
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * {@link /api/produtos-loja}
+ * {@link /api/skus-loja}
  */
 export function listarProdutosLoja<ThrowOnError extends boolean = true>(options: Options<ListarProdutosLojaOptions, ThrowOnError> = {}): Unwrappable<RequestResult<ListarProdutosLojaResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/api/produtos-loja', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ListarProdutosLojaResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/api/skus-loja', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ListarProdutosLojaResponses, ThrowOnError>>)
 }

@@ -1,4 +1,5 @@
 "use client";
+import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
 import Link from "next/link";
 import { useDocumentRecovery, MissingSelection, selectedExists } from "./document-recovery";
@@ -12,7 +13,7 @@ import { useOperator, useIdentity, useCan } from "./auth";
 import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useSkuCatalog as useListarProdutos, snapshotLabel } from "@/lib/skus";
 import type { VendaResponseDTO } from "@/generated/sdk/types/VendaResponseDTO";
 import { atualizarVenda } from "@/generated/sdk/clients/atualizarVenda";
 import { concluirVenda } from "@/generated/sdk/clients/concluirVenda";
@@ -369,10 +370,7 @@ export function SaleRecord({ id }: { id: string }) {
           {row.itens?.map((i, index) => (
             <TableRow key={i.id || index}>
               <TableCell>
-                {lookups.products.data?.find((p) => p.id === i.idProduto)
-                  ?.nome ||
-                  i.idProduto ||
-                  "—"}
+                {snapshotLabel(i)}
               </TableCell>
               <TableCell>{quantity(i.quantidade)}</TableCell>
               <TableCell>{currency(i.precoUnitario)}</TableCell>
@@ -382,7 +380,7 @@ export function SaleRecord({ id }: { id: string }) {
                 {i.unidadeSiglaSnapshot || `Histórico indisponível; catálogo atual: ${lookups.units.data?.find(
                   (u) =>
                     u.id ===
-                    lookups.products.data?.find((p) => p.id === i.idProduto)
+                    lookups.products.data?.find((p) => p.id === i.idProdutoSku)
                       ?.idUnidadeMedida,
                 )?.sigla || "—"}`}
               </TableCell>
@@ -424,7 +422,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
     lookups.products,
     lookups.users,
   ].every((q) => q.isSuccess && !q.isFetching && !!q.data?.length);
-  const selectionsValid = selectedExists(draft.idCliente, lookups.customers.data) && selectedExists(draft.idUsuario, lookups.users.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProduto, lookups.products.data));
+  const selectionsValid = selectedExists(draft.idCliente, lookups.customers.data) && selectedExists(draft.idUsuario, lookups.users.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProdutoSku, lookups.products.data));
   let total: number | undefined,
     roundingDifference = false;
   try {
@@ -485,7 +483,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
       />
       <LookupErrors lookups={lookups} />
       {recovery.ui}
-      {(changed || conflicted) && <Panel className="space-y-3 p-4"><p role="alert">A venda salva mudou. Os valores digitados foram preservados. Compare os dados atuais antes de reenviar.</p><p>Salvo no servidor: cliente {row?.nomeCliente || row?.idCliente}, loja {row?.nomeLoja || row?.idLoja}. Total: {currency(row?.valorTotal)}.</p><p>Observação salva: {row?.observacao || "—"}</p><ul>{row?.itens?.map(i=><li key={i.id}>{i.nomeProduto || i.idProduto}: {quantity(i.quantidade)} × {currency(i.precoUnitario)}, desconto {currency(i.desconto)}.</li>)}</ul><Button disabled={unavailable || immutable} onClick={() => { recovery.rebase(String(row?.versao)); setDraft({...draft,baseVersion:row?.versao});setConflicted(false); }}>Usar versão atual e revisar valores</Button></Panel>}
+      {(changed || conflicted) && <Panel className="space-y-3 p-4"><p role="alert">A venda salva mudou. Os valores digitados foram preservados. Compare os dados atuais antes de reenviar.</p><p>Salvo no servidor: cliente {row?.nomeCliente || row?.idCliente}, loja {row?.nomeLoja || row?.idLoja}. Total: {currency(row?.valorTotal)}.</p><p>Observação salva: {row?.observacao || "—"}</p><ul>{row?.itens?.map(i=><li key={i.id}>{snapshotLabel(i, i.nomeProduto)}: {quantity(i.quantidade)} × {currency(i.precoUnitario)}, desconto {currency(i.desconto)}.</li>)}</ul><Button disabled={unavailable || immutable} onClick={() => { recovery.rebase(String(row?.versao)); setDraft({...draft,baseVersion:row?.versao});setConflicted(false); }}>Usar versão atual e revisar valores</Button></Panel>}
       {immutable && <p role="alert">Esta venda é somente leitura. <Link href={`/vendas/${row?.id}`}>Ver venda</Link></p>}
       {draft.pending && !savedLink && <p role="status">Solicitação guardada para repetição segura com a mesma chave e os mesmos dados.</p>}
       {!selectionsValid && <p role="alert">Há seleções indisponíveis. Selecione novamente os cadastros indicados antes de salvar.</p>}
@@ -583,23 +581,23 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                 <h2 className="col-span-full font-semibold">
                   Item {index + 1}
                 </h2>
-                <label>
-                  Produto *
-                  <Select
-                    aria-label="Produto *"
+                <div>
+                  SKU *
+                  <SkuSelect
+                    aria-label="SKU *"
                     required
-                    value={item.idProduto}
-                    onChange={(e) => change("idProduto", e.target.value)}
+                    value={item.idProdutoSku}
+                    onChange={(e) => change("idProdutoSku", e.target.value)}
                   >
                     <option value="">Selecione…</option>
-                    <MissingSelection value={item.idProduto} rows={lookups.products.data} />
-                    {lookups.products.data?.map((p) => (
+                    <MissingSelection value={item.idProdutoSku} rows={lookups.products.data} />
+                    {lookups.products.data?.filter(p=>p.status === "ATIVO").map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome}
                       </option>
                     ))}
-                  </Select>
-                </label>
+                  </SkuSelect>
+                </div>
                 {(["quantidade", "precoUnitario", "desconto"] as const).map(
                   (key) => (
                     <label key={key}>
@@ -691,12 +689,12 @@ function SaleActions({ row, reload, unavailable }: {row:VendaResponseDTO;reload:
     {saved && <p role="status">Operação concluída: {saleStatus(saved.status)}. {refreshFailed && "Não foi possível atualizar a tela; recarregue para consultar o registro salvo."}</p>}
     {current.status==="ABERTA" && !row.legado ? <>
       <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href={`/vendas/${row.id}/editar`}>Editar venda</Link></Button><Button disabled={busy || unavailable || !!saved} onClick={()=>setReview("concluir")}>Concluir venda</Button><Button variant="outline" disabled={busy || unavailable || !!saved} onClick={()=>setReview("cancelar")}>Cancelar venda</Button></div>
-      <p>Estoque atual por produto nesta loja (consulta informativa, sem reserva; a disponibilidade será validada na confirmação):</p>
-      {stock.isPending ? <Loading /> : stock.isError ? <ErrorNotice error={stock.error} retry={()=>void stock.refetch()} /> : <ul>{[...new Set(row.itens?.map(i=>i.idProduto))].map(id=><li key={id}>{row.itens?.find(i=>i.idProduto===id)?.nomeProduto || id}: {quantity(stock.data?.find(s=>s.idProduto===id && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0)}</li>)}</ul>}
+      <p>Estoque atual por SKU nesta loja (consulta informativa, sem reserva; a disponibilidade será validada na confirmação):</p>
+      {stock.isPending ? <Loading /> : stock.isError ? <ErrorNotice error={stock.error} retry={()=>void stock.refetch()} /> : <ul>{[...new Set(row.itens?.map(i=>i.idProdutoSku))].map(id=><li key={id}>{row.itens?.find(i=>i.idProdutoSku===id)?.nomeProduto || id}: {quantity(stock.data?.find(s=>s.idProdutoSku===id && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0)}</li>)}</ul>}
     </> : <p>Venda {saleStatus(current.status).toLocaleLowerCase()}: somente leitura.</p>}
     <Dialog open={!!review} onOpenChange={open=>{if(!open && !busy)setReview(null);}}><DialogContent><DialogTitle>{review==="concluir" ? "Revisar e concluir venda" : "Cancelar venda aberta"}</DialogTitle><DialogDescription>{review==="concluir" ? "A confirmação registra a venda e a saída do estoque. Nenhum pagamento está sendo registrado. Após concluir, a venda será somente leitura." : "O cancelamento preserva o histórico e não movimenta o estoque."}</DialogDescription>
       <p>Loja: {row.nomeLoja || row.idLoja}</p>
-      {review==="concluir" ? <><ul>{row.itens?.map(i=><li key={i.id}>{i.nomeProduto || i.idProduto}: {quantity(i.quantidade)} {i.unidadeSiglaSnapshot || "(unidade histórica indisponível)"} · {currency(i.totalItem)}</li>)}</ul><p>Subtotal salvo: {currency(row.subtotal)} · Descontos: {currency(row.descontoTotal)}</p><p>Total salvo: {currency(row.valorTotal)}</p></> : <label>Motivo do cancelamento<Textarea value={reason} onChange={e=>setReason(e.target.value)} /></label>}
+      {review==="concluir" ? <><ul>{row.itens?.map(i=><li key={i.id}>{snapshotLabel(i, i.nomeProduto)}: {quantity(i.quantidade)} {i.unidadeSiglaSnapshot || "(unidade histórica indisponível)"} · {currency(i.totalItem)}</li>)}</ul><p>Subtotal salvo: {currency(row.subtotal)} · Descontos: {currency(row.descontoTotal)}</p><p>Total salvo: {currency(row.valorTotal)}</p></> : <label>Motivo do cancelamento<Textarea value={reason} onChange={e=>setReason(e.target.value)} /></label>}
       <div className="flex gap-3"><Button disabled={busy || unavailable || (review==="cancelar" && !reason.trim())} onClick={()=>void perform()}>{review==="concluir" ? "Confirmar saída de estoque" : "Confirmar cancelamento"}</Button><Button variant="outline" disabled={busy} onClick={()=>setReview(null)}>Voltar</Button></div>
     </DialogContent></Dialog>
   </div>;

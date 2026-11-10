@@ -13,7 +13,7 @@ const state = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: state.push }) }));
 const id = "11111111-1111-4111-8111-111111111111";
 const result = () => ({
-  data: [{ id, nome: "Ana", nomeFantasia: "Centro" }],
+  data: [{ id, nome: "Ana", status:"ATIVO", nomeFantasia: "Centro" }],
   isSuccess: true,
   isError: false,
 });
@@ -23,8 +23,8 @@ vi.mock("@/generated/sdk/hooks/useListarClientes", () => ({
 vi.mock("@/generated/sdk/hooks/useListarLojas", () => ({
   useListarLojas: () => result(),
 }));
-vi.mock("@/generated/sdk/hooks/useListarProdutos", () => ({
-  useListarProdutos: () => result(),
+vi.mock("@/lib/skus", () => ({
+  snapshotLabel: (i: {idProdutoSku?:string}) => i.idProdutoSku, useSkuCatalog: () => result(),
 }));
 vi.mock("@/generated/sdk/hooks/useListarUnidadesMedida", () => ({
   useListarUnidadesMedida: () => result(),
@@ -70,7 +70,7 @@ function mount(record = false) {
   return client;
 }
 function fill() {
-  for (const label of ["Cliente *", "Loja *", "Produto *"])
+  for (const label of ["Cliente *", "Loja *", "SKU *"])
     fireEvent.change(screen.getByLabelText(label), { target: { value: id } });
   fireEvent.change(screen.getByLabelText(/Quantidade/), {
     target: { value: "1,125" },

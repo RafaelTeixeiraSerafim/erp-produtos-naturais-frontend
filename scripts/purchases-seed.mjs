@@ -33,13 +33,13 @@ export function purchasesSeed({ base, sql, inventory }) {
         status: "RASCUNHO",
         itens: [
           {
-            idProduto: inventory.product,
+            idProdutoSku: inventory.product,
             quantidade: 1.125,
             custoUnitario: 2.3456,
             desconto: 0.1,
           },
           {
-            idProduto: inventory.otherProduct,
+            idProdutoSku: inventory.otherProduct,
             quantidade: 0.001,
             custoUnitario: 5,
             desconto: 0,
@@ -89,7 +89,7 @@ export function purchasesSeed({ base, sql, inventory }) {
       );
       const reports = [];
       for (let i = 0; i < 25; i++) {
-        const row = await api("compras", "POST", { ...body, dataCompra: "2020-06-15T12:00:00-03:00", itens: [{ idProduto: inventory.product, quantidade: 1, custoUnitario: 2.34, desconto: 0 }] });
+        const row = await api("compras", "POST", { ...body, dataCompra: "2020-06-15T12:00:00-03:00", itens: [{ idProdutoSku: inventory.product, quantidade: 1, custoUnitario: 2.34, desconto: 0 }] });
         assert.match(row.id, /^[0-9a-f-]{36}$/i);
         const status = ["RASCUNHO", "PARCIALMENTE_RECEBIDA", "RECEBIDA", "CANCELADA"][i % 4];
         await sql(`UPDATE compra SET status = '${status}' WHERE id = '${row.id}'`);

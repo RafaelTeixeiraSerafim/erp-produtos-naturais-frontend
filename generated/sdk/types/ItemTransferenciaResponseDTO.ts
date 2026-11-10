@@ -16,6 +16,14 @@ export type ItemTransferenciaResponseDTO = {
    * @type string | undefined
    */
   idProduto?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idProdutoSku?: string;
+  skuCodigoSnapshot?: string;
+  skuApresentacaoSnapshot?: string;
   nomeProduto?: string;
   quantidade?: number;
   unidadeSiglaSnapshot?: string;

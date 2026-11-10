@@ -11,7 +11,7 @@ import {
 } from "@/lib/purchases";
 const id = "11111111-1111-4111-8111-111111111111";
 const item = {
-  idProduto: id,
+  idProdutoSku: id,
   quantidade: "1,125",
   custoUnitario: "2,3456",
   desconto: "0,10",
@@ -115,7 +115,7 @@ it("monta criação e PUT completo, preservando IDs e deixando operador ao servi
     observacao: "Teste",
     itens: [
       {
-        idProduto: id,
+        idProdutoSku: id,
         quantidade: 1.125,
         custoUnitario: 2.3456,
         desconto: 0.1,
@@ -132,7 +132,7 @@ it("monta criação e PUT completo, preservando IDs e deixando operador ao servi
     itens: [
       {
         id,
-        idProduto: id,
+        idProdutoSku: id,
         quantidade: 1.125,
         custoUnitario: 2.3456,
         desconto: 0.1,

@@ -1,5 +1,7 @@
 # Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos, vendas e transferências
 
+Etapa atual: **13 — SKU como variante comercial**, nas branches `stage13-sku-variants`. Produto agrupa variantes; documentos, saldos e preços exigem SKU. Veja [contrato e reset de desenvolvimento](docs/STAGE13_SKU_VARIANTS.md) e [evidências de aceite](docs/STAGE13_RELEASE.md). As seções de etapas anteriores abaixo são registros históricos.
+
 Frontend administrativo em português para visão geral, catálogo, consulta de estoque, fornecedores/compras, clientes/vendas operacionais, transferências entre lojas e relatórios CSV de produtos naturais. Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, componentes no padrão shadcn/ui com Radix, Lucide, React Hook Form, Zod, Axios e TanStack Query.
 
 

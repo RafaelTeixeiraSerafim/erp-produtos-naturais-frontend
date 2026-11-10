@@ -16,6 +16,12 @@ export type ProdutoLojaResponseDTO = {
    * @type string | undefined
    */
   idProduto?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idProdutoSku?: string;
   nomeProduto?: string;
   /**
    * @description

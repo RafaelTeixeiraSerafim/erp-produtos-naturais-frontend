@@ -21,6 +21,12 @@ export type ProdutoPrecoLojaResponseDTO = {
    * Format: `uuid`
    * @type string | undefined
    */
+  idProdutoSku?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
   idLoja?: string;
   preco?: number;
   /**

@@ -28,7 +28,7 @@ export type ItemAjusteRequestDTO = {
    * Format: `uuid`
    * @type string
    */
-  idProduto: string;
+  idProdutoSku: string;
   tipo: ItemAjusteRequestDTOTipoEnumKey;
   /**
    * @minimum 0.001

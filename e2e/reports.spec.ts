@@ -10,6 +10,8 @@ async function setup(page: Page) {
     vendas:Array.from({length:25},(_,i)=>({id:id(400+i),idLoja:id(1),idCliente:id(5),idUsuario:id(6),dataVenda:"2026-11-05T10:00:00",status:["ABERTA","CONCLUIDA","CANCELADA"][i%3],subtotal:0.1,descontoTotal:0,valorTotal:0.1})),
     compras:Array.from({length:25},(_,i)=>({id:id(500+i),idLoja:id(1),idFornecedor:id(7),dataCompra:"2026-11-05T10:00:00",status:["RASCUNHO","RECEBIDA","PARCIALMENTE_RECEBIDA","CANCELADA"][i%4],valorTotal:0.2})),
   };
+  db["produtos-sku"]=Array.from({length:25},(_,i)=>({id:id(100+i),idProduto:id(100+i),nomeProduto:`Produto ${String(i).padStart(2,"0")}`,sku:`SKU${i}`,descricaoApresentacao:"Granel",idUnidadeMedida:id(4),siglaUnidadeMedida:"kg",tipoVenda:"PESO",status:"ATIVO"}));
+  for(const resource of ["estoques","movimentacoes-estoque"])db[resource]=db[resource].map((r)=>({...r,idProdutoSku:(r as {idProduto:string}).idProduto}));
   await page.route("**/api/**", route => route.fulfill({json:db[new URL(route.request().url()).pathname.replace("/api/","")] || []}));
 }
 test("início, filtros na URL, escopos, links e navegação", async ({page}, info) => {

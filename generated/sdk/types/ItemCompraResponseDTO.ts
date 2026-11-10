@@ -19,6 +19,15 @@ export type ItemCompraResponseDTO = {
    * @type string | undefined
    */
   idProduto?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idProdutoSku?: string;
+  skuCodigoSnapshot?: string;
+  skuApresentacaoSnapshot?: string;
+  unidadeSiglaSnapshot?: string;
   quantidade?: number;
   custoUnitario?: number;
   desconto?: number;

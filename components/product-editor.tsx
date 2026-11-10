@@ -10,21 +10,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useListarCategorias } from "@/generated/sdk/hooks/useListarCategorias";
-import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { useBuscarProdutoPorId } from "@/generated/sdk/hooks/useBuscarProdutoPorId";
 import { Heading, Loading, ErrorNotice } from "@/components/feedback";
 import { RecordForm } from "@/components/record-form";
 export function ProductEditor({ id }: { id?: string }) {
   const router = useRouter();
-  const categories = useListarCategorias(),
-    units = useListarUnidadesMedida();
+  const categories = useListarCategorias();
   const product = useBuscarProdutoPorId(
     { path: { id: id || "" } },
     { query: { enabled: !!id } },
   );
   const loading =
-    categories.isPending || units.isPending || (!!id && product.isPending);
-  const hasPrerequisites = !!categories.data?.length && !!units.data?.length;
+    categories.isPending || (!!id && product.isPending);
+  const hasPrerequisites = !!categories.data?.length;
   return (
     <>
       <Link
@@ -40,18 +38,12 @@ export function ProductEditor({ id }: { id?: string }) {
       />
       {loading ? (
         <Loading />
-      ) : categories.isError || units.isError || (id && product.isError) ? (
+      ) : categories.isError || (id && product.isError) ? (
         <>
           {categories.isError && (
             <ErrorNotice
               error={categories.error}
               retry={() => void categories.refetch()}
-            />
-          )}{" "}
-          {units.isError && (
-            <ErrorNotice
-              error={units.error}
-              retry={() => void units.refetch()}
             />
           )}{" "}
           {id && product.isError && (
@@ -67,8 +59,7 @@ export function ProductEditor({ id }: { id?: string }) {
             <Notice>
               <NoticeDescription>
                 Antes de cadastrar produtos, crie pelo menos uma{" "}
-                <Link href="/categorias">categoria</Link> e uma{" "}
-                <Link href="/unidades-medida">unidade de medida</Link>.
+                <Link href="/categorias">categoria</Link>.
               </NoticeDescription>
             </Notice>
           )}
@@ -90,10 +81,6 @@ export function ProductEditor({ id }: { id?: string }) {
                 idCategoria: categories.data?.map((x) => ({
                   value: x.id!,
                   label: x.nome || "",
-                })),
-                idUnidadeMedida: units.data?.map((x) => ({
-                  value: x.id!,
-                  label: `${x.nome} (${x.sigla})`,
                 })),
               }}
               onCancel={() => router.push(id ? `/produtos/${id}` : "/produtos")}

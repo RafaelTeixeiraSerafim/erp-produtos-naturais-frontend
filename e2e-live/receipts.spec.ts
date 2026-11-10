@@ -2,12 +2,12 @@ import { test, expect } from "./auth-fixture";
 test("recebimento real: compra, recuperação, rascunho parcial, confirmação, saldo e conclusão final", async ({ page, request }) => {
   if (process.env.CATALOG_DISPOSABLE !== "1") throw new Error("Use npm run test:integration.");
   const f=JSON.parse(process.env.PURCHASES_FIXTURE!);
-  const before=await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json();
+  const before=await (await request.get(`/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${f.store}`)).json();
   const balance=(v:Record<string,number>) => v.quantidadeAtual ?? v.saldo ?? v.quantidade ?? 0;
   await page.goto("/compras/nova");
   await page.getByLabel("Fornecedor *",{exact:true}).selectOption(f.supplier);
   await page.getByLabel("Loja *",{exact:true}).selectOption(f.store);
-  await page.getByLabel("Produto *",{exact:true}).selectOption(f.product);
+  await page.getByLabel("SKU *",{exact:true}).selectOption(f.product);
   await page.getByLabel(/^Quantidade \*/).fill("10");
   await page.getByLabel(/^Custo unitário/).fill("2");
   await page.getByRole("button",{name:"Salvar rascunho"}).click();
@@ -23,7 +23,7 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await expect(page.getByLabel("Quantidade a receber")).toHaveValue("4");
   await page.getByRole("button",{name:"Salvar rascunho"}).click();
   await expect(page).toHaveURL(/\/recebimentos\/[0-9a-f-]{36}$/); const partialUrl=page.url(); const receiptId=partialUrl.split("/").pop();
-  expect(await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json()).toEqual(before);
+  expect(await (await request.get(`/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${f.store}`)).json()).toEqual(before);
   // Real draft replacement and optimistic recovery check.
   await page.getByRole("link",{name:"Editar rascunho"}).click();
   await page.getByLabel("Observação",{exact:true}).fill("Conferido");
@@ -35,15 +35,15 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await page.goto(purchaseUrl); await page.getByRole("link",{name:"Novo recebimento"}).click(); await page.getByRole("checkbox").check(); await page.getByLabel("Quantidade a receber").fill("1");
   await page.getByRole("button",{name:"Salvar rascunho"}).click(); await expect(page).toHaveURL(/\/recebimentos\/[0-9a-f-]{36}$/);
   await page.getByRole("button",{name:"Excluir rascunho"}).click(); await page.getByRole("button",{name:"Confirmar exclusão"}).click(); await expect(page).toHaveURL(purchaseUrl);
-  expect(await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json()).toEqual(before);
+  expect(await (await request.get(`/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${f.store}`)).json()).toEqual(before);
   await page.goto(partialUrl);
   await page.getByRole("button",{name:"Concluir recebimento"}).click();
   await expect(page.getByRole("dialog")).toContainText("Destino:");
   await page.getByRole("button",{name:"Confirmar entrada"}).click();
   await expect(page.getByText("Status: Concluído",{exact:true})).toBeVisible();
   await page.reload(); await expect(page.getByText("Recebimento confirmado: somente leitura.")).toBeVisible();
-  const after=await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json(); expect(balance(after)).toBeCloseTo(balance(before)+4,3);
-  const movements=await (await request.get(`/api/movimentacoes-estoque?idProduto=${f.product}&idLoja=${f.store}`)).json();
+  const after=await (await request.get(`/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${f.store}`)).json(); expect(balance(after)).toBeCloseTo(balance(before)+4,3);
+  const movements=await (await request.get(`/api/movimentacoes-estoque?idProdutoSku=${f.product}&idLoja=${f.store}`)).json();
   expect(movements.filter((m:Record<string,unknown>)=>m.idRecebimentoCompra===receiptId)).toHaveLength(1);
   await page.getByRole("link",{name:"Ver movimentações da loja"}).click();
   const movement=page.getByRole("row").filter({hasText:"05/11/2026, 09:30:01"}).filter({hasText:"Entrada de compra"}).filter({hasText:purchaseId!});
@@ -60,5 +60,5 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   await page.goto(purchaseUrl); await page.reload(); await expect(page.getByText("Status: Recebida",{exact:true})).toBeVisible();
   await expect(page.getByRole("link",{name:"Novo recebimento"})).toHaveCount(0);
   const complete=await (await request.get(`/api/compras/${purchaseId}`)).json(); expect(complete.itens[0].quantidadeRecebida).toBe(10); expect(complete.valorTotal).toBe(20);
-  const final=await (await request.get(`/api/estoques/saldo?idProduto=${f.product}&idLoja=${f.store}`)).json(); expect(balance(final)).toBeCloseTo(balance(before)+10,3);
+  const final=await (await request.get(`/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${f.store}`)).json(); expect(balance(final)).toBeCloseTo(balance(before)+10,3);
 });

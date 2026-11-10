@@ -1,4 +1,5 @@
 "use client";
+import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -6,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useListarAjustesEstoque } from "@/generated/sdk/hooks/useListarAjustesEstoque";
 import { useBuscarAjusteEstoquePorId } from "@/generated/sdk/hooks/useBuscarAjusteEstoquePorId";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useSkuCatalog as useListarProdutos, snapshotLabel } from "@/lib/skus";
 import { useListarEstoques } from "@/generated/sdk/hooks/useListarEstoques";
 import { criarAjusteEstoque } from "@/generated/sdk/clients/criarAjusteEstoque";
 import { atualizarAjusteEstoque } from "@/generated/sdk/clients/atualizarAjusteEstoque";
@@ -245,11 +246,11 @@ function AdjustmentItems({ row }: { row: AjusteResponseDTO }) {
       <tbody>
         {row.itens?.map((i) => (
           <TableRow key={i.id}>
-            <TableCell>{row.status === "CONCLUIDO" ? <Link href={`/estoque/movimentacoes?idAjusteEstoque=${row.id}&idProduto=${i.idProduto}`}>{i.produtoNome || i.idProduto}</Link> : i.produtoNome || i.idProduto}</TableCell>
+            <TableCell>{row.status === "CONCLUIDO" ? <Link href={`/estoque/movimentacoes?idAjusteEstoque=${row.id}&idProdutoSku=${i.idProdutoSku}`}>{snapshotLabel(i, i.produtoNome)}</Link> : snapshotLabel(i, i.produtoNome)}</TableCell>
             <TableCell>{i.tipo}</TableCell><TableCell>{quantity(i.quantidade)}</TableCell>
             <TableCell>
               {i.unidadeSigla || "Histórico indisponível"}
-            </TableCell><TableCell>{row.status === "CONCLUIDO" ? quantity(i.saldoAntes) : stock.isSuccess ? quantity(stock.data?.find(s=>s.idProduto===i.idProduto && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0) : "Indisponível"}</TableCell><TableCell>{row.status === "CONCLUIDO" ? quantity(i.saldoDepois) : stock.isSuccess ? quantity((stock.data?.find(s=>s.idProduto===i.idProduto && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0)+(i.tipo==="AJUSTE_ENTRADA"?1:-1)*(i.quantidade ?? 0)) : "Indisponível"}</TableCell>
+            </TableCell><TableCell>{row.status === "CONCLUIDO" ? quantity(i.saldoAntes) : stock.isSuccess ? quantity(stock.data?.find(s=>s.idProdutoSku===i.idProdutoSku && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0) : "Indisponível"}</TableCell><TableCell>{row.status === "CONCLUIDO" ? quantity(i.saldoDepois) : stock.isSuccess ? quantity((stock.data?.find(s=>s.idProdutoSku===i.idProdutoSku && s.idLoja===row.idLoja)?.quantidadeAtual ?? 0)+(i.tipo==="AJUSTE_ENTRADA"?1:-1)*(i.quantidade ?? 0)) : "Indisponível"}</TableCell>
           </TableRow>
         ))}
       </tbody>
@@ -538,7 +539,7 @@ export function AdjustmentEditor({
     !products.isFetching;
   const selections =
     selectedExists(draft.idLoja, stores.data) &&
-    draft.itens.every((i) => selectedExists(i.idProduto, products.data));
+    draft.itens.every((i) => selectedExists(i.idProdutoSku, products.data));
   const blocked =
     unavailable ||
     immutable ||
@@ -710,32 +711,32 @@ export function AdjustmentEditor({
                 aria-label={`Item ${index + 1}`}
                 className="grid grid-cols-3 gap-4 mobile:grid-cols-1"
               >
-                <label>
-                  Produto *
-                  <Select
-                    aria-label="Produto *"
-                    value={i.idProduto}
+                <div>
+                  SKU *
+                  <SkuSelect
+                    aria-label="SKU *"
+                    value={i.idProdutoSku}
                     onChange={(e) =>
                       setDraft({
                         ...draft,
                         itens: draft.itens.map((r, n) =>
-                          n === index ? { ...r, idProduto: e.target.value } : r,
+                          n === index ? { ...r, idProdutoSku: e.target.value } : r,
                         ),
                       })
                     }
                   >
                     <option value="">Selecione…</option>
                     <MissingSelection
-                      value={i.idProduto}
+                      value={i.idProdutoSku}
                       rows={products.data}
                     />
-                    {products.data?.map((p) => (
+                    {products.data?.filter(p=>p.status === "ATIVO").map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome}
                       </option>
                     ))}
-                  </Select>
-                </label>
+                  </SkuSelect>
+                </div>
                 <label>Tipo<Select value={i.tipo} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,tipo:e.target.value as "AJUSTE_ENTRADA"|"AJUSTE_SAIDA"}:r)})}><option value="AJUSTE_ENTRADA">Entrada</option><option value="AJUSTE_SAIDA">Saída</option></Select></label>
                 <label>Observação<Input value={i.observacao} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,observacao:e.target.value}:r)})}/></label>
                 <label>
@@ -768,7 +769,7 @@ export function AdjustmentEditor({
                   Remover item {index + 1}
                 </Button>
               </fieldset>
-              <p>Saldo projetado (informativo): {stock.isSuccess ? quantity((stock.data?.find(s=>s.idProduto===i.idProduto && s.idLoja===draft.idLoja)?.quantidadeAtual ?? 0) + (i.tipo==="AJUSTE_ENTRADA"?1:-1)*Number(i.quantidade.replace(",","."))) : "Indisponível"}</p>
+              <p>Saldo projetado (informativo): {stock.isSuccess ? quantity((stock.data?.find(s=>s.idProdutoSku===i.idProdutoSku && s.idLoja===draft.idLoja)?.quantidadeAtual ?? 0) + (i.tipo==="AJUSTE_ENTRADA"?1:-1)*Number(i.quantidade.replace(",","."))) : "Indisponível"}</p>
               <p>
                 Disponível na loja (informativo, sem reserva):{" "}
                 {stock.isPending
@@ -778,7 +779,7 @@ export function AdjustmentEditor({
                     : quantity(
                         stock.data?.find(
                           (s) =>
-                            s.idProduto === i.idProduto &&
+                            s.idProdutoSku === i.idProdutoSku &&
                             s.idLoja === draft.idLoja,
                         )?.quantidadeAtual ?? 0,
                       )}

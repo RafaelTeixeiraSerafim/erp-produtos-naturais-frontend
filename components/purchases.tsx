@@ -1,4 +1,5 @@
 "use client";
+import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
 import { useCan } from "./auth";
 import Link from "next/link";
@@ -14,7 +15,7 @@ import { useListarCompras } from "@/generated/sdk/hooks/useListarCompras";
 import { useBuscarCompraPorId } from "@/generated/sdk/hooks/useBuscarCompraPorId";
 import { useListarFornecedores } from "@/generated/sdk/hooks/useListarFornecedores";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useSkuCatalog as useListarProdutos, snapshotLabel } from "@/lib/skus";
 import { criarCompra } from "@/generated/sdk/clients/criarCompra";
 import { atualizarCompra } from "@/generated/sdk/clients/atualizarCompra";
 import type { CompraResponseDTO } from "@/generated/sdk/types/CompraResponseDTO";
@@ -359,10 +360,7 @@ export function PurchaseRecord({
           {row.itens?.map((i, index) => (
             <TableRow key={i.id || index}>
               <TableCell>
-                {lookups.products.data?.find((p) => p.id === i.idProduto)
-                  ?.nome ||
-                  i.idProduto ||
-                  "—"}
+                {snapshotLabel(i,lookups.products.data?.find(p=>p.id===i.idProdutoSku)?.nomeProduto)}
               </TableCell>
               <TableCell>{quantity(i.quantidade)}</TableCell>
               <TableCell>{unitCost(i.custoUnitario)}</TableCell>
@@ -410,7 +408,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
   const prerequisites = Object.values(lookups).every(
     (q) => q.isSuccess && !q.isFetching && !!q.data?.length,
   );
-  const selectionsValid = selectedExists(draft.idFornecedor, lookups.suppliers.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProduto, lookups.products.data));
+  const selectionsValid = selectedExists(draft.idFornecedor, lookups.suppliers.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProdutoSku, lookups.products.data));
   let total: number | undefined;
   try {
     total = preview(draft.itens);
@@ -604,23 +602,23 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                 <h2 className="col-span-full font-semibold">
                   Item {index + 1}
                 </h2>
-                <label>
-                  Produto *
-                  <Select
-                    aria-label="Produto *"
+                <div>
+                  SKU *
+                  <SkuSelect
+                    aria-label="SKU *"
                     required
-                    value={item.idProduto}
-                    onChange={(e) => change("idProduto", e.target.value)}
+                    value={item.idProdutoSku}
+                    onChange={(e) => change("idProdutoSku", e.target.value)}
                   >
                     <option value="">Selecione…</option>
-                    <MissingSelection value={item.idProduto} rows={lookups.products.data} />
-                    {lookups.products.data?.map((p) => (
+                    <MissingSelection value={item.idProdutoSku} rows={lookups.products.data} />
+                    {lookups.products.data?.filter(p=>p.status === "ATIVO").map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome}
                       </option>
                     ))}
-                  </Select>
-                </label>
+                  </SkuSelect>
+                </div>
                 {(["quantidade", "custoUnitario", "desconto"] as const).map(
                   (key) => (
                     <label key={key}>

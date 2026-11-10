@@ -14,8 +14,8 @@ const resources = new Set([
   "unidades-medida",
   "lojas",
   "produtos-sku",
-  "produtos-loja",
-  "produtos-precos-loja",
+  "skus-loja",
+  "skus-precos-loja",
 ]);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function forwardCatalog(request: Request, path: string[]) {
@@ -53,7 +53,7 @@ export async function forwardCatalog(request: Request, path: string[]) {
         : inventory
           ? ["GET"]
           : id
-            ? resource === "produtos-loja"
+            ? resource === "skus-loja"
               ? ["GET", "DELETE"]
               : resource === "compras"
                 ? ["GET", "PUT"]
@@ -82,13 +82,13 @@ export async function forwardCatalog(request: Request, path: string[]) {
   if (balance) {
     const params = new URL(request.url).searchParams;
     if (
-      !["idProduto", "idLoja"].every(
+      !["idProdutoSku", "idLoja"].every(
         (key) =>
           params.getAll(key).length === 1 && uuid.test(params.get(key) || ""),
       )
     )
       return Response.json(
-        { message: "Informe idProduto e idLoja válidos." },
+        { message: "Informe idProdutoSku e idLoja válidos." },
         { status: 400, headers: { "Cache-Control": "no-store" } },
       );
   }

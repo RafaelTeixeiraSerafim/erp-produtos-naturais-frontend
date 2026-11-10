@@ -15,7 +15,7 @@ const valid = () => ({
   ...transferValues(),
   idLojaOrigem: origin,
   idLojaDestino: destination,
-  itens: [{ idProduto: product, quantidade: "1,125" }],
+  itens: [{ idProdutoSku: product, quantidade: "1,125" }],
 });
 afterEach(() => vi.unstubAllGlobals());
 it("validates distinct stores, unique products and exact quantity scale and limits", () => {
@@ -24,7 +24,7 @@ it("validates distinct stores, unique products and exact quantity scale and limi
     expect(() =>
       transferPayload({
         ...valid(),
-        itens: [{ idProduto: product, quantidade }],
+        itens: [{ idProdutoSku: product, quantidade }],
       }),
     ).toThrow();
   expect(() =>

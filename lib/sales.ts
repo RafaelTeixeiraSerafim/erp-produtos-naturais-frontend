@@ -4,7 +4,7 @@ import { decimal, purchaseLocalDate, saoPauloTimestamp } from "./purchases";
 import { uuid } from "./validation";
 export type SaleItem = {
   id?: string;
-  idProduto: string;
+  idProdutoSku: string;
   quantidade: string;
   precoUnitario: string;
   desconto: string;
@@ -20,7 +20,7 @@ export type SaleDraft = {
   itens: SaleItem[];
 };
 export const blankItem = (): SaleItem => ({
-  idProduto: "",
+  idProdutoSku: "",
   quantidade: "",
   precoUnitario: "",
   desconto: "0",
@@ -88,12 +88,12 @@ export function salePayload(draft: SaleDraft): VendaRequestDTO {
       : {}),
     observacao: draft.observacao || "",
     itens: draft.itens.map((i) => {
-      if (!uuid.safeParse(i.idProduto).success)
+      if (!uuid.safeParse(i.idProdutoSku).success)
         throw new Error("Selecione um produto válido em cada item.");
       const { q, c, d } = itemCalculation(i);
       return {
         ...(i.id ? { id:i.id } : {}),
-        idProduto: i.idProduto,
+        idProdutoSku: i.idProdutoSku,
         quantidade: Number(q) / 1000,
         precoUnitario: Number(c) / 100,
         desconto: Number(d) / 100,
@@ -111,5 +111,5 @@ export const saleStatus = (v?: string) => (v ? statusLabels[v] || v : "—");
 export function savedSaleValues(row: VendaResponseDTO): SaleDraft {
   const format = (n?: number) => n === undefined ? "" : n.toLocaleString("pt-BR", { useGrouping:false, maximumFractionDigits:3 });
   return { idCliente:row.idCliente || "", idUsuario:row.idUsuario || "", idLoja:row.idLoja || "", dataVenda:purchaseLocalDate(row.dataVenda), observacao:row.observacao || "", baseVersion:row.versao,
-    itens:(row.itens || []).map(i => ({ id:i.id, idProduto:i.idProduto || "", quantidade:format(i.quantidade), precoUnitario:format(i.precoUnitario), desconto:format(i.desconto) })) };
+    itens:(row.itens || []).map(i => ({ id:i.id, idProdutoSku:i.idProdutoSku || "", quantidade:format(i.quantidade), precoUnitario:format(i.precoUnitario), desconto:format(i.desconto) })) };
 }

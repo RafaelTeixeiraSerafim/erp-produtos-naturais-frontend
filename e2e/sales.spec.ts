@@ -7,9 +7,10 @@ async function setup(page: Page, empty = false) {
     clientes: [{ id: id(1), nome: "Ana", dataNascimento: "2000-02-29" }],
     lojas: empty ? [] : [{ id: id(2), nomeFantasia: "Centro" }],
     usuarios: empty ? [] : [{ id: id(3), nome: "Operador" }],
-    produtos: [{ id: id(4), nome: "Aveia" }],
+    produtos: [{ id: id(4), nome: "Aveia",status:"ATIVO" }],
     vendas: [],
   };
+  db["produtos-sku"] = db.produtos.map(p=>({id:p.id,idProduto:p.id,nomeProduto:p.nome,sku:String(p.id),descricaoApresentacao:"Granel",tipoVenda:"PESO",status:"ATIVO"}));
   const writes: Row[] = [];
   let count = 100;
   await page.route("**/api/**", async (route) => {
@@ -114,7 +115,7 @@ test("venda: seleções obrigatórias, precisão, vários itens, arredondamento 
   await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
   const fill = async (n: number) => {
     const item = page.getByLabel(`Item ${n}`, { exact: true });
-    await item.getByLabel("Produto").selectOption(id(4));
+    await item.getByLabel("SKU", {exact:false}).selectOption(id(4));
     await item.getByLabel("Quantidade").fill("0,001");
     await item.getByLabel("Preço unitário").fill("5");
   };

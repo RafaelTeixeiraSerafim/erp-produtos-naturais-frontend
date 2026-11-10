@@ -407,3 +407,6 @@ Integração posterior autorizada pelo usuário: `stage12-returns` → `main` no
 frontend e `stage12-returns` → `novaVersao` no backend. Merges sem conflitos,
 com histórico preservado; nenhum deploy manual ou migração compartilhada.
 As branches de origem permanecem; a `main` do backend não foi alterada.
+
+
+Etapa 13: implementação SKU em `stage13-sku-variants`, sobre os HEADs integrados. O handoff atual é [STAGE13_SKU_VARIANTS.md](STAGE13_SKU_VARIANTS.md), com aceite em [STAGE13_RELEASE.md](STAGE13_RELEASE.md). Contratos por produto nas etapas anteriores são históricos.

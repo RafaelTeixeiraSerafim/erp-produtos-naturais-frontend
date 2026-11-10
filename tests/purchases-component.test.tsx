@@ -30,7 +30,7 @@ vi.mock("@/generated/sdk/hooks/useListarRecebimentosCompra", () => ({
 }));
 const id = "11111111-1111-4111-8111-111111111111";
 const result = () => ({
-  data: [{ id, nome: "Aveia", nomeFantasia: "Natural" }],
+  data: [{ id, nome: "Aveia", status:"ATIVO", nomeFantasia: "Natural" }],
   isSuccess: true,
   isError: false,
 });
@@ -40,8 +40,8 @@ vi.mock("@/generated/sdk/hooks/useListarFornecedores", () => ({
 vi.mock("@/generated/sdk/hooks/useListarLojas", () => ({
   useListarLojas: () => result(),
 }));
-vi.mock("@/generated/sdk/hooks/useListarProdutos", () => ({
-  useListarProdutos: () => result(),
+vi.mock("@/lib/skus", () => ({
+  snapshotLabel: (i: {idProdutoSku?:string}) => i.idProdutoSku, useSkuCatalog: () => result(),
 }));
 vi.mock("@/generated/sdk/clients/criarCompra", () => ({
   criarCompra: (...args: unknown[]) => ({
@@ -65,7 +65,7 @@ const initial = {
   itens: [
     {
       id,
-      idProduto: id,
+      idProdutoSku: id,
       quantidade: 1.125,
       custoUnitario: 2.3456,
       desconto: 0.1,
