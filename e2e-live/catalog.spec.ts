@@ -108,7 +108,6 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.getByRole("link", { name: "Editar produto", exact: true }).click();
     await page.getByLabel("Nome do produto").fill(edited);
     await page.getByLabel("Status").selectOption("INATIVO");
-    await page.getByLabel("Tipo de venda").selectOption("PESO");
     await page.getByLabel("Descrição", { exact: false }).fill("Descrição editada");
     await page.getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page).toHaveURL(productUrl);

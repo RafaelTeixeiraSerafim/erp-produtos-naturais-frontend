@@ -11,7 +11,7 @@ test("SKU real: três variantes, escolha explícita, saldos isolados e ciclo com
   for(const [presentation,type,unit] of [["Pacote 200 g","UNIDADE",each.id],["Pacote 500 g","UNIDADE",each.id],["Granel","PESO",units.find((u:{id:string})=>u.id===template.idUnidadeMedida).id]])skus.push(await post("produtos-sku",{idProduto:parent.id,sku:crypto.randomUUID(),descricaoApresentacao:presentation,idUnidadeMedida:unit,tipoVenda:type,status:"ATIVO"}));
   const amounts=[2,100,3.125];
   const buy=await post("compras",{idFornecedor:p.supplier,idLoja:f.store,itens:skus.map((s,n)=>({idProdutoSku:s.id,quantidade:amounts[n],custoUnitario:n+1,desconto:0}))});
-  const receipt=await post("recebimentos-compras",{idCompra:buy.id,status:"RASCUNHO",itens:buy.itens.map((i:{id:string;idProdutoSku:string;quantidade:number})=>({idItemCompra:i.id,idProdutoSku:i.idProdutoSku,quantidade:i.quantidade}))},crypto.randomUUID());await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});
+  const receipt=await post("recebimentos-compras",{idCompra:buy.id,idUsuario:f.operator,status:"RASCUNHO",itens:buy.itens.map((i:{id:string;idProdutoSku:string;quantidade:number})=>({idItemCompra:i.id,idProdutoSku:i.idProdutoSku,quantidade:i.quantidade}))},crypto.randomUUID());await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});
   const balances=async()=>Promise.all(skus.map(async s=>(await get(`estoques/saldo?idProdutoSku=${s.id}&idLoja=${f.store}`)).quantidadeAtual));
   expect(await balances()).toEqual(amounts);
   await page.goto("/vendas/nova");await expect(page.getByLabel("SKU *",{exact:true})).toHaveValue("");
