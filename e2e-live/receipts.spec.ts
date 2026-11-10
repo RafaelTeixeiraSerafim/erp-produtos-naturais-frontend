@@ -46,6 +46,9 @@ test("recebimento real: compra, recuperação, rascunho parcial, confirmação, 
   const movements=await (await request.get(`/api/movimentacoes-estoque?idProdutoSku=${f.product}&idLoja=${f.store}`)).json();
   expect(movements.filter((m:Record<string,unknown>)=>m.idRecebimentoCompra===receiptId)).toHaveLength(1);
   await page.getByRole("link",{name:"Ver movimentações da loja"}).click();
+  await page.getByLabel("SKU",{exact:true}).selectOption(f.product);
+  await page.getByLabel("Data inicial").fill("2026-11-05");
+  await page.getByLabel("Data final").fill("2026-11-05");
   const movement=page.getByRole("row").filter({hasText:"05/11/2026, 09:30:01"}).filter({hasText:"Entrada de compra"}).filter({hasText:purchaseId!});
   // Locate via the API quantity/date; direct link must be present in movement details.
   await expect(page.getByRole("heading",{name:"Movimentações"})).toBeVisible();

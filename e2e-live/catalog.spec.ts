@@ -114,7 +114,7 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.reload();
     await expect(page.getByRole("heading", { name: edited, exact: true })).toBeVisible();
     await expect(page.getByText("Inativo", { exact: true })).toBeVisible();
-    await expect(page.getByText("Peso", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Variante para lojas e preços")).toHaveValue("");
     await expect(page.getByText("Descrição editada", { exact: true })).toBeVisible();
     await expect(page.getByRole("cell", { name: sku, exact: true })).toBeVisible();
     await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
