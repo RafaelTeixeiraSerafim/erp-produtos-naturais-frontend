@@ -7,3 +7,7 @@
 - Produto agrupador; itens comerciais exigem `idProdutoSku`, com snapshots de código, apresentação e unidade.
 - Endpoints de vínculo/preço substituídos por `/api/skus-loja` e `/api/skus-precos-loja`; filtros de estoque/movimentos combinam produto e SKU.
 - Evidências: [aceite da etapa 13](../docs/STAGE13_RELEASE.md). Contrato anterior permanece no histórico Git.
+
+- SHA-256 do OpenAPI autenticado: `e6fe54a2947f48cbb37c4c184aa40cf46ebadda43eef25fa0563c252201d109b`.
+- Comparação integral: `diff -qr generated/sdk ../erp-produtos-naturais-backend/generated/sdk` sem diferenças.
+- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42888325815), [CI frontend validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42892700923), código frontend `42ae648`.
