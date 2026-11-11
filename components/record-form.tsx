@@ -1,4 +1,12 @@
 "use client";
+import { Controller } from "react-hook-form";
+import { DocumentInput } from "./ui/document-input";
+import { LocalityFields } from "./locality-fields";
+import { RelatedField, related } from "./related-field";
+import { useListarCategorias } from "@/generated/sdk/hooks/useListarCategorias";
+import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
+import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { Select, Textarea, Input } from "@/components/ui/input";
 import { FormActions } from "@/components/ui/form-actions";
 import { cn } from "@/lib/utils";
@@ -46,17 +54,22 @@ export function RecordForm({
   layout?: "dialog" | "page";
 }) {
   const formId = useId();
+  const categories=useListarCategorias({query:{enabled:resource==="products"}});
+  const stores=useListarLojas({query:{enabled:["assignments","prices"].includes(resource)}});
+  const units=useListarUnidadesMedida({query:{enabled:resource==="skus"}});
+  const products=useListarProdutos({query:{enabled:resource==="skus" && !extra.idProduto}});
+  const fieldQueries={idCategoria:categories,idLoja:stores,idUnidadeMedida:units,idProduto:products};
+  const [documentType,setDocumentType]=useState(initial?.cpf?"cpf":"cnpj");
   const queryClient = useQueryClient();
   const [requestError, setRequestError] = useState<unknown>();
+  const form=useForm<Values>({defaultValues: { ...initialValues(resource, initial), municipioIbge:String(initial?.municipioIbge || ""), ...extra }});
   const {
     register,
     handleSubmit,
     setError,
     clearErrors,
     formState: { errors, isSubmitting },
-  } = useForm<Values>({
-    defaultValues: { ...initialValues(resource, initial), ...extra },
-  });
+  } = form;
   useEffect(() => {
     onBusyChange?.(isSubmitting);
   }, [isSubmitting, onBusyChange]);
@@ -94,14 +107,21 @@ export function RecordForm({
           layout === "page" && "p-7 mobile:p-5",
         )}
       >
+        {resource==="suppliers" && <label>Tipo de documento<Select aria-label="Tipo de documento" value={documentType} disabled={isSubmitting || disabled} onChange={e=>{setDocumentType(e.target.value);form.setValue("cpf","");form.setValue("cnpj","");}}><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></Select></label>}
+        {(resource==="suppliers" || resource==="stores") && <LocalityFields form={form} disabled={isSubmitting || disabled}/>}
         {(fields[resource] as Field[]).map((f) => {
+          if((resource==="suppliers" || resource==="stores") && ["estado","cidade"].includes(f.name))return null;
+          if(resource==="suppliers" && ["cpf","cnpj"].includes(f.name) && f.name!==documentType)return null;
+          if(extra[f.name]!==undefined && f.name==="idProduto")return null;
+          const query=fieldQueries[f.name as keyof typeof fieldQueries];
+          const optional=resource==="suppliers" && ["cpf","cnpj"].includes(f.name)?false:f.optional;
           const id = `${formId}-${f.name}`,
-            options = fieldOptions[f.name] || f.options;
+            options = query?.data ? query.data.map(r=>({value:r.id!,label:("sigla" in r?`${r.nome} (${r.sigla})`:"nomeFantasia" in r?r.nomeFantasia:"nome" in r?r.nome:"")||r.id!})) : fieldOptions[f.name] || f.options;
           const attrs = {
             id,
             ...register(f.name),
             "aria-invalid": !!errors[f.name],
-            "aria-required": !f.optional,
+            "aria-required": !optional,
             "aria-describedby": errors[f.name]
               ? `${id}-error`
               : f.hint
@@ -120,14 +140,16 @@ export function RecordForm({
                   "col-span-full",
               )}
             >
-              <label
+              <div className="flex flex-wrap items-center gap-1"><label
                 className="text-[12px] font-semibold text-[#49614e]"
                 htmlFor={id}
               >
                 {f.label}
-                {!f.optional && <span aria-hidden="true"> *</span>}
+                {!optional && <span aria-hidden="true"> *</span>}
+
               </label>
-              {f.type === "select" ? (
+              {query && <RelatedField field={f.name as keyof typeof related} query={query}/>}</div>
+              {["cpf","cnpj"].includes(f.name) ? <Controller name={f.name} control={form.control} render={({field})=><DocumentInput {...attrs} cnpj={f.name==="cnpj"} value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} disabled={isSubmitting || disabled}/>}/> : f.type === "select" ? (
                 <Select {...attrs}>
                   <option value="">Selecione…</option>
                   {options?.map((o) => (

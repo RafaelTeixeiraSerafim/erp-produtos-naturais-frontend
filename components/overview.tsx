@@ -72,7 +72,7 @@ export function Overview() {
     <Section title="Catálogo" scope="Contagens globais: independem da loja e das datas selecionadas." query={products}>
       <div className="flex flex-wrap gap-6">{[["ATIVO", "Produtos ativos"], ["INATIVO", "Produtos inativos"]].map(([status,label]) => <Link className="rounded border border-border p-4 text-primary underline" href={`/produtos?status=${status}`} key={status}>{label}: {(products.data || []).filter(r => r.status === status).length}</Link>)}</div>
     </Section>
-    <Section title="Estoque atual" scope="Registros de produto/loja retornados, filtrados pela loja. Independem das datas; não incluem produtos sem registro de estoque." query={stocks}>
+    <Section title="Estoque atual" scope="Registros de SKU/loja retornados, filtrados pela loja. Independem das datas; não incluem SKUs sem registro de estoque." query={stocks}>
       <div className="flex flex-wrap gap-6">{[["positivo", "Saldo positivo"], ["zero", "Saldo zero"], ["negativo", "Saldo negativo"]].map(([value,label]) => <Link className="rounded border border-border p-4 text-primary underline" href={`/estoque?${new URLSearchParams({idLoja: store, quantidade: value})}`} key={value}>{label}: {stockRows.filter(r => Number.isFinite(r.quantidadeAtual) && matchesQuantity(r.quantidadeAtual, value)).length}</Link>)}</div>
       {stockRows.some(r => r.quantidadeAtual === undefined || !Number.isFinite(r.quantidadeAtual)) && <p role="status">Contagem incompleta: há registros sem saldo válido.</p>}
     </Section>

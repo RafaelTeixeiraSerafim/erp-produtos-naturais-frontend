@@ -8,10 +8,10 @@ import type { ExcluirProdutoLojaOptions, ExcluirProdutoLojaResponses } from '../
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * {@link /api/produtos-loja/:id}
+ * {@link /api/skus-loja/:id}
  */
 export function excluirProdutoLoja<ThrowOnError extends boolean = true>(options: Options<ExcluirProdutoLojaOptions, ThrowOnError>): Unwrappable<RequestResult<ExcluirProdutoLojaResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'DELETE', url: '/api/produtos-loja/{id}', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ExcluirProdutoLojaResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'DELETE', url: '/api/skus-loja/{id}', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<ExcluirProdutoLojaResponses, ThrowOnError>>)
 }

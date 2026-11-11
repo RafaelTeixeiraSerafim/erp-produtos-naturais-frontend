@@ -4,7 +4,7 @@ import { uuid } from "./validation";
 import { inventoryInstant } from "./inventory";
 export type DraftItem = {
   id?: string;
-  idProduto: string;
+  idProdutoSku: string;
   quantidade: string;
   custoUnitario: string;
   desconto: string;
@@ -17,7 +17,7 @@ export type Draft = {
   itens: DraftItem[];
 };
 export const blankItem = (): DraftItem => ({
-  idProduto: "",
+  idProdutoSku: "",
   quantidade: "",
   custoUnitario: "",
   desconto: "0",
@@ -80,11 +80,11 @@ export function purchasePayload(
   preview(draft.itens);
   if (
     draft.dataCompra &&
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(draft.dataCompra)
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(draft.dataCompra)
   )
     throw new Error("Data inválida.");
   const dataCompra = draft.dataCompra
-    ? saoPauloTimestamp(draft.dataCompra)
+    ? saoPauloTimestamp(`${draft.dataCompra}:00`)
     : undefined;
   if (dataCompra && !Number.isFinite(new Date(dataCompra).getTime()))
     throw new Error("Data inválida.");
@@ -95,7 +95,7 @@ export function purchasePayload(
       ? {
           dataCompra:
             existing?.dataCompra &&
-            draft.dataCompra === purchaseLocalDate(existing.dataCompra)
+            draft.dataCompra === purchaseLocalDate(existing.dataCompra).slice(0,16)
               ? existing.dataCompra
               : dataCompra,
         }
@@ -103,12 +103,12 @@ export function purchasePayload(
     status: "RASCUNHO",
     observacao: draft.observacao,
     itens: draft.itens.map((item) => {
-      if (!uuid.safeParse(item.idProduto).success)
+      if (!uuid.safeParse(item.idProdutoSku).success)
         throw new Error("Selecione um produto válido em cada item.");
       const { q, c, d } = itemCalculation(item);
       return {
         ...(item.id ? { id: item.id } : {}),
-        idProduto: item.idProduto,
+        idProdutoSku: item.idProdutoSku,
         quantidade: Number(q) / 1000,
         custoUnitario: Number(c) / 10000,
         desconto: Number(d) / 100,
@@ -141,12 +141,12 @@ export function draftValues(row?: CompraResponseDTO): Draft {
   return {
     idFornecedor: row?.idFornecedor || "",
     idLoja: row?.idLoja || "",
-    dataCompra: purchaseLocalDate(row?.dataCompra),
+    dataCompra: purchaseLocalDate(row?.dataCompra).slice(0,16),
     observacao: row?.observacao || "",
     itens: row
       ? (row.itens || []).map((i) => ({
           id: i.id,
-          idProduto: i.idProduto || "",
+          idProdutoSku: i.idProdutoSku || "",
           quantidade: format(i.quantidade, 3),
           custoUnitario: format(i.custoUnitario, 4),
           desconto: format(i.desconto ?? 0, 2),

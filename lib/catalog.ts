@@ -95,6 +95,11 @@ export const fields = {
   products: [
     { name: "nome", label: "Nome do produto" },
     { name: "idCategoria", label: "Categoria", type: "select" },
+    status,
+    { name: "descricao", label: "Descrição", type: "textarea", optional: true },
+  ],
+  skus: [
+    {name:"idProduto",label:"Produto agrupador",type:"select"},
     { name: "idUnidadeMedida", label: "Unidade de medida", type: "select" },
     {
       name: "tipoVenda",
@@ -105,10 +110,7 @@ export const fields = {
         { value: "PESO", label: "Peso" },
       ],
     },
-    status,
-    { name: "descricao", label: "Descrição", type: "textarea", optional: true },
-  ],
-  skus: [
+
     { name: "sku", label: "SKU" },
     status,
     {
@@ -127,7 +129,6 @@ export const fields = {
       name: "descricaoApresentacao",
       label: "Descrição da apresentação",
       type: "textarea",
-      optional: true,
     },
   ],
   assignments: [{ name: "idLoja", label: "Loja", type: "select" }],
@@ -177,12 +178,12 @@ export const resourceNames: Record<
   products: { url: "produtos", plural: "Produtos", singular: "produto" },
   skus: { url: "produtos-sku", plural: "SKUs", singular: "SKU" },
   assignments: {
-    url: "produtos-loja",
+    url: "skus-loja",
     plural: "Lojas vinculadas",
     singular: "vínculo",
   },
   prices: {
-    url: "produtos-precos-loja",
+    url: "skus-precos-loja",
     plural: "Preços por loja",
     singular: "preço",
   },

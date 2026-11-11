@@ -15,6 +15,12 @@ export type FornecedorResponseDTO = {
   estado?: string;
   cidade?: string;
   bairro?: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  municipioIbge?: number;
   complemento?: string;
   cnpj?: string;
   cpf?: string;

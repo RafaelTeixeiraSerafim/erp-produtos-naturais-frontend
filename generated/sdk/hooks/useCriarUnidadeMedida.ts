@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { CriarUnidadeMedidaOptions, CriarUnidadeMedidaStatus200 } from '../types/CriarUnidadeMedida'
+import type { CriarUnidadeMedidaOptions, CriarUnidadeMedidaStatus201, CriarUnidadeMedidaStatus400, CriarUnidadeMedidaStatus409 } from '../types/CriarUnidadeMedida'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { criarUnidadeMedida } from '../clients/criarUnidadeMedida'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const criarUnidadeMedidaMutationKey = () => [{ url: '/api/unidades-medida
 
 export function criarUnidadeMedidaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = criarUnidadeMedidaMutationKey()
-  return mutationOptions<CriarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, CriarUnidadeMedidaOptions, TContext>({
+  return mutationOptions<CriarUnidadeMedidaStatus201, ResponseErrorConfig<CriarUnidadeMedidaStatus400 | CriarUnidadeMedidaStatus409>, CriarUnidadeMedidaOptions, TContext>({
     mutationKey,
     mutationFn: async({ body }) => {
       return criarUnidadeMedida({ ...config, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function criarUnidadeMedidaMutationOptions<TContext = unknown>(config: Pa
  * {@link /api/unidades-medida}
  */
 export function useCriarUnidadeMedida<TContext>(options: {
-  mutation?: UseMutationOptions<CriarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, CriarUnidadeMedidaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<CriarUnidadeMedidaStatus201, ResponseErrorConfig<CriarUnidadeMedidaStatus400 | CriarUnidadeMedidaStatus409>, CriarUnidadeMedidaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? criarUnidadeMedidaMutationKey()
 
-  const baseOptions = criarUnidadeMedidaMutationOptions(config) as UseMutationOptions<CriarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, CriarUnidadeMedidaOptions, TContext>
+  const baseOptions = criarUnidadeMedidaMutationOptions(config) as UseMutationOptions<CriarUnidadeMedidaStatus201, ResponseErrorConfig<CriarUnidadeMedidaStatus400 | CriarUnidadeMedidaStatus409>, CriarUnidadeMedidaOptions, TContext>
 
-  return useMutation<CriarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, CriarUnidadeMedidaOptions, TContext>({
+  return useMutation<CriarUnidadeMedidaStatus201, ResponseErrorConfig<CriarUnidadeMedidaStatus400 | CriarUnidadeMedidaStatus409>, CriarUnidadeMedidaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<CriarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, CriarUnidadeMedidaOptions, TContext>
+  }, queryClient) as UseMutationResult<CriarUnidadeMedidaStatus201, ResponseErrorConfig<CriarUnidadeMedidaStatus400 | CriarUnidadeMedidaStatus409>, CriarUnidadeMedidaOptions, TContext>
 }

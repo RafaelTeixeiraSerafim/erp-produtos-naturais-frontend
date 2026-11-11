@@ -9,7 +9,7 @@ import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from
 import { listarPrecosProdutoLoja } from '../clients/listarPrecosProdutoLoja'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const listarPrecosProdutoLojaQueryKey = ({ query }: Omit<ListarPrecosProdutoLojaOptions, 'headers'> = {}) => [{ url: '/api/produtos-precos-loja' }, ...(query ? [query] : [])] as const
+export const listarPrecosProdutoLojaQueryKey = ({ query }: Omit<ListarPrecosProdutoLojaOptions, 'headers'> = {}) => [{ url: '/api/skus-precos-loja' }, ...(query ? [query] : [])] as const
 
 type ListarPrecosProdutoLojaQueryKey = ReturnType<typeof listarPrecosProdutoLojaQueryKey>
 
@@ -24,7 +24,7 @@ export function listarPrecosProdutoLojaQueryOptions({ query }: ListarPrecosProdu
 }
 
 /**
- * {@link /api/produtos-precos-loja}
+ * {@link /api/skus-precos-loja}
  */
 export function useListarPrecosProdutoLoja<TData = ListarPrecosProdutoLojaStatus200, TQueryData = ListarPrecosProdutoLojaStatus200, TQueryKey extends QueryKey = ListarPrecosProdutoLojaQueryKey>({ query }: { query?: ListarPrecosProdutoLojaOptions['query'] | (() => ListarPrecosProdutoLojaOptions['query']) } = {}, options: {
   query?: Partial<QueryObserverOptions<ListarPrecosProdutoLojaStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },

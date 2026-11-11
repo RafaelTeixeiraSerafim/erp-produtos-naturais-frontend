@@ -18,7 +18,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
       (
         await (
           await request.get(
-            `/api/estoques/saldo?idProduto=${f.product}&idLoja=${store}`,
+            `/api/estoques/saldo?idProdutoSku=${f.product}&idLoja=${store}`,
           )
         ).json()
       ).quantidadeAtual,
@@ -30,7 +30,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
     idLoja: f.store,
     status: "RASCUNHO",
     itens: [
-      { idProduto: f.product, quantidade: 10, custoUnitario: 1, desconto: 0 },
+      { idProdutoSku: f.product, quantidade: 10, custoUnitario: 1, desconto: 0 },
     ],
   });
   const receipt = await post(
@@ -42,7 +42,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
       itens: [
         {
           idItemCompra: purchase.itens[0].id,
-          idProduto: f.product,
+          idProdutoSku: f.product,
           quantidade: 10,
         },
       ],
@@ -57,7 +57,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
   await page
     .getByLabel("Destino *", { exact: true })
     .selectOption(f.otherStore);
-  await page.getByLabel("Produto *", { exact: true }).selectOption(f.product);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);
   await page.getByLabel("Quantidade *", { exact: true }).fill("2,125");
   await page
     .getByLabel("Observação", { exact: true })
@@ -130,7 +130,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
       idLoja: f.otherStore,
       itens: [
         {
-          idProduto: f.product,
+          idProdutoSku: f.product,
           quantidade: 1.125,
           precoUnitario: 2,
           desconto: 0,
@@ -150,7 +150,7 @@ test("rascunho preservado na falta; cancelamento, replay perdido e revisão expl
   const body = {
     idLojaOrigem: f.store,
     idLojaDestino: f.otherStore,
-    itens: [{ idProduto: f.product, quantidade: 99999999999 }],
+    itens: [{ idProdutoSku: f.product, quantidade: 99999999999 }],
   };
   const key = crypto.randomUUID();
   const create = async () => {
@@ -183,7 +183,7 @@ test("rascunho preservado na falta; cancelamento, replay perdido e revisão expl
       ...body,
       versao: a.versao,
       observacao: "Outra aba",
-      itens: a.itens.map((i: { id: string; idProduto: string }) => ({
+      itens: a.itens.map((i: { id: string; idProdutoSku: string }) => ({
         ...i,
         quantidade: 2,
       })),
@@ -240,7 +240,7 @@ test("resposta perdida na criação repete chave e conteúdo após recarregar", 
   await page
     .getByLabel("Destino *", { exact: true })
     .selectOption(f.otherStore);
-  await page.getByLabel("Produto *", { exact: true }).selectOption(f.product);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);
   await page.getByLabel("Quantidade *", { exact: true }).fill("1");
   const before = (
     await (await request.get("/api/transferencias-estoque")).json()
@@ -273,6 +273,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     data: {
       nome: "Transfer scope",
       email,
+      usuario:email.split("@")[0].slice(0,32),
       cargo: "GER",
       status: "ATIVO",
       lojas: [f.store],
@@ -285,7 +286,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     body = {
       idLojaOrigem: f.store,
       idLojaDestino: f.otherStore,
-      itens: [{ idProduto: f.product, quantidade: 1 }],
+      itens: [{ idProdutoSku: f.product, quantidade: 1 }],
     };
   const a = await (
     await request.post("/api/transferencias-estoque", {
@@ -308,7 +309,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     });
   }
   try {
-    expect((await mutate("auth/login", { email, senha: temporary })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: temporary })).ok()).toBe(
       true,
     );
     expect(
@@ -319,7 +320,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
         })
       ).ok(),
     ).toBe(true);
-    expect((await mutate("auth/login", { email, senha: permanent })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: permanent })).ok()).toBe(
       true,
     );
     expect(
@@ -356,6 +357,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
           data: {
             nome: "Transfer scope",
             email,
+            usuario:email.split("@")[0].slice(0,32),
             cargo: "FUNC",
             status: "ATIVO",
             lojas: [f.store],
@@ -363,7 +365,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
         })
       ).ok(),
     ).toBe(true);
-    expect((await mutate("auth/login", { email, senha: permanent })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: permanent })).ok()).toBe(
       true,
     );
     expect(
@@ -374,7 +376,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     );
     const person = await context.newPage();
     await person.goto(
-      `/estoque/movimentacoes?idProduto=${f.product}&idLoja=${f.store}`,
+      `/estoque/movimentacoes?idProdutoSku=${f.product}&idLoja=${f.store}`,
     );
     await expect(
       person.getByRole("link", { name: "Transferências", exact: true }),
@@ -389,6 +391,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
       data: {
         nome: "Transfer scope",
         email,
+      usuario:email.split("@")[0].slice(0,32),
         cargo: "FUNC",
         status: "INATIVO",
         lojas: [],

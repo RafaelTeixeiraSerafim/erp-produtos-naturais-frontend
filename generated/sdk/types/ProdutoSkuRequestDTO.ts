@@ -10,6 +10,13 @@ export const produtoSkuRequestDTOStatusEnum = {
 
 export type ProdutoSkuRequestDTOStatusEnumKey = (typeof produtoSkuRequestDTOStatusEnum)[keyof typeof produtoSkuRequestDTOStatusEnum];
 
+export const produtoSkuRequestDTOTipoVendaEnum = {
+  UNIDADE: 'UNIDADE',
+  PESO: 'PESO',
+} as const;
+
+export type ProdutoSkuRequestDTOTipoVendaEnumKey = (typeof produtoSkuRequestDTOTipoVendaEnum)[keyof typeof produtoSkuRequestDTOTipoVendaEnum];
+
 export type ProdutoSkuRequestDTO = {
   /**
    * @description
@@ -23,7 +30,26 @@ export type ProdutoSkuRequestDTO = {
    * @type string
    */
   sku: string;
+  /**
+   * @pattern (?:|[0-9]{13})
+   * @type string | undefined
+   */
   ean13?: string;
+  /**
+   * @pattern (?:|[0-9]{14})
+   * @type string | undefined
+   */
   dun14?: string;
-  descricaoApresentacao?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  idUnidadeMedida: string;
+  tipoVenda: ProdutoSkuRequestDTOTipoVendaEnumKey;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  descricaoApresentacao: string;
 };

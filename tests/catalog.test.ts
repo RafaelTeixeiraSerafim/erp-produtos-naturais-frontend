@@ -20,13 +20,12 @@ function parseRequestBody(data: unknown) {
 }
 
 describe("integração com os clientes gerados", () => {
-  it("aplica os padrões ATIVO e UNIDADE ao criar produto", async () => {
+  it("aplica status ATIVO ao criar produto sem variante", async () => {
     const request = transport();
     await saveRecord("products", {
       ...initialValues("products"),
       nome: "Aveia",
       idCategoria: product,
-      idUnidadeMedida: store,
     });
     expect(request).toHaveBeenCalledOnce();
     const config = request.mock.calls[0][0];
@@ -35,7 +34,6 @@ describe("integração com os clientes gerados", () => {
     expect(config.method).toBe("POST");
     expect(parseRequestBody(config.data)).toMatchObject({
       status: "ATIVO",
-      tipoVenda: "UNIDADE",
     });
   });
   it("envia DTO completo em PUT", async () => {
@@ -43,9 +41,7 @@ describe("integração com os clientes gerados", () => {
     const values = {
       nome: "Aveia nova",
       idCategoria: product,
-      idUnidadeMedida: store,
       descricao: "Integral",
-      tipoVenda: "PESO",
       status: "INATIVO",
     };
     await saveRecord("products", values, product);
@@ -57,16 +53,16 @@ describe("integração com os clientes gerados", () => {
   it("salva preço e validade em operação própria", async () => {
     const request = transport();
     await saveRecord("prices", {
-      idProduto: product,
+      idProdutoSku: product,
       idLoja: store,
       preco: "1.234,56",
       dataInicio: "2026-11-03T12:00:00-03:00",
       dataFim: "",
     });
     const config = request.mock.calls[0][0];
-    expect(config.url).toBe("/api/produtos-precos-loja");
+    expect(config.url).toBe("/api/skus-precos-loja");
     expect(parseRequestBody(config.data)).toEqual({
-      idProduto: product,
+      idProdutoSku: product,
       idLoja: store,
       preco: 1234.56,
       dataInicio: "2026-11-03T15:00:00.000Z",

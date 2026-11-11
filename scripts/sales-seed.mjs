@@ -29,8 +29,8 @@ export function salesSeed({ base, inventory, sql }) {
         idUsuario: operator.id,
         idLoja: inventory.store,
         observacao: "probe",
-        itens: [inventory.product, inventory.otherProduct].map((idProduto) => ({
-          idProduto,
+        itens: [inventory.product, inventory.otherProduct].map((idProdutoSku) => ({
+          idProdutoSku,
           quantidade: 0.001,
           precoUnitario: 5,
           desconto: 0,
@@ -67,7 +67,7 @@ export function salesSeed({ base, inventory, sql }) {
       // Mixed report statuses are inserted before browser suites, only in the owned DB.
       const reports = [];
       for (let i = 0; i < 25; i++) {
-        const row = await api("vendas", "POST", { ...body, dataVenda: "2020-06-15T12:00:00-03:00", itens: [{ idProduto: inventory.product, quantidade: 1, precoUnitario: 1.23, desconto: 0 }] });
+        const row = await api("vendas", "POST", { ...body, dataVenda: "2020-06-15T12:00:00-03:00", itens: [{ idProdutoSku: inventory.product, quantidade: 1, precoUnitario: 1.23, desconto: 0 }] });
         assert.match(row.id, /^[0-9a-f-]{36}$/i);
         const status = ["ABERTA", "CONCLUIDA", "CANCELADA"][i % 3];
         await sql(`UPDATE venda SET legado=true,status = '${status}' WHERE id = '${row.id}'`);

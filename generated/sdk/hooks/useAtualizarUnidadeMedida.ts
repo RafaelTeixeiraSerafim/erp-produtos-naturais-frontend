@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { AtualizarUnidadeMedidaOptions, AtualizarUnidadeMedidaStatus200 } from '../types/AtualizarUnidadeMedida'
+import type { AtualizarUnidadeMedidaOptions, AtualizarUnidadeMedidaStatus200, AtualizarUnidadeMedidaStatus400, AtualizarUnidadeMedidaStatus409 } from '../types/AtualizarUnidadeMedida'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { atualizarUnidadeMedida } from '../clients/atualizarUnidadeMedida'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const atualizarUnidadeMedidaMutationKey = () => [{ url: '/api/unidades-me
 
 export function atualizarUnidadeMedidaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = atualizarUnidadeMedidaMutationKey()
-  return mutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, AtualizarUnidadeMedidaOptions, TContext>({
+  return mutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<AtualizarUnidadeMedidaStatus400 | AtualizarUnidadeMedidaStatus409>, AtualizarUnidadeMedidaOptions, TContext>({
     mutationKey,
     mutationFn: async({ path, body }) => {
       return atualizarUnidadeMedida({ ...config, path, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function atualizarUnidadeMedidaMutationOptions<TContext = unknown>(config
  * {@link /api/unidades-medida/:id}
  */
 export function useAtualizarUnidadeMedida<TContext>(options: {
-  mutation?: UseMutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, AtualizarUnidadeMedidaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<AtualizarUnidadeMedidaStatus400 | AtualizarUnidadeMedidaStatus409>, AtualizarUnidadeMedidaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? atualizarUnidadeMedidaMutationKey()
 
-  const baseOptions = atualizarUnidadeMedidaMutationOptions(config) as UseMutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, AtualizarUnidadeMedidaOptions, TContext>
+  const baseOptions = atualizarUnidadeMedidaMutationOptions(config) as UseMutationOptions<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<AtualizarUnidadeMedidaStatus400 | AtualizarUnidadeMedidaStatus409>, AtualizarUnidadeMedidaOptions, TContext>
 
-  return useMutation<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, AtualizarUnidadeMedidaOptions, TContext>({
+  return useMutation<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<AtualizarUnidadeMedidaStatus400 | AtualizarUnidadeMedidaStatus409>, AtualizarUnidadeMedidaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<Error>, AtualizarUnidadeMedidaOptions, TContext>
+  }, queryClient) as UseMutationResult<AtualizarUnidadeMedidaStatus200, ResponseErrorConfig<AtualizarUnidadeMedidaStatus400 | AtualizarUnidadeMedidaStatus409>, AtualizarUnidadeMedidaOptions, TContext>
 }

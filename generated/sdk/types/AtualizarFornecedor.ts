@@ -3,6 +3,7 @@
 * Do not edit manually.
 */
 
+import type { ApiError } from './ApiError'
 import type { FornecedorRequestDTO } from './FornecedorRequestDTO'
 import type { FornecedorResponseDTO } from './FornecedorResponseDTO'
 
@@ -17,6 +18,12 @@ export type AtualizarFornecedorPath = {
 
 export type AtualizarFornecedorStatus200 = FornecedorResponseDTO;
 
+export type AtualizarFornecedorStatus400 = ApiError;
+
+export type AtualizarFornecedorStatus409 = ApiError;
+
+export type AtualizarFornecedorStatus503 = ApiError;
+
 export type AtualizarFornecedorBody = FornecedorRequestDTO;
 
 export type AtualizarFornecedorOptions = {
@@ -28,6 +35,9 @@ export type AtualizarFornecedorOptions = {
 
 export type AtualizarFornecedorResponses = {
   '200': AtualizarFornecedorStatus200;
+  '400': AtualizarFornecedorStatus400;
+  '409': AtualizarFornecedorStatus409;
+  '503': AtualizarFornecedorStatus503;
 };
 
 /**

@@ -1,8 +1,8 @@
 import { test,expect,type Page } from "./auth-fixture";
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 async function setup(page:Page) {
-  const purchase={id:id(1),idLoja:id(2),status:"RASCUNHO",itens:[{id:id(3),idProduto:id(4),quantidade:10,quantidadeRecebida:0}]};
-  let receipt={id:id(5),idCompra:id(1),idUsuario:id(6),status:"RASCUNHO",versao:0,dataRecebimento:"2026-11-05T12:00:00Z",observacao:"",itens:[{id:id(7),idItemCompra:id(3),idProduto:id(4),quantidade:2,observacao:""}]};
+  const purchase={id:id(1),idLoja:id(2),status:"RASCUNHO",itens:[{id:id(3),idProdutoSku:id(4),quantidade:10,quantidadeRecebida:0}]};
+  let receipt={id:id(5),idCompra:id(1),idUsuario:id(6),status:"RASCUNHO",versao:0,dataRecebimento:"2026-11-05T12:00:00Z",observacao:"",itens:[{id:id(7),idItemCompra:id(3),idProdutoSku:id(4),quantidade:2,observacao:""}]};
   const operations:{key:string;body:unknown}[]=[];
   let loseResponse=false, failRefresh=false, deleted=false;
   await page.route("**/api/**",async route=>{

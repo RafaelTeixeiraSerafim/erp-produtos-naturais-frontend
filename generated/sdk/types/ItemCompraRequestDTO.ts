@@ -15,7 +15,7 @@ export type ItemCompraRequestDTO = {
    * Format: `uuid`
    * @type string
    */
-  idProduto: string;
+  idProdutoSku: string;
   /**
    * @minimum 0.001
    * @type number

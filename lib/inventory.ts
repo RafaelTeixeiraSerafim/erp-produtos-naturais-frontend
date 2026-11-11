@@ -23,8 +23,8 @@ export function timestamp(value?: string) {
   if (!value || !inventoryDay(value)) return "—";
   return inventoryInstant(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
-export function matchesIds(row: { idProduto?: string; idLoja?: string }, product: string, store: string) {
-  return (!product || row.idProduto === product) && (!store || row.idLoja === store);
+export function matchesIds(row: { idProduto?: string; idProdutoSku?:string; idLoja?: string }, product: string, store: string, sku = "") {
+  return (!product || row.idProduto === product) && (!store || row.idLoja === store) && (!sku || row.idProdutoSku === sku);
 }
 export function inDateRange(value: string | undefined, start: string, end: string) {
   if (!start && !end) return true;
@@ -34,9 +34,10 @@ export function inDateRange(value: string | undefined, start: string, end: strin
 export function matchesQuantity(value: number | undefined, filter: string) {
   return !filter || (value !== undefined && (filter === "positivo" ? value > 0 : filter === "zero" ? value === 0 : filter === "negativo" ? value < 0 : true));
 }
-export function inventoryLink(path: string, product?: string, store?: string) {
+export function inventoryLink(path: string, product?: string, store?: string, sku?: string) {
   const params = new URLSearchParams();
   if (product) params.set("idProduto", product);
   if (store) params.set("idLoja", store);
+  if (sku) params.set("idProdutoSku", sku);
   return `${path}?${params}`;
 }

@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { CriarClienteOptions, CriarClienteStatus200 } from '../types/CriarCliente'
+import type { CriarClienteOptions, CriarClienteStatus201, CriarClienteStatus400, CriarClienteStatus409 } from '../types/CriarCliente'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { criarCliente } from '../clients/criarCliente'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const criarClienteMutationKey = () => [{ url: '/api/clientes' }] as const
 
 export function criarClienteMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = criarClienteMutationKey()
-  return mutationOptions<CriarClienteStatus200, ResponseErrorConfig<Error>, CriarClienteOptions, TContext>({
+  return mutationOptions<CriarClienteStatus201, ResponseErrorConfig<CriarClienteStatus400 | CriarClienteStatus409>, CriarClienteOptions, TContext>({
     mutationKey,
     mutationFn: async({ body }) => {
       return criarCliente({ ...config, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function criarClienteMutationOptions<TContext = unknown>(config: Partial<
  * {@link /api/clientes}
  */
 export function useCriarCliente<TContext>(options: {
-  mutation?: UseMutationOptions<CriarClienteStatus200, ResponseErrorConfig<Error>, CriarClienteOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<CriarClienteStatus201, ResponseErrorConfig<CriarClienteStatus400 | CriarClienteStatus409>, CriarClienteOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? criarClienteMutationKey()
 
-  const baseOptions = criarClienteMutationOptions(config) as UseMutationOptions<CriarClienteStatus200, ResponseErrorConfig<Error>, CriarClienteOptions, TContext>
+  const baseOptions = criarClienteMutationOptions(config) as UseMutationOptions<CriarClienteStatus201, ResponseErrorConfig<CriarClienteStatus400 | CriarClienteStatus409>, CriarClienteOptions, TContext>
 
-  return useMutation<CriarClienteStatus200, ResponseErrorConfig<Error>, CriarClienteOptions, TContext>({
+  return useMutation<CriarClienteStatus201, ResponseErrorConfig<CriarClienteStatus400 | CriarClienteStatus409>, CriarClienteOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<CriarClienteStatus200, ResponseErrorConfig<Error>, CriarClienteOptions, TContext>
+  }, queryClient) as UseMutationResult<CriarClienteStatus201, ResponseErrorConfig<CriarClienteStatus400 | CriarClienteStatus409>, CriarClienteOptions, TContext>
 }

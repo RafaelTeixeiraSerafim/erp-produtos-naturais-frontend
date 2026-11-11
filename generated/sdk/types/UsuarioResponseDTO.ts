@@ -26,6 +26,7 @@ export type UsuarioResponseDTO = {
    */
   id?: string;
   nome?: string;
+  usuario?: string;
   email?: string;
   cargo?: UsuarioResponseDTOCargoEnumKey;
   status?: UsuarioResponseDTOStatusEnumKey;

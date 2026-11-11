@@ -1,18 +1,15 @@
-# SDK do backend
+# SDK da etapa 14
 
-- Repositório: https://github.com/Zayma1/erp-produtos-naturais-backend
-- Branch integrada: `novaVersao`; origem `stage12-returns`, base `bdd39f3`.
-- Commit de código validado e fixado no runner: `c87fe72a66ca2fe8aaf14bead7101c0e95e27267`, contido em `novaVersao`.
-- Contrato: `openapi-stage12.json`, exportado por `ReturnsTests.exportOpenApi` com ADMIN autenticado e PostgreSQL V7 descartável.
-- Geração completa: Kubb e lockfile existentes, `OPENAPI_FILE=openapi-stage12.json npm run sdk:generate`.
-- SDK inteiro copiado do backend, incluindo `.kubb`, sem edição manual de arquivos gerados.
-- Tipos distintos para itens de ajuste, devolução de cliente e devolução a fornecedor.
-- Proxy de mesma origem com sessão/CSRF e Idempotency-Key UUID somente na criação das APIs aprovadas, incluindo devoluções.
-- `scripts/integration.mjs` fixa o SHA acima.
-- Evidências anteriores permanecem nos registros das etapas 9–11; evidência desta etapa em `docs/STAGE12_RELEASE.md`.
+Backend base `22ff8a5`, branch `stage14-forms-auth`, commit `7f8477645978dbabaceca961aa09f98b7882abc2` (pin do runner).
+Contrato `openapi-stage14.json` exportado por `ReturnsTests.exportOpenApi` com ADMIN
+em PostgreSQL V9 descartável. SDK integral gerado no backend com
+`OPENAPI_FILE=openapi-stage14.json npm run sdk:generate`, lockfile existente.
+Árvore completa copiada incluindo `.kubb`; nenhum arquivo gerado editado à mão.
 
-- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42284077339).
-- [CI consumidor validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563) no frontend `b78cfbe`.
+Novos contratos: usuário real separado de nome/e-mail, login por `login`,
+recuperação/redefinição de senha, localidades e código IBGE de município.
+Configuração e evidências em [etapa 14](../docs/STAGE14_FORMS_AUTH.md).
 
-Integração em 06/11/2026: frontend `main`, backend `novaVersao`. O contrato e
-o SDK permanecem os mesmos do aceite; mudanças documentais não exigem regeneração.
+SHA-256 do OpenAPI autenticado: `8ad71842fbcc5b654f78d99a11f88eb5ff4b787167b83d7d4f56b90ae0029519`.
+O teste de exportação verifica schemas distintos para recuperação pública e
+senha temporária administrativa, além das respostas de sucesso e erro.

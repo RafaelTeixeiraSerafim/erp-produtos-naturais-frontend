@@ -9,7 +9,7 @@ import type { QueryKey, QueryClient, QueryObserverOptions, UseQueryResult } from
 import { buscarProdutoLojaPorId } from '../clients/buscarProdutoLojaPorId'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-export const buscarProdutoLojaPorIdQueryKey = ({ path }: Omit<BuscarProdutoLojaPorIdOptions, 'headers'>) => [{ url: '/api/produtos-loja/:id', params: path }] as const
+export const buscarProdutoLojaPorIdQueryKey = ({ path }: Omit<BuscarProdutoLojaPorIdOptions, 'headers'>) => [{ url: '/api/skus-loja/:id', params: path }] as const
 
 type BuscarProdutoLojaPorIdQueryKey = ReturnType<typeof buscarProdutoLojaPorIdQueryKey>
 
@@ -24,7 +24,7 @@ export function buscarProdutoLojaPorIdQueryOptions({ path }: BuscarProdutoLojaPo
 }
 
 /**
- * {@link /api/produtos-loja/:id}
+ * {@link /api/skus-loja/:id}
  */
 export function useBuscarProdutoLojaPorId<TData = BuscarProdutoLojaPorIdStatus200, TQueryData = BuscarProdutoLojaPorIdStatus200, TQueryKey extends QueryKey = BuscarProdutoLojaPorIdQueryKey>({ path }: { path: BuscarProdutoLojaPorIdOptions['path'] | (() => BuscarProdutoLojaPorIdOptions['path']) }, options: {
   query?: Partial<QueryObserverOptions<BuscarProdutoLojaPorIdStatus200, ResponseErrorConfig<Error>, TData, TQueryData, TQueryKey>> & { client?: QueryClient },

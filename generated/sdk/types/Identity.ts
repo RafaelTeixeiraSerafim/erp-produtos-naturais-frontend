@@ -11,6 +11,7 @@ export type Identity = {
    */
   id?: string;
   nome?: string;
+  usuario?: string;
   email?: string;
   cargo?: string;
   lojas?: string[];

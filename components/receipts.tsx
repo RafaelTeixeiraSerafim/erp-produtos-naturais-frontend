@@ -7,7 +7,7 @@ import { useBuscarCompraPorId } from "@/generated/sdk/hooks/useBuscarCompraPorId
 import { useBuscarRecebimentoCompraPorId, buscarRecebimentoCompraPorIdQueryKey } from "@/generated/sdk/hooks/useBuscarRecebimentoCompraPorId";
 import { useListarRecebimentosCompra } from "@/generated/sdk/hooks/useListarRecebimentosCompra";
 import { useOperator, useIdentity } from "./auth";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { snapshotLabel } from "@/lib/skus";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
 import { criarRecebimentoCompra } from "@/generated/sdk/clients/criarRecebimentoCompra";
 import { atualizarRecebimentoCompra } from "@/generated/sdk/clients/atualizarRecebimentoCompra";
@@ -66,7 +66,7 @@ function ReceiptWithPurchase({ receipt: r, edit, unavailable, reloadReceipt }: {
   </>;
 }
 function ReceiptDetail({ purchase: c, receipt: r, unavailable, reload }: { purchase: CompraResponseDTO; receipt: RecebimentoCompraResponseDTO; unavailable: boolean; reload: () => Promise<void> }) {
-  const stores = useListarLojas(), products = useListarProdutos(), client = useQueryClient(), router = useRouter();
+  const stores = useListarLojas(), client = useQueryClient(), router = useRouter();
   const [review,setReview] = useState<"confirm" | "delete" | null>(null), [busy,setBusy] = useState(false), [error,setError] = useState<unknown>(), [saved,setSaved] = useState(false), [refreshFailed,setRefreshFailed] = useState(false);
   const store = stores.data?.find(s => s.id === c.idLoja)?.nomeFantasia || c.idLoja;
   async function perform() {
@@ -87,27 +87,26 @@ function ReceiptDetail({ purchase: c, receipt: r, unavailable, reload }: { purch
     } catch(e) { setError(e); setReview(null); await reload(); }
     finally { setBusy(false); }
   }
-  const productName = (id?: string) => products.data?.find(p => p.id === id)?.nome || id;
   return <>
     <Heading eyebrow="COMPRAS" title="Detalhes do recebimento" description="A confirmação registra a entrada na loja da compra." />
     {!!error && <ErrorNotice error={error} />}
     {saved && <p role="status">Operação concluída. {refreshFailed && "Não foi possível atualizar a tela."} <Link href={`/compras/${r.idCompra}`}>Ver compra salva</Link></p>}
     <Panel className="space-y-3 p-5"><p>Status: {receiptStatus(r.status)}</p><p>Loja de destino: {store}</p><p>Operador: {r.nomeUsuario || r.idUsuario}</p><p>Última alteração: {r.nomeModificador || "—"}</p>{r.nomeConfirmador && <p>Confirmado por: {r.nomeConfirmador}</p>}<p>Data do recebimento: {timestamp(r.dataRecebimento)}</p><p>Observação: {r.observacao || "—"}</p><p>Versão: {r.versao}</p>{r.concluidoEm && <p>Concluído em: {timestamp(r.concluidoEm)}</p>}<Link href={`/compras/${r.idCompra}`}>Ver compra</Link></Panel>
-    <ReceiptItems receipt={r} name={productName} />
+    <ReceiptItems receipt={r} />
     {r.status === "RASCUNHO" ? <div className="my-5 flex flex-wrap gap-3">
       <Button asChild variant="outline"><Link href={`/recebimentos/${r.id}/editar`}>Editar rascunho</Link></Button>
       <Button disabled={busy || unavailable || saved || !canReceive(c)} onClick={() => setReview("confirm")}>Concluir recebimento</Button>
       <Button variant="outline" disabled={busy || unavailable || saved} onClick={() => setReview("delete")}>Excluir rascunho</Button>
     </div> : <p className="my-5">Recebimento confirmado: somente leitura.</p>}
     <div className="my-5 flex flex-wrap gap-4"><Link href={inventoryLink("/estoque", "", c.idLoja || "")}>Consultar saldos da loja</Link><Link href={inventoryLink("/estoque/movimentacoes", "", c.idLoja || "")}>Ver movimentações da loja</Link><Link href="/recebimentos">Todos os recebimentos</Link></div>
-    <Dialog open={!!review} onOpenChange={open => { if (!open && !busy) setReview(null); }}><DialogContent><DialogTitle>{review === "delete" ? "Excluir rascunho?" : "Revisar entrada no estoque"}</DialogTitle><DialogDescription>{review === "delete" ? "O rascunho e seus itens serão excluídos. Ele não possui efeitos no estoque." : `Destino: ${store}. Confira os itens e as quantidades. Após confirmar, o recebimento será imutável.`}</DialogDescription>{review === "confirm" && <ReceiptItems receipt={r} name={productName} />}<div className="flex gap-3"><Button disabled={busy || unavailable} onClick={() => void perform()}>{review === "delete" ? "Confirmar exclusão" : "Confirmar entrada"}</Button><Button variant="outline" disabled={busy} onClick={() => setReview(null)}>Voltar</Button></div></DialogContent></Dialog>
+    <Dialog open={!!review} onOpenChange={open => { if (!open && !busy) setReview(null); }}><DialogContent><DialogTitle>{review === "delete" ? "Excluir rascunho?" : "Revisar entrada no estoque"}</DialogTitle><DialogDescription>{review === "delete" ? "O rascunho e seus itens serão excluídos. Ele não possui efeitos no estoque." : `Destino: ${store}. Confira os itens e as quantidades. Após confirmar, o recebimento será imutável.`}</DialogDescription>{review === "confirm" && <ReceiptItems receipt={r} />}<div className="flex gap-3"><Button disabled={busy || unavailable} onClick={() => void perform()}>{review === "delete" ? "Confirmar exclusão" : "Confirmar entrada"}</Button><Button variant="outline" disabled={busy} onClick={() => setReview(null)}>Voltar</Button></div></DialogContent></Dialog>
   </>;
 }
-function ReceiptItems({ receipt, name }: { receipt: RecebimentoCompraResponseDTO; name: (id?: string) => React.ReactNode }) {
-  return <Table><thead><TableRow>{["PRODUTO", "QUANTIDADE", "OBSERVAÇÃO"].map(t => <TableHead key={t}>{t}</TableHead>)}</TableRow></thead><tbody>{receipt.itens?.map(i => <TableRow key={i.id}><TableCell>{name(i.idProduto)}</TableCell><TableCell>{quantity(i.quantidade)}</TableCell><TableCell>{i.observacao || "—"}</TableCell></TableRow>)}</tbody></Table>;
+function ReceiptItems({ receipt }: { receipt: RecebimentoCompraResponseDTO }) {
+  return <Table><thead><TableRow>{["PRODUTO", "QUANTIDADE", "OBSERVAÇÃO"].map(t => <TableHead key={t}>{t}</TableHead>)}</TableRow></thead><tbody>{receipt.itens?.map(i => <TableRow key={i.id}><TableCell>{snapshotLabel(i)}</TableCell><TableCell>{quantity(i.quantidade)}</TableCell><TableCell>{i.observacao || "—"}</TableCell></TableRow>)}</tbody></Table>;
 }
 export function ReceiptEditor({ purchase: c, receipt: r, unavailable = false, reload }: { purchase: CompraResponseDTO; receipt?: RecebimentoCompraResponseDTO; unavailable?: boolean; reload: () => Promise<void> }) {
-  const users = useOperator(), products = useListarProdutos(), stores = useListarLojas(), client = useQueryClient(), router = useRouter();
+  const users = useOperator(), stores = useListarLojas(), client = useQueryClient(), router = useRouter();
   const user = useIdentity();
   const initial = { ...receiptValues(c,r), idUsuario: user?.id || "" };
   const [draft,setDraft] = useState(() => initial), [busy,setBusy] = useState(false), [error,setError] = useState<unknown>(), [savedLink,setSavedLink] = useState(""), [refreshFailed,setRefreshFailed] = useState(false), [conflicted,setConflicted] = useState(false);
@@ -158,7 +157,7 @@ export function ReceiptEditor({ purchase: c, receipt: r, unavailable = false, re
       <fieldset disabled={locked || !!draft.pending || changed || conflicted} className="space-y-5">
         <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1"><p>Operador: {user?.nome}</p><label>Data do recebimento<Input type="datetime-local" step="1" value={draft.dataRecebimento} onChange={e => setDraft({ ...draft,dataRecebimento:e.target.value })} /><small>Horário de São Paulo. Em branco, usa a data do servidor.</small></label><label>Observação<Textarea maxLength={255} value={draft.observacao} onChange={e => setDraft({ ...draft,observacao:e.target.value })} /></label></Panel>
         <Button type="button" variant="outline" onClick={() => setDraft({ ...draft, itens:draft.itens.map(i => { const item = c.itens?.find(x => x.id === i.idItemCompra); const pending = item ? outstanding(item) : 0; return { ...i, selecionado:pending > 0, quantidade:pending > 0 ? formatQuantityInput(pending) : "" }; }) })}>Preencher pendentes</Button>
-        {draft.itens.map((i,index) => { const ordered = c.itens?.find(x => x.id === i.idItemCompra); return <Panel key={i.idItemCompra} className="space-y-3 p-5" aria-label={`Item ${index+1}`}><label className="flex gap-3"><input type="checkbox" checked={i.selecionado} onChange={e => patch(index,"selecionado",e.target.checked)} />{products.data?.find(p => p.id === i.idProduto)?.nome || i.idProduto}</label><p>Pedida: {quantity(ordered?.quantidade)} · Recebida: {quantity(ordered?.quantidadeRecebida)} · Pendente: {quantity(ordered ? outstanding(ordered) : undefined)}</p><label>Quantidade a receber<Input inputMode="decimal" value={i.quantidade} onChange={e => patch(index,"quantidade",e.target.value)} /><small>Até três casas decimais.</small></label><label>Observação do item<Textarea maxLength={255} value={i.observacao} onChange={e => patch(index,"observacao",e.target.value)} /></label></Panel>; })}
+        {draft.itens.map((i,index) => { const ordered = c.itens?.find(x => x.id === i.idItemCompra); return <Panel key={i.idItemCompra} className="space-y-3 p-5" aria-label={`Item ${index+1}`}><label className="flex gap-3"><input type="checkbox" checked={i.selecionado} onChange={e => patch(index,"selecionado",e.target.checked)} />{snapshotLabel(ordered || i)}</label><p>Pedida: {quantity(ordered?.quantidade)} · Recebida: {quantity(ordered?.quantidadeRecebida)} · Pendente: {quantity(ordered ? outstanding(ordered) : undefined)}</p><label>Quantidade a receber<Input inputMode="decimal" value={i.quantidade} onChange={e => patch(index,"quantidade",e.target.value)} /><small>Até três casas decimais.</small></label><label>Observação do item<Textarea maxLength={255} value={i.observacao} onChange={e => patch(index,"observacao",e.target.value)} /></label></Panel>; })}
       </fieldset>
       <div className="my-5 flex flex-wrap gap-4"><Button type="submit" disabled={locked || changed || conflicted || !operatorValid}>{busy ? "Salvando…" : draft.pending && !savedLink ? "Repetir envio salvo" : "Salvar rascunho"}</Button><Button asChild variant="outline"><Link href={r ? `/recebimentos/${r.id}` : `/compras/${c.id}`}>Voltar</Link></Button></div>
     </form>

@@ -1,15 +1,15 @@
 import { test, expect } from "./auth-fixture";
 test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, request }) => {
   if (process.env.CATALOG_DISPOSABLE !== "1" || !process.env.INVENTORY_FIXTURE) throw new Error("Execute npm run test:integration com fixture descartável.");
-  const fixture = JSON.parse(process.env.INVENTORY_FIXTURE) as { product: string; otherProduct: string; store: string; otherStore: string };
+  const fixture = JSON.parse(process.env.INVENTORY_FIXTURE) as { product: string; productGroup:string; otherProduct: string; store: string; otherStore: string };
   // Desktop receiving and selling change this persistent fixture before mobile runs.
   // Reconcile the original known balance with both linked entries and sale exits.
   const movements = await (await request.get("/api/movimentacoes-estoque")).json();
-  const entries = movements.filter((m: { idProduto:string; tipo:string; idRecebimentoCompra?:string }) => m.idProduto === fixture.product && m.tipo === "ENTRADA_COMPRA" && m.idRecebimentoCompra);
+  const entries = movements.filter((m: { idProdutoSku:string; tipo:string; idRecebimentoCompra?:string }) => m.idProdutoSku === fixture.product && m.tipo === "ENTRADA_COMPRA" && m.idRecebimentoCompra);
   const received = entries.filter((m: { idLoja:string }) => m.idLoja === fixture.store).reduce((sum:number,m:{quantidade:number}) => sum + m.quantidade,0);
-  const exits=movements.filter((m:{idProduto:string;tipo:string;idVenda?:string})=>m.idProduto===fixture.product && m.tipo==="SAIDA_VENDA" && m.idVenda);
+  const exits=movements.filter((m:{idProdutoSku:string;tipo:string;idVenda?:string})=>m.idProdutoSku===fixture.product && m.tipo==="SAIDA_VENDA" && m.idVenda);
   const sold=exits.filter((m:{idLoja:string})=>m.idLoja===fixture.store).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
-  const transfers=movements.filter((m:{idProduto:string;tipo:string;idTransferencia?:string})=>m.idProduto===fixture.product && m.idTransferencia && ["TRANSFERENCIA_ENTRADA","TRANSFERENCIA_SAIDA"].includes(m.tipo));
+  const transfers=movements.filter((m:{idProdutoSku:string;tipo:string;idTransferencia?:string})=>m.idProdutoSku===fixture.product && m.idTransferencia && ["TRANSFERENCIA_ENTRADA","TRANSFERENCIA_SAIDA"].includes(m.tipo));
   const transferDelta=(store:string)=>transfers.filter((m:{idLoja:string})=>m.idLoja===store).reduce((sum:number,m:{tipo:string;quantidade:number})=>sum+(m.tipo==="TRANSFERENCIA_ENTRADA"?1:-1)*m.quantidade,0);
   const otherReceived=entries.filter((m:{idLoja:string})=>m.idLoja===fixture.otherStore).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
   const otherSold=exits.filter((m:{idLoja:string})=>m.idLoja===fixture.otherStore).reduce((sum:number,m:{quantidade:number})=>sum+m.quantidade,0);
@@ -18,20 +18,20 @@ test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, r
   await page.goto("/estoque");
   await expect(page.getByRole("cell", { name: expected, exact: true })).toBeVisible();
   await expect(page.getByRole("cell", { name: "-0,125", exact: true })).toBeVisible();
-  await page.getByLabel("Produto", { exact: true }).selectOption(fixture.product);
+  await page.getByRole("combobox", { name: "SKU", exact: true }).selectOption(fixture.product);
   await expect(page.locator("tbody tr")).toHaveCount(2);
-  await page.getByLabel("Loja", { exact: true }).selectOption(fixture.store);
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption(fixture.store);
   await expect(page.getByLabel("Saldo exato")).toContainText(`${expected} kg`);
   await page.reload();
-  await expect(page.getByLabel("Produto", { exact: true })).toHaveValue(fixture.product);
+  await expect(page.getByRole("combobox", { name: "SKU", exact: true })).toHaveValue(fixture.product);
   await expect(page.locator("tbody tr")).toHaveCount(1);
-  await page.getByLabel("Loja", { exact: true }).selectOption(fixture.otherStore);
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption(fixture.otherStore);
   await expect(page.getByLabel("Saldo exato")).toContainText(`${expectedOther} kg`);
   await expect(page.getByText("Sem registro de estoque")).toHaveCount(0);
-  await page.getByLabel("Produto", { exact: true }).selectOption(fixture.otherProduct);
+  await page.getByRole("combobox", { name: "SKU", exact: true }).selectOption(fixture.otherProduct);
   await expect(page.getByText("Sem registro de estoque")).toBeVisible();
   await expect(page.getByLabel("Saldo exato")).toContainText("0 kg");
-  await page.goto(`/estoque/movimentacoes?idProduto=${fixture.product}`);
+  await page.goto(`/estoque/movimentacoes?idProdutoSku=${fixture.product}`);
   await expect(page.locator("tbody tr")).toHaveCount(4 + entries.length + exits.length + transfers.length);
   await page.getByLabel("Data inicial").fill("2026-11-04");
   await page.getByLabel("Data final").fill("2026-11-04");
@@ -45,7 +45,7 @@ test("estoque real: precisão, saldo, filtros, datas e reload", async ({ page, r
   await page.getByRole("button", { name: "Ver detalhes" }).first().click();
   await expect(page.getByRole("dialog")).toContainText("Limite de data");
   await page.getByRole("button", { name: "Fechar", exact: true }).click();
-  await page.getByRole("link", { name: "Aveia integração", exact: true }).first().click();
+  await page.getByRole("link", { name: /Aveia integração/ }).first().click();
   await page.getByRole("link", { name: "Consultar estoque", exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/estoque\\?idProduto=${fixture.product}`));
+  await expect(page).toHaveURL(new RegExp(`/estoque\\?idProduto=${fixture.productGroup}`));
 });

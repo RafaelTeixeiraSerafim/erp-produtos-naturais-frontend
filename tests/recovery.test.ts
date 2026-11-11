@@ -28,7 +28,7 @@ it("purchase baseline covers editable fields, status, operator and item identiti
 it("restaura a criação de venda com a mesma serialização do payload submetido", async () => {
   const {salePayload}=await import("@/lib/sales");
   const id="11111111-1111-4111-8111-111111111111";
-  const draft={...saleValues(),idCliente:id,idUsuario:id,idLoja:id,observacao:"Conferida",itens:[{idProduto:id,quantidade:"1",precoUnitario:"2",desconto:"0"}]};
+  const draft={...saleValues(),idCliente:id,idUsuario:id,idLoja:id,observacao:"Conferida",itens:[{idProdutoSku:id,quantidade:"1",precoUnitario:"2",desconto:"0"}]};
   const body=salePayload(draft);
   const recovered=decodeRecovery(JSON.stringify(record({...draft,pending:{key:id,body}})),saleDraftSchema,now);
   expect(JSON.stringify(recovered.values.pending?.body)).toBe(JSON.stringify(body));

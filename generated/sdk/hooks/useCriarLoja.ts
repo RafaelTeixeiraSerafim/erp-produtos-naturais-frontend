@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { CriarLojaOptions, CriarLojaStatus200 } from '../types/CriarLoja'
+import type { CriarLojaOptions, CriarLojaStatus201, CriarLojaStatus400, CriarLojaStatus409, CriarLojaStatus503 } from '../types/CriarLoja'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { criarLoja } from '../clients/criarLoja'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const criarLojaMutationKey = () => [{ url: '/api/lojas' }] as const
 
 export function criarLojaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = criarLojaMutationKey()
-  return mutationOptions<CriarLojaStatus200, ResponseErrorConfig<Error>, CriarLojaOptions, TContext>({
+  return mutationOptions<CriarLojaStatus201, ResponseErrorConfig<CriarLojaStatus400 | CriarLojaStatus409 | CriarLojaStatus503>, CriarLojaOptions, TContext>({
     mutationKey,
     mutationFn: async({ body }) => {
       return criarLoja({ ...config, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function criarLojaMutationOptions<TContext = unknown>(config: Partial<Omi
  * {@link /api/lojas}
  */
 export function useCriarLoja<TContext>(options: {
-  mutation?: UseMutationOptions<CriarLojaStatus200, ResponseErrorConfig<Error>, CriarLojaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<CriarLojaStatus201, ResponseErrorConfig<CriarLojaStatus400 | CriarLojaStatus409 | CriarLojaStatus503>, CriarLojaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? criarLojaMutationKey()
 
-  const baseOptions = criarLojaMutationOptions(config) as UseMutationOptions<CriarLojaStatus200, ResponseErrorConfig<Error>, CriarLojaOptions, TContext>
+  const baseOptions = criarLojaMutationOptions(config) as UseMutationOptions<CriarLojaStatus201, ResponseErrorConfig<CriarLojaStatus400 | CriarLojaStatus409 | CriarLojaStatus503>, CriarLojaOptions, TContext>
 
-  return useMutation<CriarLojaStatus200, ResponseErrorConfig<Error>, CriarLojaOptions, TContext>({
+  return useMutation<CriarLojaStatus201, ResponseErrorConfig<CriarLojaStatus400 | CriarLojaStatus409 | CriarLojaStatus503>, CriarLojaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<CriarLojaStatus200, ResponseErrorConfig<Error>, CriarLojaOptions, TContext>
+  }, queryClient) as UseMutationResult<CriarLojaStatus201, ResponseErrorConfig<CriarLojaStatus400 | CriarLojaStatus409 | CriarLojaStatus503>, CriarLojaOptions, TContext>
 }

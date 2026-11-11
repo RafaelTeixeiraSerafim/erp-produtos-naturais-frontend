@@ -11,7 +11,7 @@ async function setup(page: Page, empty = false) {
     cidade: "Criciúma",
     bairro: "Centro",
     complemento: "",
-    cnpj: "",
+    cnpj: "04252011000110",
     cpf: "",
   };
   const db: Record<string, Row[]> = {
@@ -20,15 +20,17 @@ async function setup(page: Page, empty = false) {
     produtos: empty
       ? []
       : [
-          { id: id(3), nome: "Aveia" },
-          { id: id(4), nome: "Castanha" },
+          { id: id(3), nome: "Aveia",status:"ATIVO" },
+          { id: id(4), nome: "Castanha",status:"ATIVO" },
         ],
     compras: [],
   };
+  db["produtos-sku"] = db.produtos.map(p=>({id:p.id,idProduto:p.id,nomeProduto:p.nome,sku:String(p.id),descricaoApresentacao:"Granel",tipoVenda:"PESO",status:"ATIVO"}));
   let count = 100;
   const writes: Row[] = [];
   await page.route("**/api/**", async (route) => {
     if (new URL(route.request().url()).pathname.startsWith("/api/auth/")) return route.fallback();
+    if(new URL(route.request().url()).pathname.startsWith("/api/localidades/"))return route.fulfill({json:{dados:new URL(route.request().url()).pathname.endsWith("municipios")?[{id:4204608,nome:"Criciúma"}]:[{id:42,nome:"Santa Catarina",sigla:"SC"}],desatualizado:false}});
     const req = route.request(),
       [resource, key] = new URL(req.url()).pathname
         .replace("/api/", "")
@@ -69,7 +71,7 @@ async function setup(page: Page, empty = false) {
 }
 async function fillItem(page: Page, n: number, product = id(3)) {
   const row = page.getByLabel(`Item ${n}`, { exact: true });
-  await row.getByLabel("Produto").selectOption(product);
+  await row.getByRole("combobox", { name: "SKU", exact: false }).selectOption(product);
   await row.getByLabel("Quantidade").fill("1,125");
   await row.getByLabel("Custo unitário").fill("2,3456");
   await row.getByLabel("Desconto").fill("0,10");
@@ -83,14 +85,15 @@ test("fornecedor: CRUD, normalização de UF, filtro e referência bloqueada", a
   for (const [label, value] of Object.entries({
     "Nome fantasia": "Novo natural",
     "Razão social": "Novo LTDA",
-    Estado: "sc",
-    Cidade: "Criciúma",
+    CNPJ: "04252011000110",
     Bairro: "Centro",
   }))
     await page
       .getByRole("dialog")
       .getByLabel(label, { exact: false })
       .fill(value);
+  await page.getByLabel("Estado",{exact:true}).selectOption("SC");
+  await page.getByLabel("Cidade",{exact:true}).selectOption("4204608");
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Salvar", exact: true })
@@ -139,8 +142,8 @@ test("rascunho com vários itens, erro preserva valores, edição e totais salvo
 }) => {
   const { writes } = await setup(page);
   await page.goto("/compras/nova");
-  await page.getByLabel("Fornecedor *", { exact: true }).selectOption(id(1));
-  await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
+  await page.getByRole("combobox", { name: "Fornecedor *", exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(id(2));
   await fillItem(page, 1);
   await page.getByRole("button", { name: "Adicionar item" }).click();
   await fillItem(page, 2, id(4));
@@ -155,7 +158,7 @@ test("rascunho com vários itens, erro preserva valores, edição e totais salvo
       : route.fallback(),
   );
   await page.getByRole("button", { name: "Salvar rascunho" }).click();
-  await expect(page.locator("main").getByRole("alert")).toContainText(
+  await expect(page.locator("main").getByRole("alert").first()).toContainText(
     "Falha de validação",
   );
   await expect(page.getByLabel("Observação")).toHaveValue("Entrega combinada");
@@ -225,16 +228,16 @@ test("pré-requisitos ausentes e falhas de lookup impedem gravação", async ({
     page.getByRole("button", { name: "Salvar rascunho" }),
   ).toBeDisabled();
   for (const name of [
-    "Cadastrar fornecedor",
-    "Cadastrar loja",
-    "Cadastrar produto",
+    "Cadastrar fornecedor em nova aba",
+    "Cadastrar loja em nova aba",
+    "Cadastrar SKU em nova aba",
   ])
     await expect(page.getByRole("link", { name })).toBeVisible();
   await page.route("**/api/fornecedores", (route) =>
     route.fulfill({ status: 500, json: { message: "Falha fornecedores" } }),
   );
   await page.reload();
-  await expect(page.locator("main").getByRole("alert")).toContainText(
+  await expect(page.locator("main").getByRole("alert").first()).toContainText(
     "Verifique a conexão",
   );
   await expect(
@@ -255,7 +258,7 @@ test("compra fora de rascunho é somente leitura e status concorrente bloqueia n
     itens: [
       {
         id: id(101),
-        idProduto: id(3),
+        idProdutoSku: id(3),
         quantidade: 1,
         custoUnitario: 2,
         desconto: 0,
@@ -315,7 +318,7 @@ test("falha de fornecedor mantém formulário e compra ausente tem retry", async
   );
   await expect(page.getByLabel("Nome fantasia")).toHaveValue("Preservado");
   await page.goto(`/compras/${id(999)}`);
-  await expect(page.locator("main").getByRole("alert")).toContainText(
+  await expect(page.locator("main").getByRole("alert").first()).toContainText(
     "Registro não encontrado",
   );
   await expect(
@@ -355,11 +358,13 @@ test("recupera valores incompletos e linhas após navegação protegida e permit
   await page.getByLabel("Quantidade").fill("1,");
   await page.getByRole("button", { name: "Adicionar item" }).click();
   await page.getByLabel("Observação").fill("Entrega local");
-  await page.getByRole("link", { name: "Cadastrar fornecedor" }).click();
+  if(await page.getByRole("button",{name:"Abrir menu"}).isVisible())await page.getByRole("button",{name:"Abrir menu"}).click();
+  await page.getByRole("navigation").getByRole("link",{name:"Fornecedores",exact:true}).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "Continuar editando" }).click();
   await expect(page.getByLabel("Observação")).toHaveValue("Entrega local");
-  await page.getByRole("link", { name: "Cadastrar fornecedor" }).click();
+  if(await page.getByRole("button",{name:"Abrir menu"}).isVisible())await page.getByRole("button",{name:"Abrir menu"}).click();
+  await page.getByRole("navigation").getByRole("link",{name:"Fornecedores",exact:true}).click();
   await page.getByRole("button", { name: "Sair e manter recuperação" }).click();
   await expect(page).toHaveURL(/\/fornecedores$/);
   await page.goto("/compras/nova");
@@ -376,14 +381,15 @@ test("recupera valores incompletos e linhas após navegação protegida e permit
 test("restauração mantém seleção ausente visível e impede envio", async ({ page }) => {
   const { db } = await setup(page);
   await page.goto("/compras/nova");
-  await page.getByLabel("Fornecedor *", { exact: true }).selectOption(id(1));
-  await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
+  await page.getByRole("combobox", { name: "Fornecedor *", exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(id(2));
   await fillItem(page, 1);
   await expect(page.getByText("Recuperação salva neste navegador", { exact: true })).toBeVisible();
-  db.produtos = [{ id: id(4), nome: "Castanha" }];
+  db.produtos = [{ id: id(4), nome: "Castanha",status:"ATIVO" }];
+  db["produtos-sku"] = db["produtos-sku"].filter(s=>s.id!==id(3));
   await page.reload();
   await page.getByRole("button", { name: "Restaurar", exact: true }).click();
-  await expect(page.getByLabel("Produto *", { exact: true })).toHaveValue(id(3));
+  await expect(page.getByRole("combobox", { name: "SKU *", exact: true })).toHaveValue(id(3));
   await expect(page.getByRole("button", { name: "Salvar rascunho" })).toBeDisabled();
   await expect(page.locator('option:checked').filter({ hasText: 'Indisponível:' })).toHaveCount(1);
 });
@@ -425,8 +431,8 @@ test("duas abas exigem decisão explícita sem mesclar itens", async ({ page, co
 test("compra salva com falha de atualização mantém link e impede reenvio", async ({ page }) => {
   const { writes } = await setup(page);
   await page.goto("/compras/nova");
-  await page.getByLabel("Fornecedor *", { exact: true }).selectOption(id(1));
-  await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
+  await page.getByRole("combobox", { name: "Fornecedor *", exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(id(2));
   await fillItem(page, 1);
   await page.route("**/api/fornecedores", route => route.fulfill({ status: 500, json: {} }));
   await page.getByRole("button", { name: "Salvar rascunho" }).click();

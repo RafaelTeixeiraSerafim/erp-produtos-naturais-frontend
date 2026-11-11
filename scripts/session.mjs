@@ -17,7 +17,7 @@ export async function authenticatedSession(base, email, password, transport = gl
     return result;
   }
   token = await (await call("/api/auth/csrf")).json();
-  const response = await call("/api/auth/login", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,senha:password})});
+  const response = await call("/api/auth/login", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({login:email,senha:password})});
   if (!response.ok) throw new Error(`Disposable login failed: ${response.status}`);
   const identity = await response.json();
   token = await (await call("/api/auth/csrf")).json();

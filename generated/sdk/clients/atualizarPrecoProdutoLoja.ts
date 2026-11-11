@@ -8,10 +8,10 @@ import type { AtualizarPrecoProdutoLojaOptions, AtualizarPrecoProdutoLojaRespons
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * {@link /api/produtos-precos-loja/:id}
+ * {@link /api/skus-precos-loja/:id}
  */
 export function atualizarPrecoProdutoLoja<ThrowOnError extends boolean = true>(options: Options<AtualizarPrecoProdutoLojaOptions, ThrowOnError>): Unwrappable<RequestResult<AtualizarPrecoProdutoLojaResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PUT', url: '/api/produtos-precos-loja/{id}', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<AtualizarPrecoProdutoLojaResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PUT', url: '/api/skus-precos-loja/{id}', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<AtualizarPrecoProdutoLojaResponses, ThrowOnError>>)
 }

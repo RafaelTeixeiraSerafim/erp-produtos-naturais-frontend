@@ -431,3 +431,27 @@ e 30 cenários reais desktop/mobile, com persistência após reinício,
 [validate/integration aprovados](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42285586563).
 A parcela de devoluções de BG-001 está encerrada na versão integrada; reconciliação de
 históricos, acertos financeiros e demais itens diferidos não foram implementados.
+
+<a id="bg-023"></a>
+## BG-023 — Produto/SKU na identidade comercial
+
+Diagnóstico no backend integrado `f38a335`: SKU armazenava identificadores opcionais de venda, enquanto estoque, preços, vínculos e documentos usavam produto. Variantes do mesmo produto compartilhavam indevidamente sua unidade comercial.
+
+Implementação da etapa 13 em `stage13-sku-variants`: unidade/tipo/apresentação obrigatórios no SKU, estoque e vínculos por SKU + loja, contratos comerciais com `idProdutoSku` obrigatório, snapshots históricos e herança por item de origem. V8 exige reset de desenvolvimento; V1–V7 preservadas, sem mapeamento presumido. Frontend, SDK integral e fixtures acompanham o contrato. **Resolvida no código backend `aa6a450`, validado em `22ff8a5`, e frontend `42ae648`.** PostgreSQL CI, 182 unitários, 112 cenários desktop/mobile, build e integração real de 32 cenários aprovados. A resolução e suas evidências finais estão em [STAGE13_RELEASE.md](STAGE13_RELEASE.md); este registro não afirma aplicação em produção. Preços automáticos (BG-012) e concorrência/idempotência de compras (BG-021/BG-022) permanecem fora desta correção.
+
+## Etapa 14 — acesso, documentos e localidades
+
+Bases inspecionadas: frontend `d60fa53`, backend `22ff8a5`. As evidências desta
+etapa são locais e estão em [STAGE14_RELEASE.md](STAGE14_RELEASE.md).
+Nenhuma conclusão abaixo declara alteração do ambiente publicado.
+
+| Lacuna | Diagnóstico e correção na branch `stage14-forms-auth` |
+| --- | --- |
+| BG-024 — Identidade de login | Confirmado por inspeção: login anterior aceitava e-mail e o alias especial `admin`, sem campo de usuário. Corrigida: usuário real separado de nome/e-mail, validação e unicidade no banco, migração com relatório e colisões estáveis. `AuthenticationTests`, `FormsAuthTests` e `MigrationTests` cobrem bootstrap, nome distinto, caixa, colisões e bloqueio compartilhado dos dois identificadores. |
+| BG-025 — Recuperação de senha | Capacidade anteriormente ausente. Corrigida: endpoints públicos com CSRF, SMTP configurado, resposta genérica e limitação persistida; token de 256 bits somente como hash, expiração, consumo único e concorrente, revogação de sessões/tokens sem conceder permissões/revisão. Testes capturam SMTP exclusivamente local. |
+| BG-026 — CNPJ mascarado e erro de integridade | Suspeita inicial de tamanho confirmada por reprodução SQL em PostgreSQL V8 isolado: máscara de 18 caracteres excede `varchar(14)` com SQLSTATE `22001`. O mapeamento antigo para 409 genérico foi confirmado por inspeção do handler; não se alega uma requisição HTTP antiga reproduzida. Corrigida a causa: normalização antes de persistir; CNPJ numérico/alfanumérico e CPF com verificadores; formato/tamanho 400 e duplicidade real 409 específico. `maskedCnpjReproducesPostgresLengthErrorInOriginalSchema` e `numericAndAlphanumericStoresPersistCanonicalDocuments` registram as evidências. |
+| BG-027 — Documentos e unidades duplicados | Confirmado por inspeção: faltavam as restrições solicitadas. Corrigida: CPF opcional/único de cliente, exatamente um documento e unicidade por documento em fornecedores, nome normalizado de unidade único sem nova unicidade de sigla. Índices cobrem requisições concorrentes; edição do próprio registro e múltiplos CPFs vazios são permitidos. Preflight V9 bloqueia conflitos por ID sem mesclar/excluir. Testes de serviço, concorrência e migração em PostgreSQL. |
+| BG-028 — Localidade livre | Confirmado por inspeção: UF/cidade eram texto livre. Corrigida: catálogo autenticado da API oficial IBGE, timeout/cache de 24h e até sete dias sinalizados em falha; sem cache, 503. Código e nome canônico são validados por UF; endereço legado preservado sem HTTP na migração. Testes controlados cobrem cache, indisponibilidade, associação inválida e respostas atrasadas na troca de UF. |
+
+BG-021/BG-022 de compras permanecem abertas. A precisão da data no formulário e
+os controles de consulta não adicionam idempotência nem versão ao PUT de compras.

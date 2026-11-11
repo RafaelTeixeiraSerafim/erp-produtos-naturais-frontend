@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { AtualizarFornecedorOptions, AtualizarFornecedorStatus200 } from '../types/AtualizarFornecedor'
+import type { AtualizarFornecedorOptions, AtualizarFornecedorStatus200, AtualizarFornecedorStatus400, AtualizarFornecedorStatus409, AtualizarFornecedorStatus503 } from '../types/AtualizarFornecedor'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { atualizarFornecedor } from '../clients/atualizarFornecedor'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const atualizarFornecedorMutationKey = () => [{ url: '/api/fornecedores/:
 
 export function atualizarFornecedorMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = atualizarFornecedorMutationKey()
-  return mutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<Error>, AtualizarFornecedorOptions, TContext>({
+  return mutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<AtualizarFornecedorStatus400 | AtualizarFornecedorStatus409 | AtualizarFornecedorStatus503>, AtualizarFornecedorOptions, TContext>({
     mutationKey,
     mutationFn: async({ path, body }) => {
       return atualizarFornecedor({ ...config, path, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function atualizarFornecedorMutationOptions<TContext = unknown>(config: P
  * {@link /api/fornecedores/:id}
  */
 export function useAtualizarFornecedor<TContext>(options: {
-  mutation?: UseMutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<Error>, AtualizarFornecedorOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<AtualizarFornecedorStatus400 | AtualizarFornecedorStatus409 | AtualizarFornecedorStatus503>, AtualizarFornecedorOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? atualizarFornecedorMutationKey()
 
-  const baseOptions = atualizarFornecedorMutationOptions(config) as UseMutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<Error>, AtualizarFornecedorOptions, TContext>
+  const baseOptions = atualizarFornecedorMutationOptions(config) as UseMutationOptions<AtualizarFornecedorStatus200, ResponseErrorConfig<AtualizarFornecedorStatus400 | AtualizarFornecedorStatus409 | AtualizarFornecedorStatus503>, AtualizarFornecedorOptions, TContext>
 
-  return useMutation<AtualizarFornecedorStatus200, ResponseErrorConfig<Error>, AtualizarFornecedorOptions, TContext>({
+  return useMutation<AtualizarFornecedorStatus200, ResponseErrorConfig<AtualizarFornecedorStatus400 | AtualizarFornecedorStatus409 | AtualizarFornecedorStatus503>, AtualizarFornecedorOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<AtualizarFornecedorStatus200, ResponseErrorConfig<Error>, AtualizarFornecedorOptions, TContext>
+  }, queryClient) as UseMutationResult<AtualizarFornecedorStatus200, ResponseErrorConfig<AtualizarFornecedorStatus400 | AtualizarFornecedorStatus409 | AtualizarFornecedorStatus503>, AtualizarFornecedorOptions, TContext>
 }

@@ -4,7 +4,7 @@ import { purchaseLocalDate, saoPauloTimestamp } from "./purchases";
 const itemBody = z
   .object({
     id: z.uuid().optional(),
-    idProduto: z.uuid(),
+    idProdutoSku: z.uuid(),
     quantidade: z.number(),
   })
   .strict();
@@ -28,7 +28,7 @@ export const transferDraftSchema = z
       z
         .object({
           id: z.string().optional(),
-          idProduto: z.string(),
+          idProdutoSku: z.string(),
           quantidade: z.string(),
         })
         .strict(),
@@ -40,7 +40,7 @@ export const transferDraftSchema = z
   })
   .strict();
 export type TransferDraft = z.infer<typeof transferDraftSchema>;
-export const blankTransferItem = () => ({ idProduto: "", quantidade: "" });
+export const blankTransferItem = () => ({ idProdutoSku: "", quantidade: "" });
 export function transferValues(row?: TransferenciaResponseDTO): TransferDraft {
   return {
     idLojaOrigem: row?.idLojaOrigem || "",
@@ -52,7 +52,7 @@ export function transferValues(row?: TransferenciaResponseDTO): TransferDraft {
     baseVersion: row?.versao,
     itens: row?.itens?.map((i) => ({
       id: i.id,
-      idProduto: i.idProduto || "",
+      idProdutoSku: i.idProdutoSku || "",
       quantidade: String(i.quantidade ?? ""),
     })) || [blankTransferItem()],
   };
@@ -62,7 +62,7 @@ export function transferPayload(d: TransferDraft) {
     throw new Error("Selecione duas lojas distintas.");
   if (
     !d.itens.length ||
-    new Set(d.itens.map((i) => i.idProduto)).size !== d.itens.length
+    new Set(d.itens.map((i) => i.idProdutoSku)).size !== d.itens.length
   )
     throw new Error("Informe itens com produtos únicos.");
   const itens = d.itens.map((i) => {
@@ -71,7 +71,7 @@ export function transferPayload(d: TransferDraft) {
     const quantidade = Number(i.quantidade.replace(",", "."));
     if (quantidade <= 0 || quantidade >= 100000000000)
       throw new Error("Quantidade fora do limite numeric(14,3).");
-    return { id: i.id, idProduto: i.idProduto, quantidade };
+    return { id: i.id, idProdutoSku: i.idProdutoSku, quantidade };
   });
   return transferBodySchema.parse({
     idLojaOrigem: d.idLojaOrigem,

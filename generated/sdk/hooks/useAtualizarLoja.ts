@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { AtualizarLojaOptions, AtualizarLojaStatus200 } from '../types/AtualizarLoja'
+import type { AtualizarLojaOptions, AtualizarLojaStatus200, AtualizarLojaStatus400, AtualizarLojaStatus409, AtualizarLojaStatus503 } from '../types/AtualizarLoja'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { atualizarLoja } from '../clients/atualizarLoja'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const atualizarLojaMutationKey = () => [{ url: '/api/lojas/:id' }] as con
 
 export function atualizarLojaMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = atualizarLojaMutationKey()
-  return mutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<Error>, AtualizarLojaOptions, TContext>({
+  return mutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<AtualizarLojaStatus400 | AtualizarLojaStatus409 | AtualizarLojaStatus503>, AtualizarLojaOptions, TContext>({
     mutationKey,
     mutationFn: async({ path, body }) => {
       return atualizarLoja({ ...config, path, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function atualizarLojaMutationOptions<TContext = unknown>(config: Partial
  * {@link /api/lojas/:id}
  */
 export function useAtualizarLoja<TContext>(options: {
-  mutation?: UseMutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<Error>, AtualizarLojaOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<AtualizarLojaStatus400 | AtualizarLojaStatus409 | AtualizarLojaStatus503>, AtualizarLojaOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? atualizarLojaMutationKey()
 
-  const baseOptions = atualizarLojaMutationOptions(config) as UseMutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<Error>, AtualizarLojaOptions, TContext>
+  const baseOptions = atualizarLojaMutationOptions(config) as UseMutationOptions<AtualizarLojaStatus200, ResponseErrorConfig<AtualizarLojaStatus400 | AtualizarLojaStatus409 | AtualizarLojaStatus503>, AtualizarLojaOptions, TContext>
 
-  return useMutation<AtualizarLojaStatus200, ResponseErrorConfig<Error>, AtualizarLojaOptions, TContext>({
+  return useMutation<AtualizarLojaStatus200, ResponseErrorConfig<AtualizarLojaStatus400 | AtualizarLojaStatus409 | AtualizarLojaStatus503>, AtualizarLojaOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<AtualizarLojaStatus200, ResponseErrorConfig<Error>, AtualizarLojaOptions, TContext>
+  }, queryClient) as UseMutationResult<AtualizarLojaStatus200, ResponseErrorConfig<AtualizarLojaStatus400 | AtualizarLojaStatus409 | AtualizarLojaStatus503>, AtualizarLojaOptions, TContext>
 }

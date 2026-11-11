@@ -8,10 +8,10 @@ import type { BuscarProdutoLojaPorIdOptions, BuscarProdutoLojaPorIdResponses } f
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * {@link /api/produtos-loja/:id}
+ * {@link /api/skus-loja/:id}
  */
 export function buscarProdutoLojaPorId<ThrowOnError extends boolean = true>(options: Options<BuscarProdutoLojaPorIdOptions, ThrowOnError>): Unwrappable<RequestResult<BuscarProdutoLojaPorIdResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/api/produtos-loja/{id}', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<BuscarProdutoLojaPorIdResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/api/skus-loja/{id}', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<BuscarProdutoLojaPorIdResponses, ThrowOnError>>)
 }

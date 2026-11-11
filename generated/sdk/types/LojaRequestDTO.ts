@@ -34,6 +34,12 @@ export type LojaRequestDTO = {
    * @type string
    */
   numero: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  municipioIbge?: number;
   complemento?: string;
   /**
    * @minLength 1

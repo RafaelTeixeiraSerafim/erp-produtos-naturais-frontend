@@ -3,10 +3,17 @@
 * Do not edit manually.
 */
 
+import type { ApiError } from './ApiError'
 import type { LojaRequestDTO } from './LojaRequestDTO'
 import type { LojaResponseDTO } from './LojaResponseDTO'
 
-export type CriarLojaStatus200 = LojaResponseDTO;
+export type CriarLojaStatus201 = LojaResponseDTO;
+
+export type CriarLojaStatus400 = ApiError;
+
+export type CriarLojaStatus409 = ApiError;
+
+export type CriarLojaStatus503 = ApiError;
 
 export type CriarLojaBody = LojaRequestDTO;
 
@@ -18,10 +25,13 @@ export type CriarLojaOptions = {
 };
 
 export type CriarLojaResponses = {
-  '200': CriarLojaStatus200;
+  '201': CriarLojaStatus201;
+  '400': CriarLojaStatus400;
+  '409': CriarLojaStatus409;
+  '503': CriarLojaStatus503;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type CriarLojaResponse = CriarLojaStatus200;
+export type CriarLojaResponse = CriarLojaStatus201;

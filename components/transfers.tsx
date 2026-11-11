@@ -1,4 +1,6 @@
 "use client";
+import { RelatedField } from "./related-field";
+import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -6,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useListarTransferenciasEstoque } from "@/generated/sdk/hooks/useListarTransferenciasEstoque";
 import { useBuscarTransferenciaEstoquePorId } from "@/generated/sdk/hooks/useBuscarTransferenciaEstoquePorId";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useSkuCatalog as useListarProdutos, snapshotLabel } from "@/lib/skus";
 import { useListarEstoques } from "@/generated/sdk/hooks/useListarEstoques";
 import { criarTransferenciaEstoque } from "@/generated/sdk/clients/criarTransferenciaEstoque";
 import { atualizarTransferenciaEstoque } from "@/generated/sdk/clients/atualizarTransferenciaEstoque";
@@ -240,7 +242,7 @@ function TransferItems({ row }: { row: TransferenciaResponseDTO }) {
       <tbody>
         {row.itens?.map((i) => (
           <TableRow key={i.id}>
-            <TableCell>{i.nomeProduto || i.idProduto}</TableCell>
+            <TableCell>{snapshotLabel(i, i.nomeProduto)}</TableCell>
             <TableCell>{quantity(i.quantidade)}</TableCell>
             <TableCell>
               {i.unidadeSiglaSnapshot || "Histórico indisponível"}
@@ -533,7 +535,7 @@ export function TransferEditor({
   const selections =
     selectedExists(draft.idLojaOrigem, stores.data) &&
     selectedExists(draft.idLojaDestino, stores.data) &&
-    draft.itens.every((i) => selectedExists(i.idProduto, products.data));
+    draft.itens.every((i) => selectedExists(i.idProdutoSku, products.data));
   const blocked =
     unavailable ||
     immutable ||
@@ -668,8 +670,9 @@ export function TransferEditor({
         <fieldset disabled={blocked || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             {(["idLojaOrigem", "idLojaDestino"] as const).map((key) => (
-              <label key={key}>
+              <div key={key}>
                 {key === "idLojaOrigem" ? "Origem *" : "Destino *"}
+                <RelatedField field="idLoja" query={stores}/>
                 <Select
                   aria-label={key === "idLojaOrigem" ? "Origem *" : "Destino *"}
                   value={draft[key]}
@@ -685,7 +688,7 @@ export function TransferEditor({
                     </option>
                   ))}
                 </Select>
-              </label>
+              </div>
             ))}
             <label>
               Data da transferência
@@ -717,32 +720,32 @@ export function TransferEditor({
                 aria-label={`Item ${index + 1}`}
                 className="grid grid-cols-3 gap-4 mobile:grid-cols-1"
               >
-                <label>
-                  Produto *
-                  <Select
-                    aria-label="Produto *"
-                    value={i.idProduto}
+                <div>
+                  SKU *
+                  <RelatedField field="idProdutoSku" query={products}/><SkuSelect
+                    aria-label="SKU *"
+                    value={i.idProdutoSku}
                     onChange={(e) =>
                       setDraft({
                         ...draft,
                         itens: draft.itens.map((r, n) =>
-                          n === index ? { ...r, idProduto: e.target.value } : r,
+                          n === index ? { ...r, idProdutoSku: e.target.value } : r,
                         ),
                       })
                     }
                   >
                     <option value="">Selecione…</option>
                     <MissingSelection
-                      value={i.idProduto}
+                      value={i.idProdutoSku}
                       rows={products.data}
                     />
-                    {products.data?.map((p) => (
+                    {products.data?.filter(p=>p.status === "ATIVO").map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome}
                       </option>
                     ))}
-                  </Select>
-                </label>
+                  </SkuSelect>
+                </div>
                 <label>
                   Quantidade *
                   <Input
@@ -782,7 +785,7 @@ export function TransferEditor({
                     : quantity(
                         stock.data?.find(
                           (s) =>
-                            s.idProduto === i.idProduto &&
+                            s.idProdutoSku === i.idProdutoSku &&
                             s.idLoja === draft.idLojaOrigem,
                         )?.quantidadeAtual ?? 0,
                       )}

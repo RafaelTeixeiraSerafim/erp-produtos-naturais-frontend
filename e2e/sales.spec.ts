@@ -7,9 +7,10 @@ async function setup(page: Page, empty = false) {
     clientes: [{ id: id(1), nome: "Ana", dataNascimento: "2000-02-29" }],
     lojas: empty ? [] : [{ id: id(2), nomeFantasia: "Centro" }],
     usuarios: empty ? [] : [{ id: id(3), nome: "Operador" }],
-    produtos: [{ id: id(4), nome: "Aveia" }],
+    produtos: [{ id: id(4), nome: "Aveia",status:"ATIVO" }],
     vendas: [],
   };
+  db["produtos-sku"] = db.produtos.map(p=>({id:p.id,idProduto:p.id,nomeProduto:p.nome,sku:String(p.id),descricaoApresentacao:"Granel",tipoVenda:"PESO",status:"ATIVO"}));
   const writes: Row[] = [];
   let count = 100;
   await page.route("**/api/**", async (route) => {
@@ -110,11 +111,11 @@ test("venda: seleções obrigatórias, precisão, vários itens, arredondamento 
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
     "cliente",
   );
-  await page.getByLabel("Cliente *", { exact: true }).selectOption(id(1));
-  await page.getByLabel("Loja *", { exact: true }).selectOption(id(2));
+  await page.getByRole("combobox", { name: "Cliente *", exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(id(2));
   const fill = async (n: number) => {
     const item = page.getByLabel(`Item ${n}`, { exact: true });
-    await item.getByLabel("Produto").selectOption(id(4));
+    await item.getByRole("combobox", { name: "SKU", exact: false }).selectOption(id(4));
     await item.getByLabel("Quantidade").fill("0,001");
     await item.getByLabel("Preço unitário").fill("5");
   };
@@ -156,8 +157,8 @@ test("lojas ausentes bloqueiam gravação com explicação e links", async ({
     page.getByText("Solicite a um administrador", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Cadastrar cliente" }),
-  ).toHaveAttribute("href", "/clientes");
+    page.getByRole("link", { name: "Cadastrar cliente em nova aba" }),
+  ).toHaveAttribute("href", "/clientes?novo=1");
 });
 test("lista combina filtros locais, datas inclusivas, ordem e conserva dados em falha de lookup", async ({
   page,
@@ -203,14 +204,14 @@ test("lista combina filtros locais, datas inclusivas, ordem e conserva dados em 
 test("venda recupera entradas e itens no reload e descarta ao sair", async ({ page }) => {
   await setup(page);
   await page.goto("/vendas/nova");
-  await page.getByLabel("Cliente *", { exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "Cliente *", exact: true }).selectOption(id(1));
   await page.getByLabel("Quantidade").fill("0,");
   await page.getByRole("button", { name: "Adicionar item" }).click();
   await expect(page.getByText("Recuperação salva neste navegador", { exact: true })).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Restaurar", exact: true }).click();
   await expect(page.getByLabel("Quantidade").first()).toHaveValue("0,");
-  await expect(page.getByLabel("Cliente *", { exact: true })).toHaveValue(id(1));
+  await expect(page.getByRole("combobox", { name: "Cliente *", exact: true })).toHaveValue(id(1));
   await expect(page.getByLabel("Item 2", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Voltar", exact: true }).click();
   await page.getByRole("button", { name: "Descartar e sair" }).click();

@@ -1,4 +1,5 @@
 "use client";
+import { RelatedField } from "./related-field";
 import {
   Panel,
   PanelHeader,
@@ -21,6 +22,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useBuscarProdutoPorId } from "@/generated/sdk/hooks/useBuscarProdutoPorId";
+import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { useListarProdutosSku } from "@/generated/sdk/hooks/useListarProdutosSku";
 import { useListarProdutosLoja } from "@/generated/sdk/hooks/useListarProdutosLoja";
 import { useListarPrecosProdutoLoja } from "@/generated/sdk/hooks/useListarPrecosProdutoLoja";
@@ -42,6 +44,10 @@ type Relationship = "skus" | "assignments" | "prices";
 type RelationRow = {
   id?: string;
   idProduto?: string;
+  idProdutoSku?: string;
+  idUnidadeMedida?: string;
+  tipoVenda?: string;
+  siglaUnidadeMedida?: string;
   idLoja?: string;
   sku?: string;
   status?: string;
@@ -57,10 +63,12 @@ function Relationships({
   id,
   resource,
   storeId,
+  skuId,
 }: {
   id: string;
   resource: Relationship;
   storeId: string;
+  skuId: string;
 }) {
   const canWrite = useCan("catalog.write");
   const skus = useListarProdutosSku(
@@ -68,14 +76,15 @@ function Relationships({
     { query: { enabled: resource === "skus" } },
   );
   const assignments = useListarProdutosLoja(
-    { query: { idProduto: id, ...(storeId ? { idLoja: storeId } : {}) } },
-    { query: { enabled: resource === "assignments" } },
+    { query: { idProduto: id, idProdutoSku: skuId || undefined, ...(storeId ? { idLoja: storeId } : {}) } },
+    { query: { enabled: resource === "assignments" && !!skuId } },
   );
   const prices = useListarPrecosProdutoLoja(
-    { query: { idProduto: id, ...(storeId ? { idLoja: storeId } : {}) } },
-    { query: { enabled: resource === "prices" } },
+    { query: { idProduto: id, idProdutoSku: skuId || undefined, ...(storeId ? { idLoja: storeId } : {}) } },
+    { query: { enabled: resource === "prices" && !!skuId } },
   );
   const stores = useListarLojas();
+  const units = useListarUnidadesMedida();
   const query =
     resource === "skus"
       ? skus
@@ -87,7 +96,7 @@ function Relationships({
     [success, setSuccess] = useState("");
   const rows = (query.data || []).filter(
     (row: RelationRow) =>
-      row.idProduto === id &&
+      row.idProduto === id && (resource === "skus" || row.idProdutoSku === skuId) &&
       (resource === "skus" || !storeId || row.idLoja === storeId),
   );
   const labels = {
@@ -100,7 +109,7 @@ function Relationships({
     assignments: {
       title: "Lojas vinculadas",
       new: "Vincular loja",
-      description: "Defina em quais lojas este produto estará disponível.",
+      description: "Defina em quais lojas este SKU estará disponível.",
     },
     prices: {
       title: "Preços por loja",
@@ -118,7 +127,7 @@ function Relationships({
     row.nomeLoja ||
     row.idLoja;
   const cannotAdd =
-    resource !== "skus" && (!stores.data?.length || stores.isError);
+    resource !== "skus" && !skuId;
   return (
     <>
       {success && (
@@ -154,12 +163,11 @@ function Relationships({
         {resource !== "skus" && stores.isSuccess && !stores.data.length && (
           <Notice className="m-5">
             <NoticeDescription>
-              Cadastre uma <Link href="/lojas">loja</Link> antes de criar
-              vínculos ou preços.
+              Crie um vínculo ou preço para selecionar a loja.
             </NoticeDescription>
           </Notice>
         )}
-        {query.isPending ? (
+        {resource !== "skus" && !skuId ? <Empty title="Selecione um SKU" description="Escolha a variante para consultar vínculos e preços." /> : query.isPending ? (
           <Loading />
         ) : query.isError ? (
           <div className="p-5">
@@ -211,7 +219,7 @@ function Relationships({
                       <TableCell className="font-semibold text-[#304b36] hover:underline">
                         {row.sku}
                       </TableCell>
-                      <TableCell>{row.descricaoApresentacao || "—"}</TableCell>
+                      <TableCell>{row.descricaoApresentacao || "—"}<small className="block">{row.siglaUnidadeMedida} · {row.tipoVenda}</small></TableCell>
                       <TableCell>
                         {row.ean13 || "—"}
                         <br />
@@ -298,8 +306,8 @@ function Relationships({
                 ? { idLoja: storeId }
                 : undefined
           }
-          extra={{ idProduto: id }}
-          fieldOptions={{ idLoja: storeOptions }}
+          extra={resource === "skus" ? { idProduto: id } : { idProdutoSku: skuId }}
+          fieldOptions={{ idLoja: storeOptions, idUnidadeMedida: units.data?.map(u => ({value:u.id!, label:`${u.nome} (${u.sigla})`})) }}
           onClose={() => setEdit(undefined)}
           onSaved={() => {
             setEdit(undefined);
@@ -330,6 +338,8 @@ export function ProductDetail({ id }: { id: string }) {
   const canWrite = useCan("catalog.write");
   const query = useBuscarProdutoPorId({ path: { id } });
   const stores = useListarLojas();
+  const skus = useListarProdutosSku({query:{idProduto:id}});
+  const [skuId, setSkuId] = useState("");
   const [storeId, setStoreId] = useState(""),
     [tab, setTab] = useState("skus");
   if (query.isPending) return <Loading />;
@@ -380,22 +390,6 @@ export function ProductDetail({ id }: { id: string }) {
           </div>
           <div>
             <dt className="mb-[5px] text-[10px] tracking-[0.6px] text-[#829083] uppercase">
-              Unidade de medida
-            </dt>
-            <dd className="m-0 text-[13px] text-[#38533e]">
-              {product.siglaUnidadeMedida || "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="mb-[5px] text-[10px] tracking-[0.6px] text-[#829083] uppercase">
-              Tipo de venda
-            </dt>
-            <dd className="m-0 text-[13px] text-[#38533e]">
-              {product.tipoVenda === "PESO" ? "Peso" : "Unidade"}
-            </dd>
-          </div>
-          <div>
-            <dt className="mb-[5px] text-[10px] tracking-[0.6px] text-[#829083] uppercase">
               Identificador
             </dt>
             <dd className="m-0 text-[13px] text-[#38533e] break-all">
@@ -409,6 +403,7 @@ export function ProductDetail({ id }: { id: string }) {
           </p>
         )}
       </Panel>
+      <div className="mt-5 block">Variante para lojas e preços <RelatedField field="idProdutoSku" query={skus}/><Select aria-label="Variante para lojas e preços" value={skuId} onChange={e=>setSkuId(e.target.value)}><option value="">Selecione um SKU</option>{skus.data?.map(s=><option key={s.id} value={s.id}>{s.descricaoApresentacao} · {s.sku} · {s.siglaUnidadeMedida}</option>)}</Select></div>
       <Tabs className="mt-[26px]" value={tab} onValueChange={setTab}>
         <TabsList aria-label="Dados do produto">
           <TabsTrigger value="skus">
@@ -448,7 +443,7 @@ export function ProductDetail({ id }: { id: string }) {
         )}
         {(["skus", "assignments", "prices"] as const).map((resource) => (
           <TabsContent key={resource} value={resource}>
-            <Relationships id={id} resource={resource} storeId={storeId} />
+            <Relationships id={id} resource={resource} storeId={storeId} skuId={skuId} />
           </TabsContent>
         ))}
       </Tabs>

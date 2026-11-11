@@ -1,6 +1,7 @@
 "use client";
+import { RelatedField } from "./related-field";
+import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
-import { useCan } from "./auth";
 import Link from "next/link";
 import { ReceiptList } from "./receipts";
 import { canReceive, outstanding } from "@/lib/receipts";
@@ -14,7 +15,7 @@ import { useListarCompras } from "@/generated/sdk/hooks/useListarCompras";
 import { useBuscarCompraPorId } from "@/generated/sdk/hooks/useBuscarCompraPorId";
 import { useListarFornecedores } from "@/generated/sdk/hooks/useListarFornecedores";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
-import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
+import { useSkuCatalog as useListarProdutos, snapshotLabel } from "@/lib/skus";
 import { criarCompra } from "@/generated/sdk/clients/criarCompra";
 import { atualizarCompra } from "@/generated/sdk/clients/atualizarCompra";
 import type { CompraResponseDTO } from "@/generated/sdk/types/CompraResponseDTO";
@@ -359,10 +360,7 @@ export function PurchaseRecord({
           {row.itens?.map((i, index) => (
             <TableRow key={i.id || index}>
               <TableCell>
-                {lookups.products.data?.find((p) => p.id === i.idProduto)
-                  ?.nome ||
-                  i.idProduto ||
-                  "—"}
+                {snapshotLabel(i,lookups.products.data?.find(p=>p.id===i.idProdutoSku)?.nomeProduto)}
               </TableCell>
               <TableCell>{quantity(i.quantidade)}</TableCell>
               <TableCell>{unitCost(i.custoUnitario)}</TableCell>
@@ -388,7 +386,7 @@ function UnavailablePurchaseRecovery({ id }: { id: string }) {
   return recovery.ui;
 }
 export function PurchaseEditor({ initial, verificationError = false }: { initial?: CompraResponseDTO; verificationError?: boolean }) {
-  const canManageStores = useCan("stores.manage");
+
   const lookups = useLookups(true),
     client = useQueryClient(),
     router = useRouter();
@@ -410,7 +408,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
   const prerequisites = Object.values(lookups).every(
     (q) => q.isSuccess && !q.isFetching && !!q.data?.length,
   );
-  const selectionsValid = selectedExists(draft.idFornecedor, lookups.suppliers.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProduto, lookups.products.data));
+  const selectionsValid = selectedExists(draft.idFornecedor, lookups.suppliers.data) && selectedExists(draft.idLoja, lookups.stores.data) && draft.itens.every(i => selectedExists(i.idProdutoSku, lookups.products.data));
   let total: number | undefined;
   try {
     total = preview(draft.itens);
@@ -489,11 +487,6 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
       {savedLink && <p role="status">Documento salvo. {postSaveError && "Não foi possível atualizar a tela."} <Link href={savedLink}>Ver registro salvo</Link></p>}
       {uncertain && <p role="alert">Não foi possível confirmar a gravação. Confira a <Link href="/compras">lista de registros</Link> antes de tentar novamente. A solicitação não será reenviada automaticamente.</p>}
 
-      <div className="mb-5 flex flex-wrap gap-4">
-        <Link href="/fornecedores">Cadastrar fornecedor</Link>
-        {canManageStores && <Link href="/lojas">Cadastrar loja</Link>}
-        <Link href="/produtos/novo">Cadastrar produto</Link>
-      </div>
       {!prerequisites && (
         <p role="status" className="mb-4">
           Para salvar, é necessário carregar e cadastrar pelo menos um
@@ -522,8 +515,8 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
       <form onSubmit={submit} noValidate aria-busy={busy}>
         <fieldset disabled={busy || locked || recovery.blocked || !!savedLink} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
-            <label>
-              Fornecedor *
+            <div>
+              Fornecedor * <RelatedField field="idFornecedor" query={lookups.suppliers}/>
               <Select
                 aria-label="Fornecedor *"
                 required
@@ -540,9 +533,9 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                   </option>
                 ))}
               </Select>
-            </label>
-            <label>
-              Loja *
+            </div>
+            <div>
+              Loja * <RelatedField field="idLoja" query={lookups.stores}/>
               <Select
                 aria-label="Loja *"
                 required
@@ -557,12 +550,12 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                   </option>
                 ))}
               </Select>
-            </label>
+            </div>
             <label>
               Data da compra
               <Input
                 type="datetime-local"
-                step="1"
+                step="60"
                 value={draft.dataCompra}
                 onChange={(e) =>
                   setDraft({ ...draft, dataCompra: e.target.value })
@@ -604,23 +597,23 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                 <h2 className="col-span-full font-semibold">
                   Item {index + 1}
                 </h2>
-                <label>
-                  Produto *
-                  <Select
-                    aria-label="Produto *"
+                <div>
+                  SKU * <RelatedField field="idProdutoSku" query={lookups.products}/>
+                  <SkuSelect
+                    aria-label="SKU *"
                     required
-                    value={item.idProduto}
-                    onChange={(e) => change("idProduto", e.target.value)}
+                    value={item.idProdutoSku}
+                    onChange={(e) => change("idProdutoSku", e.target.value)}
                   >
                     <option value="">Selecione…</option>
-                    <MissingSelection value={item.idProduto} rows={lookups.products.data} />
-                    {lookups.products.data?.map((p) => (
+                    <MissingSelection value={item.idProdutoSku} rows={lookups.products.data} />
+                    {lookups.products.data?.filter(p=>p.status === "ATIVO").map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nome}
                       </option>
                     ))}
-                  </Select>
-                </label>
+                  </SkuSelect>
+                </div>
                 {(["quantidade", "custoUnitario", "desconto"] as const).map(
                   (key) => (
                     <label key={key}>
@@ -634,6 +627,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                       <Input
                         inputMode="decimal"
                         value={item[key]}
+                        onFocus={e => { if(key === "desconto" && e.target.value === "0")e.target.select(); }}
                         onChange={(e) => change(key, e.target.value)}
                       />
                       <small>

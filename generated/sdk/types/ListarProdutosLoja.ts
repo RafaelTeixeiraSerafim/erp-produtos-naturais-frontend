@@ -17,6 +17,12 @@ export type ListarProdutosLojaQuery = {
    * Format: `uuid`
    * @type string | undefined
    */
+  idProdutoSku?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
   idLoja?: string;
 };
 

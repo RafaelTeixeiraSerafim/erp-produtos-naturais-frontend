@@ -11,7 +11,7 @@ export type ConsultarSaldoEstoqueQuery = {
    * Format: `uuid`
    * @type string
    */
-  idProduto: string;
+  idProdutoSku: string;
   /**
    * @description
    * Format: `uuid`

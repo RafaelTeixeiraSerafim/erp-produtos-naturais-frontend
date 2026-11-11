@@ -16,6 +16,15 @@ export type EstoqueResponseDTO = {
    * @type string | undefined
    */
   idProduto?: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  idProdutoSku?: string;
+  sku?: string;
+  descricaoApresentacao?: string;
+  siglaUnidadeMedida?: string;
   nomeProduto?: string;
   /**
    * @description
