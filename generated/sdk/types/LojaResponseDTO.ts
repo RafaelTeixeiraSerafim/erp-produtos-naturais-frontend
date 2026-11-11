@@ -16,6 +16,12 @@ export type LojaResponseDTO = {
   cidade?: string;
   bairro?: string;
   numero?: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  municipioIbge?: number;
   complemento?: string;
   cnpj?: string;
 };

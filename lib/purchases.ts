@@ -80,11 +80,11 @@ export function purchasePayload(
   preview(draft.itens);
   if (
     draft.dataCompra &&
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(draft.dataCompra)
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(draft.dataCompra)
   )
     throw new Error("Data inválida.");
   const dataCompra = draft.dataCompra
-    ? saoPauloTimestamp(draft.dataCompra)
+    ? saoPauloTimestamp(`${draft.dataCompra}:00`)
     : undefined;
   if (dataCompra && !Number.isFinite(new Date(dataCompra).getTime()))
     throw new Error("Data inválida.");
@@ -95,7 +95,7 @@ export function purchasePayload(
       ? {
           dataCompra:
             existing?.dataCompra &&
-            draft.dataCompra === purchaseLocalDate(existing.dataCompra)
+            draft.dataCompra === purchaseLocalDate(existing.dataCompra).slice(0,16)
               ? existing.dataCompra
               : dataCompra,
         }
@@ -141,7 +141,7 @@ export function draftValues(row?: CompraResponseDTO): Draft {
   return {
     idFornecedor: row?.idFornecedor || "",
     idLoja: row?.idLoja || "",
-    dataCompra: purchaseLocalDate(row?.dataCompra),
+    dataCompra: purchaseLocalDate(row?.dataCompra).slice(0,16),
     observacao: row?.observacao || "",
     itens: row
       ? (row.itens || []).map((i) => ({

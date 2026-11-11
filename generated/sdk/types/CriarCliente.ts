@@ -3,10 +3,15 @@
 * Do not edit manually.
 */
 
+import type { ApiError } from './ApiError'
 import type { ClienteRequestDTO } from './ClienteRequestDTO'
 import type { ClienteResponseDTO } from './ClienteResponseDTO'
 
-export type CriarClienteStatus200 = ClienteResponseDTO;
+export type CriarClienteStatus201 = ClienteResponseDTO;
+
+export type CriarClienteStatus400 = ApiError;
+
+export type CriarClienteStatus409 = ApiError;
 
 export type CriarClienteBody = ClienteRequestDTO;
 
@@ -18,10 +23,12 @@ export type CriarClienteOptions = {
 };
 
 export type CriarClienteResponses = {
-  '200': CriarClienteStatus200;
+  '201': CriarClienteStatus201;
+  '400': CriarClienteStatus400;
+  '409': CriarClienteStatus409;
 };
 
 /**
  * @description Union of all possible responses
  */
-export type CriarClienteResponse = CriarClienteStatus200;
+export type CriarClienteResponse = CriarClienteStatus201;

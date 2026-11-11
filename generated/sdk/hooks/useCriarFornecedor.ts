@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { CriarFornecedorOptions, CriarFornecedorStatus200 } from '../types/CriarFornecedor'
+import type { CriarFornecedorOptions, CriarFornecedorStatus201, CriarFornecedorStatus400, CriarFornecedorStatus409, CriarFornecedorStatus503 } from '../types/CriarFornecedor'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { criarFornecedor } from '../clients/criarFornecedor'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const criarFornecedorMutationKey = () => [{ url: '/api/fornecedores' }] a
 
 export function criarFornecedorMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = criarFornecedorMutationKey()
-  return mutationOptions<CriarFornecedorStatus200, ResponseErrorConfig<Error>, CriarFornecedorOptions, TContext>({
+  return mutationOptions<CriarFornecedorStatus201, ResponseErrorConfig<CriarFornecedorStatus400 | CriarFornecedorStatus409 | CriarFornecedorStatus503>, CriarFornecedorOptions, TContext>({
     mutationKey,
     mutationFn: async({ body }) => {
       return criarFornecedor({ ...config, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function criarFornecedorMutationOptions<TContext = unknown>(config: Parti
  * {@link /api/fornecedores}
  */
 export function useCriarFornecedor<TContext>(options: {
-  mutation?: UseMutationOptions<CriarFornecedorStatus200, ResponseErrorConfig<Error>, CriarFornecedorOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<CriarFornecedorStatus201, ResponseErrorConfig<CriarFornecedorStatus400 | CriarFornecedorStatus409 | CriarFornecedorStatus503>, CriarFornecedorOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? criarFornecedorMutationKey()
 
-  const baseOptions = criarFornecedorMutationOptions(config) as UseMutationOptions<CriarFornecedorStatus200, ResponseErrorConfig<Error>, CriarFornecedorOptions, TContext>
+  const baseOptions = criarFornecedorMutationOptions(config) as UseMutationOptions<CriarFornecedorStatus201, ResponseErrorConfig<CriarFornecedorStatus400 | CriarFornecedorStatus409 | CriarFornecedorStatus503>, CriarFornecedorOptions, TContext>
 
-  return useMutation<CriarFornecedorStatus200, ResponseErrorConfig<Error>, CriarFornecedorOptions, TContext>({
+  return useMutation<CriarFornecedorStatus201, ResponseErrorConfig<CriarFornecedorStatus400 | CriarFornecedorStatus409 | CriarFornecedorStatus503>, CriarFornecedorOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<CriarFornecedorStatus200, ResponseErrorConfig<Error>, CriarFornecedorOptions, TContext>
+  }, queryClient) as UseMutationResult<CriarFornecedorStatus201, ResponseErrorConfig<CriarFornecedorStatus400 | CriarFornecedorStatus409 | CriarFornecedorStatus503>, CriarFornecedorOptions, TContext>
 }

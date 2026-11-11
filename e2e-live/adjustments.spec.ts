@@ -9,9 +9,9 @@ test("ajuste real: revisão, saldos persistidos, repetição, falta e cancelamen
   f.product=(await createProduct()).id;f.otherProduct=(await createProduct()).id;
   const initial=await balance();
   await page.goto("/estoque/ajustes/novo");
-  await page.getByLabel("Loja *",{exact:true}).selectOption(f.store);
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(f.store);
   await page.getByLabel("Justificativa *",{exact:true}).fill("Correção integrada");
-  await page.getByLabel("SKU *",{exact:true}).selectOption(f.product);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);
   await page.getByLabel("Quantidade *",{exact:true}).fill("2,125");
   await page.getByRole("button",{name:"Salvar rascunho",exact:true}).click();
   await expect(page).toHaveURL(/\/estoque\/ajustes\/[0-9a-f-]{36}$/);

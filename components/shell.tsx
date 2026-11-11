@@ -165,8 +165,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const user = useIdentity();
   const path = usePathname(),
     [open, setOpen] = useState(false);
-  if (path === "/login" || path === "/alterar-senha") return <main id="conteudo">{children}</main>;
+  if (["/login", "/alterar-senha", "/esqueci-senha", "/redefinir-senha"].includes(path)) return <main id="conteudo">{children}</main>;
   const current =
+    (path.startsWith("/skus/") ? {label:"SKUs"} : undefined) ||
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
     [...inventoryLinks].reverse().find((x) => path === x.href || (["/estoque/transferencias","/estoque/ajustes"].includes(x.href) && path.startsWith(x.href+"/"))) ||
     salesLinks.find((x) => path.startsWith(x.href)) ||
@@ -246,7 +247,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       ? " / Editar rascunho"
                       : " / Detalhes"
                     : path.endsWith("/novo")
-                      ? " / Novo produto"
+                      ? path.startsWith("/skus/") ? " / Novo SKU" : " / Novo produto"
                       : path.endsWith("/editar")
                         ? " / Editar produto"
                         : path.startsWith("/produtos/")

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { testCnpj } from "../scripts/controlled-services.mjs";
 import { test, expect, type Page } from "./auth-fixture";
 
 // No routing/interception: all writes go through the production proxy and real API.
@@ -47,14 +48,16 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.getByRole("button", { name: "Nova loja" }).click();
     for (const [label, value] of Object.entries({
       "Nome fantasia": stamp, "Razão social": stamp,
-      CNPJ: `${Date.now()}${Math.floor(Math.random() * 10)}`,
-      Estado: "SC", Cidade: "Criciúma", Bairro: "Centro", Número: "10",
+      CNPJ: testCnpj(),
+      Bairro: "Centro", Número: "10",
       Complemento: "Integração descartável",
     })) await page.getByRole("dialog").getByLabel(label, { exact: false }).fill(value);
+    await page.getByLabel("Estado",{exact:true}).selectOption("SC");
+    await page.getByLabel("Cidade",{exact:true}).selectOption("4204608");
     await save(page);
     await page.goto("/produtos/novo");
     await page.getByLabel("Nome do produto").fill(name);
-    await page.getByLabel("Categoria", { exact: false }).selectOption({ label: stamp });
+    await page.getByRole("combobox", { name: "Categoria", exact: false }).selectOption({ label: stamp });
     await page.getByLabel("Descrição", { exact: false }).fill("Produto real");
     await page.getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page).toHaveURL(/\/produtos\/[0-9a-f-]{36}$/);
@@ -62,7 +65,7 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Novo SKU" }).click();
     await page.getByRole("textbox", { name: "SKU", exact: true }).fill(sku);
-    await page.getByLabel("Unidade de medida").selectOption({ label: `${stamp} (lv)` });
+    await page.getByRole("combobox", { name: "Unidade de medida", exact: false }).selectOption({ label: `${stamp} (lv)` });
     await page.getByLabel("Descrição da apresentação").fill("Pacote real");
     await page.getByLabel("EAN-13").fill("7891234567890");
     await page.getByLabel("DUN-14").fill("17891234567890");
@@ -71,7 +74,7 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await expect(page.getByRole("cell", { name: sku, exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Novo SKU" }).click();
     await page.getByRole("textbox", { name: "SKU", exact: true }).fill(sku);
-    await page.getByLabel("Unidade de medida").selectOption({ label: `${stamp} (lv)` });
+    await page.getByRole("combobox", { name: "Unidade de medida", exact: false }).selectOption({ label: `${stamp} (lv)` });
     await page.getByLabel("Descrição da apresentação").fill("Pacote real");
     await page.getByRole("dialog").getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page.getByRole("alert")).toContainText("SKU já cadastrado");
@@ -81,20 +84,20 @@ test("catálogo real: fluxo completo, erros independentes e persistência", asyn
     await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Lojas", exact: true }).click();
     await page.getByRole("button", { name: "Vincular loja", exact: true }).click();
-    await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
+    await page.getByRole("dialog").getByRole("combobox", { name: "Loja", exact: false }).selectOption({ label: stamp });
     await save(page);
     await expect(page.getByRole("cell", { name: stamp, exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Vincular loja", exact: true }).click();
-    await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
+    await page.getByRole("dialog").getByRole("combobox", { name: "Loja", exact: false }).selectOption({ label: stamp });
     await page.getByRole("dialog").getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page.getByRole("alert")).toContainText("SKU já vinculado a esta loja");
-    await expect(page.getByRole("dialog").getByLabel("Loja")).not.toHaveValue("");
+    await expect(page.getByRole("dialog").getByRole("combobox", { name: "Loja", exact: false })).not.toHaveValue("");
     await cancel(page);
     // A failed assignment must not prevent an independent price save.
     await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
     await page.getByRole("tab", { name: "Preços", exact: true }).click();
     await page.getByRole("button", { name: "Novo preço" }).click();
-    await page.getByRole("dialog").getByLabel("Loja").selectOption({ label: stamp });
+    await page.getByRole("dialog").getByRole("combobox", { name: "Loja", exact: false }).selectOption({ label: stamp });
     await page.getByLabel("Preço (R$)").fill("1.234,56");
     await page.getByLabel("Início da validade").fill("2026-11-03T12:00");
     await page.getByLabel("Fim da validade").fill("2026-11-10T12:00");

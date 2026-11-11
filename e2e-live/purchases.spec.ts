@@ -13,14 +13,15 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
   for (const [label, value] of Object.entries({
     "Nome fantasia": name,
     "Razão social": name,
-    Estado: "sc",
-    Cidade: "Criciúma",
+    CNPJ: testInfo.project.name.includes("mobile")?"04252011000110":"11222333000181",
     Bairro: "Centro",
   }))
     await page
       .getByRole("dialog")
       .getByLabel(label, { exact: false })
       .fill(value);
+  await page.getByLabel("Estado",{exact:true}).selectOption("SC");
+  await page.getByLabel("Cidade",{exact:true}).selectOption("4204608");
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Salvar", exact: true })
@@ -28,9 +29,9 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.goto("/compras/nova");
   await page
-    .getByLabel("Fornecedor *", { exact: true })
+    .getByRole("combobox", { name: "Fornecedor *", exact: true })
     .selectOption({ label: name });
-  await page.getByLabel("Loja *", { exact: true }).selectOption(fixture.store);
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(fixture.store);
   const fill = async (
     n: number,
     product: string,
@@ -39,7 +40,7 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
     discount: string,
   ) => {
     const row = page.getByLabel(`Item ${n}`, { exact: true });
-    await row.getByLabel("SKU", {exact:false}).selectOption(product);
+    await row.getByRole("combobox", { name: "SKU", exact: false }).selectOption(product);
     await row.getByLabel("Quantidade").fill(q);
     await row.getByLabel("Custo unitário").fill(cost);
     await row.getByLabel("Desconto").fill(discount);
@@ -47,7 +48,7 @@ test("compras reais: fornecedor e rascunho com vários itens, edição e reload"
   await fill(1, fixture.product, "1,125", "2,3456", "0,10");
   await page.getByRole("button", { name: "Adicionar item" }).click();
   await fill(2, fixture.otherProduct, "0,001", "5", "0");
-  await page.getByLabel("Data da compra").fill("2026-11-04T23:59:59");
+  await page.getByLabel("Data da compra").fill("2026-11-04T23:59");
   await expect(page.getByText("Recuperação salva neste navegador", { exact: true })).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Restaurar", exact: true }).click();

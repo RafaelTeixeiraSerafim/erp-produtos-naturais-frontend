@@ -46,7 +46,7 @@ test("admin creates an account and logout clears only their recovery",async({pag
   await page.getByRole("button",{name:"Novo usuário",exact:true}).click();
   await expect(page.getByRole("dialog",{name:"Novo usuário",exact:true})).toBeVisible();
   await expect(page.getByText(/Nenhuma loja cadastrada/)).toBeVisible();
-  await page.getByLabel("Nome",{exact:true}).fill(name);await page.getByLabel("E-mail",{exact:true}).fill(`account-${Date.now()}@example.test`);await page.getByLabel("Senha temporária",{exact:true}).fill("Temporary-password-123");await page.getByRole("button",{name:"Salvar conta"}).click();await expect(page.getByRole("button",{name:`Editar ${name}`})).toBeVisible();
+  await page.getByLabel("Nome",{exact:true}).fill(name);await page.getByLabel("Usuário",{exact:true}).fill(`account-${Date.now()}`);await page.getByLabel("E-mail",{exact:true}).fill(`account-${Date.now()}@example.test`);await page.getByLabel("Senha temporária",{exact:true}).fill("Temporary-password-123");await page.getByRole("button",{name:"Salvar conta"}).click();await expect(page.getByRole("button",{name:`Editar ${name}`})).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByRole("button",{name:`Editar ${name}`,exact:true}).click();
   await expect(page.getByRole("dialog",{name:"Editar usuário",exact:true})).toBeVisible();
@@ -61,7 +61,7 @@ test("admin creates an account and logout clears only their recovery",async({pag
   await page.getByLabel("Filtrar por status").selectOption("INATIVO");
   await expect(page.getByRole("cell",{name:"Gerente",exact:true})).toBeVisible();
   await page.evaluate(()=>{const env=document.querySelector('meta[name="recovery-environment"]')!.getAttribute("content");localStorage.setItem(`vila:recovery:v2:${env}:11111111-1111-4111-8111-111111111111:sale:new`,"own");localStorage.setItem(`vila:recovery:v2:${env}:22222222-2222-4222-8222-222222222222:sale:new`,"other");});
-  page.once("dialog",dialog=>dialog.accept());await page.getByRole("button",{name:"Sair",exact:true}).click();await expect(page).toHaveURL(/\/login/);
+  page.once("dialog",dialog=>dialog.accept());if(await page.getByText(/^Conta ·/).count())await page.getByText(/^Conta ·/).click();await page.getByRole("button",{name:"Sair",exact:true}).click();await expect(page).toHaveURL(/\/login/);
   const copies=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.startsWith("vila:recovery:")));expect(copies).toHaveLength(1);expect(copies[0][1]).toBe("other");
   await page.goto("/produtos");await expect(page).toHaveURL(/\/login\?/);
 });
@@ -93,6 +93,6 @@ test("default admin username accepts the temporary admin password",async({page})
   await expect(page.getByRole("complementary")).toHaveCount(0);
   await expect(page.getByRole("banner")).toHaveCount(0);
   page.once("dialog",dialog=>dialog.accept());
-  await page.getByRole("button",{name:"Sair",exact:true}).click();
+  if(await page.getByText(/^Conta ·/).count())await page.getByText(/^Conta ·/).click();await page.getByRole("button",{name:"Sair",exact:true}).click();
   await expect(page).toHaveURL(/\/login/);
 });

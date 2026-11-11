@@ -99,6 +99,7 @@ export const fields = {
     { name: "descricao", label: "Descrição", type: "textarea", optional: true },
   ],
   skus: [
+    {name:"idProduto",label:"Produto agrupador",type:"select"},
     { name: "idUnidadeMedida", label: "Unidade de medida", type: "select" },
     {
       name: "tipoVenda",

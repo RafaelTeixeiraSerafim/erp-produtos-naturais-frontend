@@ -1,13 +1,15 @@
-# SDK da etapa 13
+# SDK da etapa 14
 
-- Backend: https://github.com/Zayma1/erp-produtos-naturais-backend, branch `stage13-sku-variants`, base `f38a335774b5f4b998514109e543932ed2cc8fe6`.
-- Commit de implementação: `22ff8a5638325abc7bb7ceff770c741d97b74231` (fixado no runner).
-- Contrato: `openapi-stage13.json`, exportado por `ReturnsTests.exportOpenApi`, com ADMIN autenticado em PostgreSQL V8 descartável.
-- SDK completo: `OPENAPI_FILE=openapi-stage13.json npm run sdk:generate`, usando Kubb e lockfile existentes; árvore completa copiada, incluindo `.kubb`, sem edição manual.
-- Produto agrupador; itens comerciais exigem `idProdutoSku`, com snapshots de código, apresentação e unidade.
-- Endpoints de vínculo/preço substituídos por `/api/skus-loja` e `/api/skus-precos-loja`; filtros de estoque/movimentos combinam produto e SKU.
-- Evidências: [aceite da etapa 13](../docs/STAGE13_RELEASE.md). Contrato anterior permanece no histórico Git.
+Backend base `22ff8a5`, branch `stage14-forms-auth`, commit `7f8477645978dbabaceca961aa09f98b7882abc2` (pin do runner).
+Contrato `openapi-stage14.json` exportado por `ReturnsTests.exportOpenApi` com ADMIN
+em PostgreSQL V9 descartável. SDK integral gerado no backend com
+`OPENAPI_FILE=openapi-stage14.json npm run sdk:generate`, lockfile existente.
+Árvore completa copiada incluindo `.kubb`; nenhum arquivo gerado editado à mão.
 
-- SHA-256 do OpenAPI autenticado: `e6fe54a2947f48cbb37c4c184aa40cf46ebadda43eef25fa0563c252201d109b`.
-- Comparação integral: `diff -qr generated/sdk ../erp-produtos-naturais-backend/generated/sdk` sem diferenças.
-- [CI backend aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/42888325815), [CI frontend validate/integration aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/42892700923), código frontend `42ae648`.
+Novos contratos: usuário real separado de nome/e-mail, login por `login`,
+recuperação/redefinição de senha, localidades e código IBGE de município.
+Configuração e evidências em [etapa 14](../docs/STAGE14_FORMS_AUTH.md).
+
+SHA-256 do OpenAPI autenticado: `8ad71842fbcc5b654f78d99a11f88eb5ff4b787167b83d7d4f56b90ae0029519`.
+O teste de exportação verifica schemas distintos para recuperação pública e
+senha temporária administrativa, além das respostas de sucesso e erro.

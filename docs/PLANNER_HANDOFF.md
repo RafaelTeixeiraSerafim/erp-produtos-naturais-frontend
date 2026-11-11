@@ -1,3 +1,5 @@
+Etapa 14 concluída e validada localmente em `stage14-forms-auth`: [handoff atual](STAGE14_FORMS_AUTH.md) e [evidências](STAGE14_RELEASE.md). Bases: frontend `d60fa53`, backend `22ff8a5`. Sem merge/deploy/reset. Os registros abaixo são históricos.
+
 # Handoff para o agente planejador — Vila Verde
 
 Referência atual: etapa 12 concluída e integrada em `main` do frontend e

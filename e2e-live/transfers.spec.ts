@@ -57,7 +57,7 @@ test("transferência real: recebimento, recuperação, edição, movimentos pare
   await page
     .getByLabel("Destino *", { exact: true })
     .selectOption(f.otherStore);
-  await page.getByLabel("SKU *", { exact: true }).selectOption(f.product);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);
   await page.getByLabel("Quantidade *", { exact: true }).fill("2,125");
   await page
     .getByLabel("Observação", { exact: true })
@@ -240,7 +240,7 @@ test("resposta perdida na criação repete chave e conteúdo após recarregar", 
   await page
     .getByLabel("Destino *", { exact: true })
     .selectOption(f.otherStore);
-  await page.getByLabel("SKU *", { exact: true }).selectOption(f.product);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);
   await page.getByLabel("Quantidade *", { exact: true }).fill("1");
   const before = (
     await (await request.get("/api/transferencias-estoque")).json()
@@ -273,6 +273,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     data: {
       nome: "Transfer scope",
       email,
+      usuario:email.split("@")[0].slice(0,32),
       cargo: "GER",
       status: "ATIVO",
       lojas: [f.store],
@@ -308,7 +309,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
     });
   }
   try {
-    expect((await mutate("auth/login", { email, senha: temporary })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: temporary })).ok()).toBe(
       true,
     );
     expect(
@@ -319,7 +320,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
         })
       ).ok(),
     ).toBe(true);
-    expect((await mutate("auth/login", { email, senha: permanent })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: permanent })).ok()).toBe(
       true,
     );
     expect(
@@ -356,6 +357,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
           data: {
             nome: "Transfer scope",
             email,
+            usuario:email.split("@")[0].slice(0,32),
             cargo: "FUNC",
             status: "ATIVO",
             lojas: [f.store],
@@ -363,7 +365,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
         })
       ).ok(),
     ).toBe(true);
-    expect((await mutate("auth/login", { email, senha: permanent })).ok()).toBe(
+    expect((await mutate("auth/login", { login:email, senha: permanent })).ok()).toBe(
       true,
     );
     expect(
@@ -389,6 +391,7 @@ test("gerente precisa das duas lojas; funcionário consulta movimentos sem link 
       data: {
         nome: "Transfer scope",
         email,
+      usuario:email.split("@")[0].slice(0,32),
         cargo: "FUNC",
         status: "INATIVO",
         lojas: [],

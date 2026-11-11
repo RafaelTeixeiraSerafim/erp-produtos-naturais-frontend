@@ -14,10 +14,10 @@ test("SKU real: três variantes, escolha explícita, saldos isolados e ciclo com
   const receipt=await post("recebimentos-compras",{idCompra:buy.id,idUsuario:f.operator,status:"RASCUNHO",itens:buy.itens.map((i:{id:string;idProdutoSku:string;quantidade:number})=>({idItemCompra:i.id,idProdutoSku:i.idProdutoSku,quantidade:i.quantidade}))},crypto.randomUUID());await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});
   const balances=async()=>Promise.all(skus.map(async s=>(await get(`estoques/saldo?idProdutoSku=${s.id}&idLoja=${f.store}`)).quantidadeAtual));
   expect(await balances()).toEqual(amounts);
-  await page.goto("/vendas/nova");await expect(page.getByLabel("SKU *",{exact:true})).toHaveValue("");
+  await page.goto("/vendas/nova");await expect(page.getByRole("combobox", { name: "SKU *", exact: true })).toHaveValue("");
   await page.getByLabel("Buscar por produto, apresentação ou código").fill(skus[0].sku);
-  await expect(page.getByLabel("SKU *",{exact:true}).locator("option")).toHaveCount(2);
-  await page.getByLabel("SKU *",{exact:true}).selectOption(skus[0].id);
+  await expect(page.getByRole("combobox", { name: "SKU *", exact: true }).locator("option")).toHaveCount(2);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(skus[0].id);
   const saleBody=(q:number)=>({idCliente:f.customer,idLoja:f.store,itens:[{idProdutoSku:skus[0].id,quantidade:q,precoUnitario:5,desconto:0}]});
   const fraction=await request.post("/api/vendas",{data:saleBody(0.125),headers:{"Idempotency-Key":crypto.randomUUID()}});expect(fraction.status()).toBe(400);
   const shortage=await post("vendas",saleBody(3),crypto.randomUUID());expect((await request.post(`/api/vendas/${shortage.id}/concluir`,{data:{versao:0}})).status()).toBe(409);expect(await balances()).toEqual(amounts);

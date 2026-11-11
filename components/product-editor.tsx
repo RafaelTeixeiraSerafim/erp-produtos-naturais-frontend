@@ -21,7 +21,7 @@ export function ProductEditor({ id }: { id?: string }) {
     { query: { enabled: !!id } },
   );
   const loading =
-    categories.isPending || (!!id && product.isPending);
+    !!id && product.isPending;
   const hasPrerequisites = !!categories.data?.length;
   return (
     <>
@@ -38,7 +38,7 @@ export function ProductEditor({ id }: { id?: string }) {
       />
       {loading ? (
         <Loading />
-      ) : categories.isError || (id && product.isError) ? (
+      ) : id && product.isError ? (
         <>
           {categories.isError && (
             <ErrorNotice
@@ -58,8 +58,7 @@ export function ProductEditor({ id }: { id?: string }) {
           {!hasPrerequisites && (
             <Notice>
               <NoticeDescription>
-                Antes de cadastrar produtos, crie pelo menos uma{" "}
-                <Link href="/categorias">categoria</Link>.
+                Cadastre uma categoria para relacionar ao produto.
               </NoticeDescription>
             </Notice>
           )}

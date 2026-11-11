@@ -1,5 +1,6 @@
 // Test-only fixture. SQL is executed exclusively in the integration runner's own
 // container; this module is never imported by application routes.
+import { testCnpj } from "./controlled-services.mjs";
 import { randomUUID } from "node:crypto";
 export function inventorySeed({ base, sql }) {
   const created = [];
@@ -26,7 +27,7 @@ export function inventorySeed({ base, sql }) {
         productIds.push(await create("produtos-sku", {idProduto:parent, sku:randomUUID(), descricaoApresentacao:"Granel", idUnidadeMedida:unit, tipoVenda:"PESO",status:"ATIVO"}));
       }
       const stores = [];
-      for (const [i, nome] of ["Centro integração", "Bairro integração"].entries()) stores.push(await create("lojas", { nomeFantasia: nome, razaoSocial: nome, cnpj: `0000000000000${i}`, estado: "SC", cidade: "Criciúma", bairro: "Centro", numero: "1" }));
+      for (const [i, nome] of ["Centro integração", "Bairro integração"].entries()) stores.push(await create("lojas", { nomeFantasia: nome, razaoSocial: nome, cnpj: testCnpj(`04252011000${i}`), municipioIbge:4204608, estado: "SC", cidade: "Criciúma", bairro: "Centro", numero: "1" }));
       const [p, q] = productIds, [a, b] = stores;
       const statements = ["BEGIN"];
       for (const [product, store, amount] of [[p, a, 1234.567], [p, b, 0], [q, a, -0.125]]) statements.push(`INSERT INTO estoque_produto (id,id_produto_sku,id_loja,quantidade_atual,atualizado_em) VALUES ('${randomUUID()}','${product}','${store}',${amount},'2026-11-04T03:00:00Z')`);

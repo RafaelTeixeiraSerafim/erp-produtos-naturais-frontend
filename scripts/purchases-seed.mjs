@@ -22,6 +22,8 @@ export function purchasesSeed({ base, sql, inventory }) {
         nomeFantasia: prefix,
         razaoSocial: prefix,
         estado: "SC",
+        municipioIbge:4204608,
+        cnpj:"12ABC34501DE35",
         cidade: "Criciúma",
         bairro: "Centro",
       });

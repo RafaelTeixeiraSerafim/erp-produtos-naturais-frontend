@@ -23,13 +23,14 @@ const draft = () => ({
   observacao: "Teste",
   itens: [{ ...item }],
 });
-it("valida o DTO de fornecedor, normaliza UF e mantém documentos opcionais", () => {
+it("valida o DTO de fornecedor, normaliza UF e exige documento de fornecedor", () => {
   const values = {
     nomeFantasia: " A ",
     razaoSocial: "B",
     estado: " sc ",
     cidade: "C",
     bairro: "D",
+    cpf: "52998224725",
   };
   expect(supplierSchema.parse(values)).toEqual({
     ...values,

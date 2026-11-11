@@ -1,4 +1,5 @@
 "use client";
+import { RelatedField } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListarVendas } from "@/generated/sdk/hooks/useListarVendas";
 import { useBuscarVendaPorId } from "@/generated/sdk/hooks/useBuscarVendaPorId";
-import { useOperator, useIdentity, useCan } from "./auth";
+import { useOperator, useIdentity } from "./auth";
 import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
@@ -403,7 +404,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
     client = useQueryClient(),
     router = useRouter();
   const user = useIdentity();
-  const canManageStores = useCan("stores.manage"), canWriteCatalog = useCan("catalog.write");
+
   const initial = { ...(row ? savedSaleValues(row) : draftValues()), idUsuario: user?.id || "" };
   const [draft, setDraft] = useState(initial);
   const recovery = useDocumentRecovery({ context: row ? `sale:${row.id}` : "sale:new", initial, values: draft, setValues: setDraft, schema: saleDraftSchema, baseline:row ? String(row.versao) : "", applicable: !unavailable && (!row || row.status === "ABERTA") });
@@ -490,11 +491,6 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
       {savedLink && <p role="status">Documento salvo. {postSaveError && "Não foi possível atualizar a tela."} <Link href={savedLink}>Ver registro salvo</Link></p>}
       {uncertain && <p role="alert">{row ? "Não foi possível confirmar a edição. Confira a versão salva e revise os valores preservados antes de reenviar." : "Não foi possível confirmar a gravação. Use Repetir envio salvo para consultar ou concluir a mesma solicitação com segurança."}</p>}
 
-      <div className="mb-5 flex flex-wrap gap-4">
-        <Link href="/clientes">Cadastrar cliente</Link>
-        {canManageStores && <Link href="/lojas">Cadastrar loja</Link>}
-        {canWriteCatalog && <Link href="/produtos/novo">Cadastrar produto</Link>}
-      </div>
       {!prerequisites && (
         <p role="status" className="mb-4">
           Para salvar, é necessário carregar e cadastrar pelo menos um cliente,
@@ -506,8 +502,8 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
       <form onSubmit={submit} noValidate aria-busy={busy}>
         <fieldset disabled={blocked || busy || recovery.blocked || !!savedLink || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
-            <label>
-              Cliente *
+            <div>
+              Cliente * <RelatedField field="idCliente" query={lookups.customers}/>
               <Select
                 aria-label="Cliente *"
                 required
@@ -524,9 +520,9 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                   </option>
                 ))}
               </Select>
-            </label>
-            <label>
-              Loja *
+            </div>
+            <div>
+              Loja * <RelatedField field="idLoja" query={lookups.stores}/>
               <Select
                 aria-label="Loja *"
                 required
@@ -541,7 +537,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                   </option>
                 ))}
               </Select>
-            </label>
+            </div>
             <label>
               Data da venda
               <Input
@@ -582,7 +578,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                   Item {index + 1}
                 </h2>
                 <div>
-                  SKU *
+                  SKU * <RelatedField field="idProdutoSku" query={lookups.products}/>
                   <SkuSelect
                     aria-label="SKU *"
                     required

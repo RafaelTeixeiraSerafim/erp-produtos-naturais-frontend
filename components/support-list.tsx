@@ -12,7 +12,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Table, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import Link from "next/link";
 import { useListarFornecedores } from "@/generated/sdk/hooks/useListarFornecedores";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import { useListarCategorias } from "@/generated/sdk/hooks/useListarCategorias";
 import { useListarUnidadesMedida } from "@/generated/sdk/hooks/useListarUnidadesMedida";
@@ -80,6 +80,8 @@ export function SupportList({ resource }: { resource: SupportResource }) {
   const [edit, setEdit] = useState<Row | null | undefined>(),
     [remove, setRemove] = useState<Row>(),
     [success, setSuccess] = useState("");
+  const openedFromUrl=useRef(false);
+  useEffect(()=>{if(params.get("novo")==="1" && query.isSuccess && canWrite && !openedFromUrl.current){openedFromUrl.current=true;setEdit(null);const url=new URL(location.href);url.searchParams.delete("novo");history.replaceState(null,"",url.pathname+url.search);}},[params,query.isSuccess,canWrite]);
   const names = resourceNames[resource];
   const filtered = (query.data || [])
     .filter((r: Row) =>

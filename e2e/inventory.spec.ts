@@ -40,9 +40,9 @@ test("saldos: paginação, filtros locais, URL, links, saldo exato e atualizaç�
   await page.getByLabel("Quantidade", { exact: true }).selectOption("");
   await page.getByLabel("Ordenar", { exact: true }).selectOption("nome-desc");
   await expect(page.locator("tbody tr").first()).toContainText("Produto 24");
-  await page.getByLabel("SKU", { exact: true }).selectOption(id(1));
+  await page.getByRole("combobox", { name: "SKU", exact: true }).selectOption(id(1));
   await expect(page.locator("tbody tr")).toHaveCount(1);
-  await page.getByLabel("Loja", { exact: true }).selectOption(id(50));
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption(id(50));
   await expect(page.getByLabel("Saldo exato")).toContainText("1.234,567");
   expect(state.requests).toContain(`/api/estoques?idProdutoSku=${id(1)}`);
   const calls = state.calls;
@@ -60,9 +60,9 @@ test("saldos: paginação, filtros locais, URL, links, saldo exato e atualizaç�
 test("movimentações: loja isolada, datas inclusivas, tipo e detalhes", async ({ page }) => {
   await mock(page);
   await page.goto("/estoque/movimentacoes");
-  await page.getByLabel("Loja", { exact: true }).selectOption(id(51));
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption(id(51));
   await expect(page.locator("tbody tr")).toHaveCount(12);
-  await page.getByLabel("Loja", { exact: true }).selectOption("");
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption("");
   await page.getByLabel("Data inicial").fill("2026-11-04");
   await page.getByLabel("Data final").fill("2026-11-04");
   await expect(page.locator("tbody tr")).toHaveCount(12);
@@ -82,7 +82,7 @@ test("zero, ausência, falha e retry preservam resultados independentes", async 
   await page.goto(`/estoque?idProdutoSku=${id(2)}&idLoja=${id(51)}`);
   await expect(page.getByRole("cell", { name: "0", exact: true })).toBeVisible();
   await expect(page.getByText("Sem registro de estoque")).toHaveCount(0);
-  await page.getByLabel("Loja", { exact: true }).selectOption(id(50));
+  await page.getByRole("combobox", { name: "Loja", exact: true }).selectOption(id(50));
   await expect(page.getByText("Sem registro de estoque")).toBeVisible();
   await expect(page.getByLabel("Saldo exato")).toContainText("0 kg");
   state.offline = true;

@@ -1,4 +1,5 @@
 "use client";
+import { RelatedField } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
@@ -669,8 +670,9 @@ export function TransferEditor({
         <fieldset disabled={blocked || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             {(["idLojaOrigem", "idLojaDestino"] as const).map((key) => (
-              <label key={key}>
+              <div key={key}>
                 {key === "idLojaOrigem" ? "Origem *" : "Destino *"}
+                <RelatedField field="idLoja" query={stores}/>
                 <Select
                   aria-label={key === "idLojaOrigem" ? "Origem *" : "Destino *"}
                   value={draft[key]}
@@ -686,7 +688,7 @@ export function TransferEditor({
                     </option>
                   ))}
                 </Select>
-              </label>
+              </div>
             ))}
             <label>
               Data da transferência
@@ -720,7 +722,7 @@ export function TransferEditor({
               >
                 <div>
                   SKU *
-                  <SkuSelect
+                  <RelatedField field="idProdutoSku" query={products}/><SkuSelect
                     aria-label="SKU *"
                     value={i.idProdutoSku}
                     onChange={(e) =>

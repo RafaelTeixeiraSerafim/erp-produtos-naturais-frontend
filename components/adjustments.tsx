@@ -1,4 +1,5 @@
 "use client";
+import { RelatedField } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
@@ -674,8 +675,9 @@ export function AdjustmentEditor({
         <fieldset disabled={blocked || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             {(["idLoja"] as const).map((key) => (
-              <label key={key}>
+              <div key={key}>
                 {key === "idLoja" ? "Loja *" : "Loja *"}
+                <RelatedField field="idLoja" query={stores}/>
                 <Select
                   aria-label={key === "idLoja" ? "Loja *" : "Loja *"}
                   value={draft[key]}
@@ -691,7 +693,7 @@ export function AdjustmentEditor({
                     </option>
                   ))}
                 </Select>
-              </label>
+              </div>
             ))}
             <p>Operador: {user?.nome}</p>
             <label>
@@ -713,7 +715,7 @@ export function AdjustmentEditor({
               >
                 <div>
                   SKU *
-                  <SkuSelect
+                  <RelatedField field="idProdutoSku" query={products}/><SkuSelect
                     aria-label="SKU *"
                     value={i.idProdutoSku}
                     onChange={(e) =>

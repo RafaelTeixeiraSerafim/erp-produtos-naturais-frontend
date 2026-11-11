@@ -1,4 +1,5 @@
 // Run only against a disposable, local novaVersao backend. Never use shared Render.
+import { testCnpj } from "./controlled-services.mjs";
 import { authenticatedSession } from "./session.mjs";
 import assert from "node:assert/strict";
 if (process.env.CATALOG_DISPOSABLE !== "1")
@@ -45,7 +46,8 @@ try {
     bairro: "Centro",
     numero: "1",
     complemento: "Teste descartável",
-    cnpj: String(Date.now()).padStart(14, "0"),
+    cnpj: testCnpj(),
+    municipioIbge:4204608,
   });
   const product = await create("produtos", {
     nome: stamp,

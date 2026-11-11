@@ -17,6 +17,7 @@ async function mockCatalog(page: Page, seed: Database = {}) {
   let count = 100;
   await page.route("**/api/**", async (route) => {
     if (new URL(route.request().url()).pathname.startsWith("/api/auth/")) return route.fallback();
+    if(new URL(route.request().url()).pathname.startsWith("/api/localidades/"))return route.fulfill({json:{dados:new URL(route.request().url()).pathname.endsWith("municipios")?[{id:4204608,nome:"Criciúma"}]:[{id:42,nome:"Santa Catarina",sigla:"SC"}],desatualizado:false}});
     const req = route.request(),
       url = new URL(req.url()),
       [resource, id] = url.pathname.replace("/api/", "").split("/");
@@ -145,18 +146,18 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   for (const [label, value] of Object.entries({
     "Nome fantasia": "Loja Centro",
     "Razão social": "Vila Verde LTDA",
-    CNPJ: "12345678000190",
-    Estado: "SC",
-    Cidade: "Criciúma",
+    CNPJ: "04252011000110",
     Bairro: "Centro",
     Número: "10",
   }))
     await page.getByLabel(label, { exact: false }).fill(value);
+  await page.getByLabel("Estado",{exact:true}).selectOption("SC");
+  await page.getByLabel("Cidade",{exact:true}).selectOption("4204608");
   await saveDialog(page);
   await navigate(page, "/produtos/novo");
   await page.getByLabel("Nome do produto").fill("Aveia integral");
   await page
-    .getByLabel("Categoria", { exact: false })
+    .getByRole("combobox", { name: "Categoria", exact: false })
     .selectOption({ label: "Grãos" });
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(
@@ -168,7 +169,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   await page.getByRole("button", { name: "Novo SKU" }).click();
   await page.getByRole("textbox", { name: "SKU", exact: true }).fill("AVE-01");
   await page.getByLabel("Descrição da apresentação").fill("Granel");
-  await page.getByLabel("Unidade de medida").selectOption({label:"Quilograma (kg)"});
+  await page.getByRole("combobox", { name: "Unidade de medida", exact: false }).selectOption({label:"Quilograma (kg)"});
   await page.getByLabel("EAN-13").fill("7891234567890");
   await saveDialog(page);
   await expect(
@@ -182,7 +183,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
     .click();
   await page
     .getByRole("dialog")
-    .getByLabel("Loja")
+    .getByRole("combobox", { name: "Loja", exact: false })
     .selectOption({ label: "Loja Centro" });
   await saveDialog(page);
   await page.getByLabel("Variante para lojas e preços").selectOption({index:1});
@@ -190,7 +191,7 @@ test("fluxo completo: cadastros, produto, SKU, loja, preço, edição e persist�
   await page.getByRole("button", { name: "Novo preço" }).click();
   await page
     .getByRole("dialog")
-    .getByLabel("Loja")
+    .getByRole("combobox", { name: "Loja", exact: false })
     .selectOption({ label: "Loja Centro" });
   await page.getByLabel("Preço (R$)").fill("12,90");
   await page.getByLabel("Início da validade").fill("2026-11-03T12:00");
@@ -253,7 +254,7 @@ test("SKU duplicado mantém os dados e o modal aberto", async ({ page }) => {
   await page.getByRole("button", { name: "Novo SKU" }).click();
   await page.getByRole("textbox", { name: "SKU", exact: true }).fill("AVE-01");
   await page.getByLabel("Descrição da apresentação").fill("Granel");
-  await page.getByLabel("Unidade de medida").selectOption({label:"Quilograma (kg)"});
+  await page.getByRole("combobox", { name: "Unidade de medida", exact: false }).selectOption({label:"Quilograma (kg)"});
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Salvar", exact: true })
@@ -276,7 +277,7 @@ test("vínculo duplicado exibe erro e permite tentar novamente", async ({
   await page
     .getByRole("button", { name: "Vincular loja", exact: true })
     .click();
-  await page.getByRole("dialog").getByLabel("Loja").selectOption(store.id);
+  await page.getByRole("dialog").getByRole("combobox", { name: "Loja", exact: false }).selectOption(store.id);
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Salvar", exact: true })
@@ -311,7 +312,7 @@ test("listas prévias vazias orientam o usuário e impedem salvar produto", asyn
   await mockCatalog(page);
   await navigate(page, "/produtos/novo");
   await expect(
-    page.getByText("Antes de cadastrar produtos, crie pelo menos uma"),
+    page.getByText("Cadastre uma categoria para relacionar ao produto."),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Salvar", exact: true }),

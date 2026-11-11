@@ -3,6 +3,7 @@
 * Do not edit manually.
 */
 
+import type { ApiError } from './ApiError'
 import type { UnidadeMedidaRequestDTO } from './UnidadeMedidaRequestDTO'
 import type { UnidadeMedidaResponseDTO } from './UnidadeMedidaResponseDTO'
 
@@ -17,6 +18,10 @@ export type AtualizarUnidadeMedidaPath = {
 
 export type AtualizarUnidadeMedidaStatus200 = UnidadeMedidaResponseDTO;
 
+export type AtualizarUnidadeMedidaStatus400 = ApiError;
+
+export type AtualizarUnidadeMedidaStatus409 = ApiError;
+
 export type AtualizarUnidadeMedidaBody = UnidadeMedidaRequestDTO;
 
 export type AtualizarUnidadeMedidaOptions = {
@@ -28,6 +33,8 @@ export type AtualizarUnidadeMedidaOptions = {
 
 export type AtualizarUnidadeMedidaResponses = {
   '200': AtualizarUnidadeMedidaStatus200;
+  '400': AtualizarUnidadeMedidaStatus400;
+  '409': AtualizarUnidadeMedidaStatus409;
 };
 
 /**

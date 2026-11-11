@@ -4,7 +4,7 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { AtualizarClienteOptions, AtualizarClienteStatus200 } from '../types/AtualizarCliente'
+import type { AtualizarClienteOptions, AtualizarClienteStatus200, AtualizarClienteStatus400, AtualizarClienteStatus409 } from '../types/AtualizarCliente'
 import type { UseMutationOptions, UseMutationResult, QueryClient } from '@tanstack/react-query'
 import { atualizarCliente } from '../clients/atualizarCliente'
 import { mutationOptions, useMutation } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export const atualizarClienteMutationKey = () => [{ url: '/api/clientes/:id' }] 
 
 export function atualizarClienteMutationOptions<TContext = unknown>(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
   const mutationKey = atualizarClienteMutationKey()
-  return mutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<Error>, AtualizarClienteOptions, TContext>({
+  return mutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<AtualizarClienteStatus400 | AtualizarClienteStatus409>, AtualizarClienteOptions, TContext>({
     mutationKey,
     mutationFn: async({ path, body }) => {
       return atualizarCliente({ ...config, path, body, throwOnError: true }).unwrap()
@@ -25,18 +25,18 @@ export function atualizarClienteMutationOptions<TContext = unknown>(config: Part
  * {@link /api/clientes/:id}
  */
 export function useAtualizarCliente<TContext>(options: {
-  mutation?: UseMutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<Error>, AtualizarClienteOptions, TContext> & { client?: QueryClient },
+  mutation?: UseMutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<AtualizarClienteStatus400 | AtualizarClienteStatus409>, AtualizarClienteOptions, TContext> & { client?: QueryClient },
   client?: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>>,
 } = {}) {
   const { mutation = {}, client: config = {} } = options ?? {}
   const { client: queryClient, ...mutationOptions } = mutation;
   const mutationKey = mutationOptions.mutationKey ?? atualizarClienteMutationKey()
 
-  const baseOptions = atualizarClienteMutationOptions(config) as UseMutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<Error>, AtualizarClienteOptions, TContext>
+  const baseOptions = atualizarClienteMutationOptions(config) as UseMutationOptions<AtualizarClienteStatus200, ResponseErrorConfig<AtualizarClienteStatus400 | AtualizarClienteStatus409>, AtualizarClienteOptions, TContext>
 
-  return useMutation<AtualizarClienteStatus200, ResponseErrorConfig<Error>, AtualizarClienteOptions, TContext>({
+  return useMutation<AtualizarClienteStatus200, ResponseErrorConfig<AtualizarClienteStatus400 | AtualizarClienteStatus409>, AtualizarClienteOptions, TContext>({
     ...baseOptions,
     mutationKey,
     ...mutationOptions,
-  }, queryClient) as UseMutationResult<AtualizarClienteStatus200, ResponseErrorConfig<Error>, AtualizarClienteOptions, TContext>
+  }, queryClient) as UseMutationResult<AtualizarClienteStatus200, ResponseErrorConfig<AtualizarClienteStatus400 | AtualizarClienteStatus409>, AtualizarClienteOptions, TContext>
 }

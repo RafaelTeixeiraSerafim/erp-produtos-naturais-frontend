@@ -1,4 +1,5 @@
 "use client";
+import { RelatedField } from "./related-field";
 import {
   Panel,
   PanelHeader,
@@ -126,7 +127,7 @@ function Relationships({
     row.nomeLoja ||
     row.idLoja;
   const cannotAdd =
-    resource !== "skus" && (!skuId || !stores.data?.length || stores.isError);
+    resource !== "skus" && !skuId;
   return (
     <>
       {success && (
@@ -162,8 +163,7 @@ function Relationships({
         {resource !== "skus" && stores.isSuccess && !stores.data.length && (
           <Notice className="m-5">
             <NoticeDescription>
-              Cadastre uma <Link href="/lojas">loja</Link> antes de criar
-              vínculos ou preços.
+              Crie um vínculo ou preço para selecionar a loja.
             </NoticeDescription>
           </Notice>
         )}
@@ -403,7 +403,7 @@ export function ProductDetail({ id }: { id: string }) {
           </p>
         )}
       </Panel>
-      <label className="mt-5 block">Variante para lojas e preços<Select aria-label="Variante para lojas e preços" value={skuId} onChange={e=>setSkuId(e.target.value)}><option value="">Selecione um SKU</option>{skus.data?.map(s=><option key={s.id} value={s.id}>{s.descricaoApresentacao} · {s.sku} · {s.siglaUnidadeMedida}</option>)}</Select></label>
+      <div className="mt-5 block">Variante para lojas e preços <RelatedField field="idProdutoSku" query={skus}/><Select aria-label="Variante para lojas e preços" value={skuId} onChange={e=>setSkuId(e.target.value)}><option value="">Selecione um SKU</option>{skus.data?.map(s=><option key={s.id} value={s.id}>{s.descricaoApresentacao} · {s.sku} · {s.siglaUnidadeMedida}</option>)}</Select></div>
       <Tabs className="mt-[26px]" value={tab} onValueChange={setTab}>
         <TabsList aria-label="Dados do produto">
           <TabsTrigger value="skus">

@@ -20,7 +20,8 @@ const resources = new Set([
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function forwardCatalog(request: Request, path: string[]) {
   const [resource, id] = path;
-  const auth = resource === "auth" && path.length === 2 && ["csrf", "login", "me", "logout", "alterar-senha"].includes(id);
+  const auth = resource === "auth" && path.length === 2 && ["csrf", "login", "me", "logout", "alterar-senha", "esqueci-senha", "redefinir-senha"].includes(id);
+  const locality = resource === "localidades" && id === "estados" && (path.length === 2 || (path.length === 4 && /^[A-Z]{2}$/.test(path[2]) && path[3] === "municipios"));
   const reset = resource === "usuarios" && path.length === 3 && path[2] === "senha-temporaria";
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
     const origins = (process.env.FRONTEND_ORIGINS || new URL(request.url).origin).split(",").map(o => o.trim());
@@ -33,16 +34,16 @@ export async function forwardCatalog(request: Request, path: string[]) {
   const conclude = receipt && path.length === 3 && path[2] === "concluir";
   const balance = resource === "estoques" && id === "saldo";
   if (
-    (!auth && !resources.has(resource)) ||
-    (path.length > 2 && !conclude && !reset && !saleAction) ||
-    (id && !auth && !balance && !uuid.test(id))
+    (!auth && !locality && !resources.has(resource)) ||
+    (path.length > 2 && !locality && !conclude && !reset && !saleAction) ||
+    (id && !auth && !locality && !balance && !uuid.test(id))
   )
     return Response.json(
       { message: "Recurso não encontrado." },
       { status: 404, headers: { "Cache-Control": "no-store" } },
     );
   const allowed =
-    auth ? [id === "csrf" || id === "me" ? "GET" : "POST"] : reset ? ["POST"] : receipt
+    locality ? ["GET"] : auth ? [id === "csrf" || id === "me" ? "GET" : "POST"] : reset ? ["POST"] : receipt
       ? conclude ? ["POST"] : id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]
       : resource === "usuarios"
       ? id ? ["GET", "PUT", "DELETE"] : ["GET", "POST"]

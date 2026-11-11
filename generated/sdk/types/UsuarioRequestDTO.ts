@@ -25,6 +25,12 @@ export type UsuarioRequestDTO = {
    */
   nome: string;
   /**
+   * @minLength 1
+   * @pattern [A-Za-z0-9._-]{3,32}
+   * @type string
+   */
+  usuario: string;
+  /**
    * @description
    * Format: `email`
    * @minLength 0

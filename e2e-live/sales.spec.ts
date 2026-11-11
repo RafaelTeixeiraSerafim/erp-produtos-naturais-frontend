@@ -22,9 +22,9 @@ test("vendas reais: cliente e venda aberta com total agregado, reload e estoque 
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.goto("/vendas/nova");
   await page
-    .getByLabel("Cliente *", { exact: true })
+    .getByRole("combobox", { name: "Cliente *", exact: true })
     .selectOption({ label: name });
-  await page.getByLabel("Loja *", { exact: true }).selectOption(fixture.store);
+  await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(fixture.store);
   const fill = async (
     n: number,
     product: string,
@@ -33,7 +33,7 @@ test("vendas reais: cliente e venda aberta com total agregado, reload e estoque 
     discount: string,
   ) => {
     const row = page.getByLabel(`Item ${n}`, { exact: true });
-    await row.getByLabel("SKU", {exact:false}).selectOption(product);
+    await row.getByRole("combobox", { name: "SKU", exact: false }).selectOption(product);
     await row.getByLabel("Quantidade").fill(q);
     await row.getByLabel("Preço unitário").fill(cost);
     await row.getByLabel("Desconto").fill(discount);
@@ -67,8 +67,8 @@ test("venda real: recebimento, edição, conclusão, saída vinculada, falta e c
   const receipt=await post("recebimentos-compras",{idCompra:purchase.id,idUsuario:f.operator,status:"RASCUNHO",itens:[{idItemCompra:purchase.itens[0].id,idProdutoSku:f.product,quantidade:10}]},crypto.randomUUID());
   await post(`recebimentos-compras/${receipt.id}/concluir`,{versao:receipt.versao});expect(await saldo()).toBeCloseTo(initial+10,3);
   await page.goto("/vendas/nova");
-  await page.getByLabel("Cliente *",{exact:true}).selectOption(f.customer);await page.getByLabel("Loja *",{exact:true}).selectOption(f.store);
-  await page.getByLabel("SKU *",{exact:true}).selectOption(f.product);await page.getByLabel(/^Quantidade/).fill("2");await page.getByLabel(/^Preço unitário/).fill("3,50");await page.getByLabel("Observação",{exact:true}).fill("Venda conferida");
+  await page.getByRole("combobox", { name: "Cliente *", exact: true }).selectOption(f.customer);await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(f.store);
+  await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);await page.getByLabel(/^Quantidade/).fill("2");await page.getByLabel(/^Preço unitário/).fill("3,50");await page.getByLabel("Observação",{exact:true}).fill("Venda conferida");
   await page.getByRole("button",{name:"Salvar venda aberta"}).click();await expect(page).toHaveURL(/\/vendas\/[0-9a-f-]{36}$/);const url=page.url(),id=url.split("/").pop();
   const beforeEdit=await (await request.get(`/api/vendas/${id}`)).json();
   await page.getByRole("link",{name:"Editar venda"}).click();await page.getByLabel(/^Quantidade/).fill("3");
@@ -90,7 +90,7 @@ test("venda real: recebimento, edição, conclusão, saída vinculada, falta e c
 });
 test("venda real: resposta perdida repete a mesma identidade e conflito preserva valores",async ({page,request})=>{
   const f=JSON.parse(process.env.SALES_FIXTURE!);
-  await page.goto("/vendas/nova");await page.getByLabel("Cliente *",{exact:true}).selectOption(f.customer);await page.getByLabel("Loja *",{exact:true}).selectOption(f.store);await page.getByLabel("SKU *",{exact:true}).selectOption(f.product);await page.getByLabel(/^Quantidade/).fill("1");await page.getByLabel(/^Preço unitário/).fill("2");
+  await page.goto("/vendas/nova");await page.getByRole("combobox", { name: "Cliente *", exact: true }).selectOption(f.customer);await page.getByRole("combobox", { name: "Loja *", exact: true }).selectOption(f.store);await page.getByRole("combobox", { name: "SKU *", exact: true }).selectOption(f.product);await page.getByLabel(/^Quantidade/).fill("1");await page.getByLabel(/^Preço unitário/).fill("2");
   let persisted:string|undefined,key:string|undefined,payload:string|undefined;
   await page.route("**/api/vendas",async route=>{
     if(route.request().method()!=="POST")return route.fallback();

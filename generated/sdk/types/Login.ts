@@ -12,7 +12,7 @@ export type Login = {
    * @maxLength 254
    * @type string
    */
-  email: string;
+  login: string;
   /**
    * @minLength 0
    * @maxLength 72

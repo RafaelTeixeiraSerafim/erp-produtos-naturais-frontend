@@ -1,7 +1,7 @@
 "use client";
+import { RelatedField } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
-import { useCan } from "./auth";
 import Link from "next/link";
 import { ReceiptList } from "./receipts";
 import { canReceive, outstanding } from "@/lib/receipts";
@@ -386,7 +386,7 @@ function UnavailablePurchaseRecovery({ id }: { id: string }) {
   return recovery.ui;
 }
 export function PurchaseEditor({ initial, verificationError = false }: { initial?: CompraResponseDTO; verificationError?: boolean }) {
-  const canManageStores = useCan("stores.manage");
+
   const lookups = useLookups(true),
     client = useQueryClient(),
     router = useRouter();
@@ -487,11 +487,6 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
       {savedLink && <p role="status">Documento salvo. {postSaveError && "Não foi possível atualizar a tela."} <Link href={savedLink}>Ver registro salvo</Link></p>}
       {uncertain && <p role="alert">Não foi possível confirmar a gravação. Confira a <Link href="/compras">lista de registros</Link> antes de tentar novamente. A solicitação não será reenviada automaticamente.</p>}
 
-      <div className="mb-5 flex flex-wrap gap-4">
-        <Link href="/fornecedores">Cadastrar fornecedor</Link>
-        {canManageStores && <Link href="/lojas">Cadastrar loja</Link>}
-        <Link href="/produtos/novo">Cadastrar produto</Link>
-      </div>
       {!prerequisites && (
         <p role="status" className="mb-4">
           Para salvar, é necessário carregar e cadastrar pelo menos um
@@ -520,8 +515,8 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
       <form onSubmit={submit} noValidate aria-busy={busy}>
         <fieldset disabled={busy || locked || recovery.blocked || !!savedLink} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
-            <label>
-              Fornecedor *
+            <div>
+              Fornecedor * <RelatedField field="idFornecedor" query={lookups.suppliers}/>
               <Select
                 aria-label="Fornecedor *"
                 required
@@ -538,9 +533,9 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                   </option>
                 ))}
               </Select>
-            </label>
-            <label>
-              Loja *
+            </div>
+            <div>
+              Loja * <RelatedField field="idLoja" query={lookups.stores}/>
               <Select
                 aria-label="Loja *"
                 required
@@ -555,12 +550,12 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                   </option>
                 ))}
               </Select>
-            </label>
+            </div>
             <label>
               Data da compra
               <Input
                 type="datetime-local"
-                step="1"
+                step="60"
                 value={draft.dataCompra}
                 onChange={(e) =>
                   setDraft({ ...draft, dataCompra: e.target.value })
@@ -603,7 +598,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                   Item {index + 1}
                 </h2>
                 <div>
-                  SKU *
+                  SKU * <RelatedField field="idProdutoSku" query={lookups.products}/>
                   <SkuSelect
                     aria-label="SKU *"
                     required
@@ -632,6 +627,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                       <Input
                         inputMode="decimal"
                         value={item[key]}
+                        onFocus={e => { if(key === "desconto" && e.target.value === "0")e.target.select(); }}
                         onChange={(e) => change(key, e.target.value)}
                       />
                       <small>

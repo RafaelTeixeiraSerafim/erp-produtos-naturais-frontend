@@ -21,7 +21,7 @@ test("início, filtros na URL, escopos, links e navegação", async ({page}, inf
   await expect(page.getByRole("navigation").getByRole("link",{name:"Visão geral"})).toHaveAttribute("aria-current","page");
   if(info.project.name === "mobile") await page.keyboard.press("Escape");
   await page.goto(`/visao-geral?idLoja=${id(1)}&inicio=2026-11-05&fim=2026-11-05`);
-  await page.reload(); await expect(page.getByLabel("Loja",{exact:true})).toHaveValue(id(1)); await expect(page.getByLabel("Data inicial")).toHaveValue("2026-11-05");
+  await page.reload(); await expect(page.getByRole("combobox", { name: "Loja", exact: true })).toHaveValue(id(1)); await expect(page.getByLabel("Data inicial")).toHaveValue("2026-11-05");
   await expect(page.getByRole("region",{name:"Catálogo"})).toContainText("Produtos ativos: 24");
   const sales = page.getByRole("region",{name:"Vendas no período"});
   await expect(sales.getByRole("row").filter({hasText:"Aberta"}).first()).toContainText("0,90");
