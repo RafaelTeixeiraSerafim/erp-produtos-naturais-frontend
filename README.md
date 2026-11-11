@@ -1,3 +1,5 @@
+Etapa 14 integrada à `main` do frontend e à `novaVersao` do backend por autorização do usuário. [Publicação e CI aprovadas](docs/STAGE14_RELEASE.md#publicação-autorizada-em-11112026).
+
 Etapa 14: [configuração e regras de acesso/formulários](docs/STAGE14_FORMS_AUTH.md), [validação](docs/STAGE14_RELEASE.md). Estas referências prevalecem sobre as descrições históricas de login e SDK abaixo.
 
 # Vila Verde · Visão geral, catálogo, estoque, compras, recebimentos, vendas e transferências

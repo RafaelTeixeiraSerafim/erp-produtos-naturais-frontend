@@ -1,3 +1,10 @@
+Etapa 14 publicada após autorização: `stage14-forms-auth` integrada à `main` do
+frontend e à `novaVersao` do backend, com a etapa 13 incluída e branches preservadas.
+[CI frontend](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/43061783469) e [CI backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/43061781973) aprovadas antes do merge.
+[Relatório atualizado](STAGE14_RELEASE.md). O reset do banco foi informado pelo usuário;
+não foi executada intervenção adicional no banco nem deploy manual nesta publicação.
+Os registros abaixo descrevem os aceites anteriores à autorização de integração.
+
 Código da etapa 14: frontend `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`, backend/SDK/runner `7f8477645978dbabaceca961aa09f98b7882abc2`. Aceite local: 187 testes frontend, 128 cenários de navegador, 99 testes PostgreSQL e 34 cenários reais, com build e reinício aprovados. Branches locais; sem publicação ou merge.
 
 Etapa 14 concluída e validada localmente em `stage14-forms-auth`: [handoff atual](STAGE14_FORMS_AUTH.md) e [evidências](STAGE14_RELEASE.md). Bases: frontend `d60fa53`, backend `22ff8a5`. Sem merge/deploy/reset. Os registros abaixo são históricos.

@@ -1,13 +1,38 @@
 # Etapa 14 — aceite local
 
-Data: 11/11/2026. Código frontend: `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`. Branches locais `stage14-forms-auth`, sobre frontend `d60fa53`
+Data: 11/11/2026. Código frontend: `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`. Branches de origem `stage14-forms-auth`, sobre frontend `d60fa53`
 e backend `22ff8a5`. Código backend fixado no SDK/runner:
 `7f8477645978dbabaceca961aa09f98b7882abc2`.
 
-Sem merge, deploy, push, envio de e-mails reais ou reset/migração de banco de
-desenvolvimento/compartilhado. Bancos descartáveis pertencem aos runners e foram
-removidos após os testes. A branch `stage13-sku-variants` foi preservada em ambos
-os repositórios. CI remota não foi executada nesta sessão.
+No aceite local anterior à autorização de publicação não houve merge, push, deploy,
+envio de e-mails reais ou reset/migração de banco de desenvolvimento/compartilhado.
+Os bancos descartáveis dos runners foram removidos após os testes. O estado de
+publicação atual consta abaixo.
+
+## Publicação autorizada em 11/11/2026
+
+Etapa 14 integrada à `main` do frontend e à `novaVersao` do backend, incluindo a
+etapa 13 que serve de base. As branches de origem foram preservadas.
+
+- Merge frontend: `6974f1bb4ed0006b19df422a85274d80a5468d9f`.
+- Merge backend: `c8520068fe65ec7c86996dae46364914ae44f336`.
+- [CI frontend da etapa 14](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/43061783469): `validate` e `integration` aprovados.
+- [CI backend da etapa 14](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/43061781973): 100 testes registrados, 99 executados,
+  nenhum erro/falha e um bootstrap exclusivo de integração ignorado.
+
+As árvores dos merges são idênticas às das branches validadas. A atualização
+posterior deste relatório altera somente documentação. Novas execuções da CI
+nas branches de destino podem ser acionadas pelo push; os links acima identificam
+as execuções aprovadas antes da integração.
+
+O backend remoto tinha duas alterações paralelas: tamanho de CNPJ no mapeamento
+JPA e um método `findByUuid` no repositório. O histórico foi incorporado, mantendo
+o CNPJ canônico de 14 caracteres e a busca atual por ID/usuário/e-mail. A árvore
+resultante foi comparada integralmente com a versão aprovada antes da CI.
+
+O usuário informou que já havia resetado o banco. Nenhum reset, SQL manual ou
+deploy manual foi executado durante esta publicação. Implantação automática e
+configuração de SMTP no ambiente publicado não foram verificadas.
 
 ## Evidências
 
