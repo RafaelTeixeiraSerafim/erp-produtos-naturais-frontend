@@ -114,7 +114,7 @@ export function Users() {
           {error && <Notice role="alert" variant="error"><AlertCircle size={18} className="shrink-0" /><p>{error}</p></Notice>}
           <fieldset disabled={busy} className="grid grid-cols-2 gap-5 mobile:grid-cols-1">
             <label className={`${fieldClass} col-span-full`}>Nome<Input required value={form.nome} onChange={event => setForm({ ...form, nome: event.target.value })} /></label>
-            <label className={`${fieldClass} col-span-full`}>Usuário<Input required minLength={3} maxLength={32} pattern="[A-Za-z0-9._-]{3,32}" autoComplete="off" value={form.usuario} onChange={event => setForm({ ...form, usuario: event.target.value })} /></label>
+            <label className={`${fieldClass} col-span-full`}>Usuário<Input required minLength={3} maxLength={32} pattern="[A-Za-z0-9._\-]{3,32}" autoComplete="off" value={form.usuario} onChange={event => setForm({ ...form, usuario: event.target.value })} /></label>
             <label className={`${fieldClass} col-span-full`}>E-mail<Input type="email" required value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} /></label>
             <label className={fieldClass}>Cargo<Select aria-label="Cargo" value={form.cargo} onChange={event => setForm({ ...form, cargo: event.target.value as Account["cargo"] })}>{Object.entries(roles).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>
             <label className={fieldClass}>Status<Select aria-label="Status" value={form.status} onChange={event => setForm({ ...form, status: event.target.value as Account["status"] })}><option value="ATIVO">Ativo</option><option value="INATIVO">Inativo</option></Select></label>
