@@ -1,6 +1,6 @@
 # Etapa 14 — aceite local
 
-Data: 11/11/2026. Branches locais `stage14-forms-auth`, sobre frontend `d60fa53`
+Data: 11/11/2026. Código frontend: `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`. Branches locais `stage14-forms-auth`, sobre frontend `d60fa53`
 e backend `22ff8a5`. Código backend fixado no SDK/runner:
 `7f8477645978dbabaceca961aa09f98b7882abc2`.
 
@@ -16,7 +16,7 @@ os repositórios. CI remota não foi executada nesta sessão.
 | Backend PostgreSQL 16 | 100 testes registrados; 99 executados e aprovados, um bootstrap exclusivo do runner ignorado. Inclui V1–V9, preflight, colisões, documentos, concorrência, tokens, cache e regressão operacional. |
 | Bootstrap de integração | Executado separadamente no banco próprio, com senha gerada pelo runner. |
 | Frontend | TypeScript, ESLint e 187 testes unitários/componentes aprovados. |
-| Navegador com fixtures | 128 cenários desktop/mobile aprovados, incluindo todos os novos fluxos de formulário e recuperação. |
+| Navegador com fixtures | 128 cenários desktop/mobile aprovados; mais dois cenários dirigidos de criação de conta passaram após ajustar o pattern HTML ao modo `v` dos navegadores. |
 | Build | Produção aprovada; o runner também construiu cópia isolada do frontend. |
 | Integração real | Smoke e 34 cenários Chromium desktop/mobile aprovados no backend fixado; comparação integral de documentos, itens, saldos e movimentos após reiniciar o processo aprovada. |
 | SDK | Árvore completa idêntica à gerada no backend, incluindo `.kubb`; sem edição manual de gerados. |

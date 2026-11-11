@@ -1,3 +1,5 @@
+Código da etapa 14: frontend `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`, backend/SDK/runner `7f8477645978dbabaceca961aa09f98b7882abc2`. Aceite local: 187 testes frontend, 128 cenários de navegador, 99 testes PostgreSQL e 34 cenários reais, com build e reinício aprovados. Branches locais; sem publicação ou merge.
+
 Etapa 14 concluída e validada localmente em `stage14-forms-auth`: [handoff atual](STAGE14_FORMS_AUTH.md) e [evidências](STAGE14_RELEASE.md). Bases: frontend `d60fa53`, backend `22ff8a5`. Sem merge/deploy/reset. Os registros abaixo são históricos.
 
 # Handoff para o agente planejador — Vila Verde
