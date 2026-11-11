@@ -455,3 +455,21 @@ Nenhuma conclusão abaixo declara alteração do ambiente publicado.
 
 BG-021/BG-022 de compras permanecem abertas. A precisão da data no formulário e
 os controles de consulta não adicionam idempotência nem versão ao PUT de compras.
+
+
+## BG-029 — Diagnóstico e recuperação da chamada HTTP ao IBGE
+
+Relato publicado de 11/11/2026: GET de estados retornou 503 no backend Render.
+O endpoint oficial respondeu 200 nos testes diretos; houve uma falha intermitente
+na chamada local completa, seguida de sucesso com 27 estados. A exceção original
+era descartada, impedindo determinar a causa de rede/status a partir dos logs.
+
+Correção de transporte: até duas tentativas para falhas transitórias dentro do
+mesmo orçamento total de cinco segundos, respeito a `Retry-After`, status HTTP e
+causa original preservados no log; cache de 24h/sete dias e 503 real sem cache
+mantidos. Sete testes com HTTP local real e regressão backend aprovados.
+
+**Investigação no Render ainda pendente:** os testes locais não comprovam a causa
+específica nem o resultado após implantação. Conferir `Falha na consulta IBGE` no
+runtime publicado se o erro persistir. Não encerrar o incidente por inferência.
+Ver [evidências e roteiro de diagnóstico](IBGE_INCIDENT.md).

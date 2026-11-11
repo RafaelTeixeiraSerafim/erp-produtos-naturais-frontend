@@ -1,6 +1,6 @@
 # SDK da etapa 14
 
-Backend base `22ff8a5`, branch `stage14-forms-auth`, commit `7f8477645978dbabaceca961aa09f98b7882abc2` (pin do runner).
+Backend base `22ff8a5`, branch `stage14-forms-auth`, commit `7f8477645978dbabaceca961aa09f98b7882abc2`.
 Contrato `openapi-stage14.json` exportado por `ReturnsTests.exportOpenApi` com ADMIN
 em PostgreSQL V9 descartável. SDK integral gerado no backend com
 `OPENAPI_FILE=openapi-stage14.json npm run sdk:generate`, lockfile existente.
@@ -13,3 +13,5 @@ Configuração e evidências em [etapa 14](../docs/STAGE14_FORMS_AUTH.md).
 SHA-256 do OpenAPI autenticado: `8ad71842fbcc5b654f78d99a11f88eb5ff4b787167b83d7d4f56b90ae0029519`.
 O teste de exportação verifica schemas distintos para recuperação pública e
 senha temporária administrativa, além das respostas de sucesso e erro.
+
+O runner acompanha a correção de transporte IBGE em `1854a5f97a1271d04bd63aa8ce23dfb4ac39db35`; o contrato e o SDK permanecem idênticos à geração acima.
