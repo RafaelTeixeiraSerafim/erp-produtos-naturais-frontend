@@ -287,3 +287,15 @@ it.each(["devolucoes-clientes","devolucoes-fornecedores"])("devoluções %s: cic
   expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"DELETE"}),[resource,inventoryId])).status).toBe(405);
   expect((await forwardCatalog(browserRequest("http://localhost/api/r",{method:"POST"}),[resource,inventoryId,"estornar"])).status).toBe(404);
 });
+
+it.each([
+  ["localidades", "estados", "REQUEST_TIMEOUT", "REQUEST_TIMEOUT"],
+  ["localidades", "estados", "HTTP_403", "HTTP_403"],
+  ["localidades", "estados", "sensitive exception text", null],
+  ["produtos", undefined, "DNS", null],
+])("relays only bounded IBGE diagnostics on locality failures", async (resource, id, code, expected) => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ message: "Indisponível" }, { status: 503, headers: { "X-IBGE-Failure": code } })));
+  const path = id ? [resource, id] : [resource];
+  const result = await forwardCatalog(browserRequest(`http://localhost/api/${path.join("/")}`), path);
+  expect(result.headers.get("X-IBGE-Failure")).toBe(expected);
+});

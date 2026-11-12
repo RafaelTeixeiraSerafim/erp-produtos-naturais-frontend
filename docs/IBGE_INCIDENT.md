@@ -58,3 +58,23 @@ exceção imediatamente abaixo:
 - `UnknownHostException` / `ConnectException`: conferir resolução DNS e conexão.
 
 A validação local não encerra a investigação do ambiente publicado por si só.
+
+## Diagnóstico sem acesso ao painel do Render
+
+Com a sessão administrativa ativa, a resposta 503 de localidades inclui o header
+`X-IBGE-Failure`. Somente ADMIN recebe o código; a resposta pública permanece
+igual para todos. O proxy aceita apenas códigos predefinidos, sem mensagens,
+stack traces, corpos upstream ou credenciais. Respostas usam `no-store`.
+
+Consultar no navegador autenticado: `fetch('/api/localidades/estados').then(r =>
+({status:r.status, failure:r.headers.get('X-IBGE-Failure')}))`.
+
+Códigos: `DNS`, `TLS`, `CONNECT_TIMEOUT`, `REQUEST_TIMEOUT`, `CONNECTION`,
+`INTERRUPTED`, `INVALID_RESPONSE_OR_IO` ou `HTTP_NNN` (status recebido do IBGE).
+Esse diagnóstico reutiliza a consulta normal, seu timeout/cache e a origem fixa;
+não cria uma ferramenta de chamadas arbitrárias nem expõe logs do servidor.
+
+Em 12/11/2026, após o cold start e com `/api/auth/me` retornando 200, estados e
+municípios continuaram retornando 503 em aproximadamente 5,4 segundos. O retry
+no formulário também falhou. A causa específica ainda precisa ser observada no
+runtime; duração semelhante ao timeout, isoladamente, não comprova sua origem.

@@ -117,6 +117,10 @@ export async function forwardCatalog(request: Request, path: string[]) {
           : undefined,
     });
     const responseHeaders = new Headers({ "Content-Type": result.headers.get("content-type") || "application/json", "Cache-Control": "no-store" });
+    // Backend emits this bounded code only for an authenticated administrator.
+    const ibgeFailure = result.headers.get("X-IBGE-Failure");
+    if (locality && result.status === 503 && ibgeFailure && /^(DNS|TLS|CONNECT_TIMEOUT|REQUEST_TIMEOUT|CONNECTION|INTERRUPTED|INVALID_RESPONSE_OR_IO|HTTP_[1-5][0-9]{2})$/.test(ibgeFailure))
+      responseHeaders.set("X-IBGE-Failure", ibgeFailure);
     // Never relay upstream Domain, Path or unrelated cookies.
     for (const cookie of result.headers.getSetCookie()) {
       const pair = cookie.split(";", 1)[0];
