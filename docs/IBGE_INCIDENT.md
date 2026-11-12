@@ -78,3 +78,16 @@ Em 12/11/2026, após o cold start e com `/api/auth/me` retornando 200, estados e
 municípios continuaram retornando 503 em aproximadamente 5,4 segundos. O retry
 no formulário também falhou. A causa específica ainda precisa ser observada no
 runtime; duração semelhante ao timeout, isoladamente, não comprova sua origem.
+
+## Resultado do diagnóstico no ambiente publicado
+
+Em 12/11/2026, com a versão de diagnóstico publicada e a sessão administrativa
+renovada, o GET de estados retornou `503` com `X-IBGE-Failure: CONNECT_TIMEOUT`.
+Isso identifica falha na conclusão da conexão do cliente Java ao IBGE, sem
+necessidade de acesso aos logs. Não comprova bloqueio de IP, DNS ou HTTP/2.
+
+O limite de conexão passa de três para cinco segundos, com orçamento total de
+seis segundos por catálogo (incluindo no máximo duas tentativas). Uma consulta
+fria de estados seguida de municípios permanece limitada a doze segundos de
+transporte, abaixo dos quinze segundos do proxy. O resultado em produção deve
+ser conferido: ampliar o timeout não resolve uma rota de rede bloqueada.
