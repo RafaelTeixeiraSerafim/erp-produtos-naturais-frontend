@@ -308,3 +308,14 @@ it("preserves the administrative IBGE cause chain returned by the backend", asyn
   expect(await result.json()).toEqual(body);
   expect(result.headers.get("Cache-Control")).toBe("no-store");
 });
+
+it("allows the administrator diagnostic GET and blocks other methods and extra paths", async () => {
+  const report = { state: "RUNNING", host: "servicodados.ibge.gov.br", checks: [] };
+  const fetch = vi.fn().mockResolvedValue(Response.json(report, { headers: { "Cache-Control": "no-store" } }));
+  vi.stubGlobal("fetch", fetch);
+  const response = await forwardCatalog(browserRequest("http://localhost/api/localidades/diagnostico"), ["localidades", "diagnostico"]);
+  expect(await response.json()).toEqual(report);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/localidades/diagnostico", { method: "POST" }), ["localidades", "diagnostico"])).status).toBe(405);
+  expect((await forwardCatalog(browserRequest("http://localhost/api/localidades/diagnostico/extra"), ["localidades", "diagnostico", "extra"])).status).toBe(404);
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
