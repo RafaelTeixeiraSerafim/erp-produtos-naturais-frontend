@@ -2,7 +2,8 @@
 import { Controller } from "react-hook-form";
 import { DocumentInput } from "./ui/document-input";
 import { LocalityFields } from "./locality-fields";
-import { RelatedField, related } from "./related-field";
+import { Field, FieldHeader } from "./ui/field";
+import { RelatedField, RelatedStatus, related } from "./related-field";
 import { useListarCategorias } from "@/generated/sdk/hooks/useListarCategorias";
 import { useListarLojas } from "@/generated/sdk/hooks/useListarLojas";
 import { useListarProdutos } from "@/generated/sdk/hooks/useListarProdutos";
@@ -21,7 +22,7 @@ import {
   saveRecord,
   type Resource,
   type Values,
-  type Field,
+  type Field as CatalogField,
 } from "@/lib/catalog";
 import { refreshCatalog } from "@/lib/queries";
 import { ErrorNotice } from "@/components/feedback";
@@ -46,7 +47,7 @@ export function RecordForm({
   resource: Resource;
   initial?: Record<string, unknown>;
   extra?: Values;
-  fieldOptions?: Record<string, Field["options"]>;
+  fieldOptions?: Record<string, CatalogField["options"]>;
   onSaved: (row: unknown) => void;
   onCancel: () => void;
   disabled?: boolean;
@@ -107,9 +108,8 @@ export function RecordForm({
           layout === "page" && "p-7 mobile:p-5",
         )}
       >
-        {resource==="suppliers" && <label>Tipo de documento<Select aria-label="Tipo de documento" value={documentType} disabled={isSubmitting || disabled} onChange={e=>{setDocumentType(e.target.value);form.setValue("cpf","");form.setValue("cnpj","");}}><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></Select></label>}
         {(resource==="suppliers" || resource==="stores") && <LocalityFields form={form} disabled={isSubmitting || disabled}/>}
-        {(fields[resource] as Field[]).map((f) => {
+        {(fields[resource] as CatalogField[]).map((f) => {
           if((resource==="suppliers" || resource==="stores") && ["estado","cidade"].includes(f.name))return null;
           if(resource==="suppliers" && ["cpf","cnpj"].includes(f.name) && f.name!==documentType)return null;
           if(extra[f.name]!==undefined && f.name==="idProduto")return null;
@@ -129,26 +129,20 @@ export function RecordForm({
                 : undefined,
             disabled: isSubmitting || disabled,
           };
-          return (
+          const field = (
             <div
               key={f.name}
               className={cn(
-                "flex flex-col gap-[7px]",
+                "min-w-0",
                 (f.type === "textarea" ||
                   f.name === "nome" ||
                   f.name === "sku") &&
                   "col-span-full",
               )}
             >
-              <div className="flex flex-wrap items-center gap-1"><label
-                className="text-[12px] font-semibold text-[#49614e]"
-                htmlFor={id}
-              >
-                {f.label}
-                {!optional && <span aria-hidden="true"> *</span>}
-
-              </label>
-              {query && <RelatedField field={f.name as keyof typeof related} query={query}/>}</div>
+              <FieldHeader htmlFor={id} actions={query && <RelatedField field={f.name as keyof typeof related} query={query}/>}>
+                {f.label}{!optional && <span aria-hidden="true"> *</span>}
+              </FieldHeader>
               {["cpf","cnpj"].includes(f.name) ? <Controller name={f.name} control={form.control} render={({field})=><DocumentInput {...attrs} cnpj={f.name==="cnpj"} value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} disabled={isSubmitting || disabled}/>}/> : f.type === "select" ? (
                 <Select {...attrs}>
                   <option value="">Selecione…</option>
@@ -173,6 +167,7 @@ export function RecordForm({
                   }
                 />
               )}
+              {query && <RelatedStatus query={query}/>}
               {f.hint && (
                 <small className="text-[11px] text-[#7b887e]" id={`${id}-hint`}>
                   {f.hint}
@@ -185,6 +180,10 @@ export function RecordForm({
               )}
             </div>
           );
+          return resource === "suppliers" && ["cpf","cnpj"].includes(f.name) ? <div key="document" className="col-span-full grid grid-cols-[160px_minmax(0,1fr)] gap-5 mobile:grid-cols-1 mobile:gap-[17px]">
+            <Field label="Tipo de documento"><Select value={documentType} disabled={isSubmitting || disabled} onChange={e=>{setDocumentType(e.target.value);form.setValue("cpf","",{shouldDirty:true});form.setValue("cnpj","",{shouldDirty:true});clearErrors(["cpf","cnpj"]);}}><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></Select></Field>
+            {field}
+          </div> : field;
         })}
       </div>
       <FormActions

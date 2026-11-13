@@ -1,5 +1,7 @@
 "use client";
-import { RelatedField } from "./related-field";
+import { BackLink } from "@/components/ui/back-link";
+import { Field } from "./ui/field";
+import { RelatedField, RelatedStatus } from "./related-field";
 import {
   Panel,
   PanelHeader,
@@ -13,7 +15,6 @@ import { useCan } from "./auth";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ArrowLeft,
   Pencil,
   Barcode,
   Store,
@@ -350,13 +351,11 @@ export function ProductDetail({ id }: { id: string }) {
   const product = query.data;
   return (
     <>
-      <Link
-        className="mb-6 inline-flex items-center gap-[7px] text-[12px] text-[#708373]"
+      <BackLink
+        className="mb-6"
         href="/produtos"
-      >
-        <ArrowLeft size={15} />
-        Voltar aos produtos
-      </Link>
+      >Voltar aos produtos
+      </BackLink>
       <Heading
         title={product.nome || "Produto"}
         description="Gerencie os identificadores, as lojas e os preços deste produto."
@@ -403,7 +402,7 @@ export function ProductDetail({ id }: { id: string }) {
           </p>
         )}
       </Panel>
-      <div className="mt-5 block">Variante para lojas e preços <RelatedField field="idProdutoSku" query={skus}/><Select aria-label="Variante para lojas e preços" value={skuId} onChange={e=>setSkuId(e.target.value)}><option value="">Selecione um SKU</option>{skus.data?.map(s=><option key={s.id} value={s.id}>{s.descricaoApresentacao} · {s.sku} · {s.siglaUnidadeMedida}</option>)}</Select></div>
+      <div className="mt-5"><Field label="Variante para lojas e preços" actions={<RelatedField field="idProdutoSku" query={skus}/>}><Select aria-label="Variante para lojas e preços" value={skuId} onChange={e=>setSkuId(e.target.value)}><option value="">Selecione um SKU</option>{skus.data?.map(s=><option key={s.id} value={s.id}>{s.descricaoApresentacao} · {s.sku} · {s.siglaUnidadeMedida}</option>)}</Select><RelatedStatus query={skus}/></Field></div>
       <Tabs className="mt-[26px]" value={tab} onValueChange={setTab}>
         <TabsList aria-label="Dados do produto">
           <TabsTrigger value="skus">

@@ -1,5 +1,6 @@
 "use client";
 import { AccountControls, useIdentity } from "./auth";
+import { resolveRoute, routeDetail } from "@/lib/navigation";
 import { pagePermission } from "@/lib/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,6 +52,7 @@ const inventoryLinks = [
 const administrationLinks = [
   { href: "/usuarios", label: "Usuários", icon: UsersRound },
 ];
+const navigationRoutes = [...links, ...salesLinks, ...purchaseLinks, ...inventoryLinks, ...administrationLinks];
 function Brand() {
   return (
     <Link
@@ -79,6 +81,7 @@ function Navigation({
   className?: string;
 }) {
   const user = useIdentity();
+  const active = resolveRoute(path, navigationRoutes)?.href;
   const visible = (href: string) => !pagePermission(href) || !!user?.permissions.includes(pagePermission(href)!);
   return (
     <nav
@@ -93,7 +96,7 @@ function Navigation({
         <Link
           key={href}
           href={href}
-          aria-current={path.startsWith(href) ? "page" : undefined}
+          aria-current={active === href ? "page" : undefined}
           onClick={onNavigate}
           className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 font-medium text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-[#236840]"
         >
@@ -109,7 +112,7 @@ function Navigation({
           key={href}
           href={href}
           onClick={onNavigate}
-          aria-current={path.startsWith(href) ? "page" : undefined}
+          aria-current={active === href ? "page" : undefined}
           className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-primary"
         >
           <Icon size={19} />
@@ -124,7 +127,7 @@ function Navigation({
           key={href}
           href={href}
           onClick={onNavigate}
-          aria-current={path.startsWith(href) ? "page" : undefined}
+          aria-current={active === href ? "page" : undefined}
           className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-primary"
         >
           <Icon size={19} />
@@ -139,7 +142,7 @@ function Navigation({
           key={href}
           href={href}
           onClick={onNavigate}
-          aria-current={path === href ? "page" : undefined}
+          aria-current={active === href ? "page" : undefined}
           className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-primary"
         >
           <Icon size={19} />
@@ -152,7 +155,7 @@ function Navigation({
         </p>
         {administrationLinks.filter(x => visible(x.href)).map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} onClick={onNavigate}
-            aria-current={path.startsWith(href) ? "page" : undefined}
+            aria-current={active === href ? "page" : undefined}
             className="my-[5px] flex items-center gap-3 rounded-[7px] px-3.5 py-3 text-[#617067] hover:bg-[#f3f6f2] aria-[current=page]:bg-[#eaf3eb] aria-[current=page]:text-primary">
             <Icon size={19} />{label}
           </Link>
@@ -166,14 +169,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname(),
     [open, setOpen] = useState(false);
   if (["/login", "/alterar-senha"].includes(path)) return <main id="conteudo">{children}</main>;
-  const current =
-    (path.startsWith("/skus/") ? {label:"SKUs"} : undefined) ||
-    (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||
-    [...inventoryLinks].reverse().find((x) => path === x.href || (["/estoque/transferencias","/estoque/ajustes"].includes(x.href) && path.startsWith(x.href+"/"))) ||
-    salesLinks.find((x) => path.startsWith(x.href)) ||
-    purchaseLinks.find((x) => path.startsWith(x.href)) ||
-    links.find((x) => path.startsWith(x.href)) ||
-    administrationLinks.find((x) => path.startsWith(x.href));
+  const current = resolveRoute(path, [...navigationRoutes, {href:"/skus",label:"SKUs"}, {href:"/visao-geral",label:"Visão geral"}]);
   return (
     <div className="flex min-h-screen">
       <a
@@ -225,34 +221,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-3 text-[12px] text-[#7b877e] mobile:gap-[7px] mobile:text-[11px]">
             <span>
-              {path === "/visao-geral" ? "Início" : administrationLinks.some(x => path.startsWith(x.href)) ? "Administração" : salesLinks.some((x) => path.startsWith(x.href))
+              {path === "/visao-geral" ? "Início" : administrationLinks.some(x => x.href === current?.href) ? "Administração" : salesLinks.some(x => x.href === current?.href)
                 ? "Vendas"
-                : purchaseLinks.some((x) => path.startsWith(x.href))
+                : purchaseLinks.some(x => x.href === current?.href)
                   ? "Compras"
-                  : path.startsWith("/estoque")
+                  : inventoryLinks.some(x => x.href === current?.href)
                     ? "Estoque"
                     : "Catálogo"}
             </span>
             <ChevronRight size={14} />
             <span className="text-[#3b5142]">
               {current?.label || "Página"}
-              {path.startsWith("/estoque/transferencias/") ? (path.endsWith("/nova") ? " / Nova transferência" : path.endsWith("/editar") ? " / Editar rascunho" : " / Detalhes") : path.endsWith("/nova")
-                ? path.startsWith("/vendas")
-                  ? " / Nova venda"
-                  : " / Nova compra"
-                : path.startsWith("/vendas/")
-                  ? " / Detalhes"
-                  : path.startsWith("/compras/")
-                    ? path.endsWith("/editar")
-                      ? " / Editar rascunho"
-                      : " / Detalhes"
-                    : path.endsWith("/novo")
-                      ? path.startsWith("/skus/") ? " / Novo SKU" : " / Novo produto"
-                      : path.endsWith("/editar")
-                        ? " / Editar produto"
-                        : path.startsWith("/produtos/")
-                          ? " / Detalhes"
-                          : ""}
+              {routeDetail(path, current?.href)}
             </span>
           </div>
           <AccountControls />

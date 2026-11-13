@@ -1,5 +1,7 @@
 "use client";
-import { RelatedField } from "./related-field";
+import { BackLink } from "@/components/ui/back-link";
+import { Field } from "./ui/field";
+import { RelatedField, RelatedStatus } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
@@ -108,9 +110,7 @@ export function TransferList() {
       <Panel>
         <div className="grid grid-cols-3 gap-4 p-5 mobile:grid-cols-1">
           {["origem", "destino"].map((key) => (
-            <label key={key}>
-              {key === "origem" ? "Origem" : "Destino"}
-              <Select
+            <Field key={key} label={key === "origem" ? "Origem" : "Destino"}><Select
                 value={val(key)}
                 onChange={(e) => control(key, e.target.value)}
               >
@@ -121,11 +121,9 @@ export function TransferList() {
                   </option>
                 ))}
               </Select>
-            </label>
+            </Field>
           ))}
-          <label>
-            Status
-            <Select
+          <Field label="Status"><Select
               value={val("status")}
               onChange={(e) => control("status", e.target.value)}
             >
@@ -136,17 +134,13 @@ export function TransferList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Criador
-            <Input
+          </Field>
+          <Field label="Criador"><Input
               value={val("criador")}
               onChange={(e) => control("criador", e.target.value)}
             />
-          </label>
-          <label>
-            Ordenar
-            <Select
+          </Field>
+          <Field label="Ordenar"><Select
               value={val("ordem") || "dataTransferencia-desc"}
               onChange={(e) => control("ordem", e.target.value)}
             >
@@ -164,7 +158,7 @@ export function TransferList() {
                 )),
               )}
             </Select>
-          </label>
+          </Field>
         </div>
         {query.isPending ? (
           <Loading />
@@ -313,7 +307,7 @@ export function TransferRecord({ id }: { id: string }) {
           await query.refetch();
         }}
       />
-      <Link href="/estoque/transferencias">Voltar às transferências</Link>
+      <BackLink href="/estoque/transferencias">Voltar às transferências</BackLink>
     </>
   );
 }
@@ -438,13 +432,11 @@ function TransferActions({
           {review === "concluir" ? (
             <TransferItems row={row} />
           ) : (
-            <label>
-              Motivo do cancelamento
-              <Textarea
+            <Field label="Motivo do cancelamento"><Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
-            </label>
+            </Field>
           )}
           <Button
             disabled={
@@ -670,10 +662,7 @@ export function TransferEditor({
         <fieldset disabled={blocked || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             {(["idLojaOrigem", "idLojaDestino"] as const).map((key) => (
-              <div key={key}>
-                {key === "idLojaOrigem" ? "Origem *" : "Destino *"}
-                <RelatedField field="idLoja" query={stores}/>
-                <Select
+              <Field key={key} label={key === "idLojaOrigem" ? "Origem *" : "Destino *"} actions={<RelatedField field="idLoja" query={stores}/>}><Select
                   aria-label={key === "idLojaOrigem" ? "Origem *" : "Destino *"}
                   value={draft[key]}
                   onChange={(e) =>
@@ -687,12 +676,9 @@ export function TransferEditor({
                       {s.nomeFantasia}
                     </option>
                   ))}
-                </Select>
-              </div>
+                </Select><RelatedStatus query={stores}/></Field>
             ))}
-            <label>
-              Data da transferência
-              <Input
+            <Field label="Data da transferência"><Input
                 type="datetime-local"
                 step="1"
                 value={draft.dataTransferencia}
@@ -701,18 +687,16 @@ export function TransferEditor({
                 }
               />
               <small>Horário de São Paulo. Em branco, usa o servidor.</small>
-            </label>
+            </Field>
             <p>Operador: {user?.nome}</p>
-            <label>
-              Observação
-              <Textarea
+            <Field label="Observação"><Textarea
                 maxLength={255}
                 value={draft.observacao}
                 onChange={(e) =>
                   setDraft({ ...draft, observacao: e.target.value })
                 }
               />
-            </label>
+            </Field>
           </Panel>
           {draft.itens.map((i, index) => (
             <Panel key={index} className="space-y-3 p-5">
@@ -720,9 +704,7 @@ export function TransferEditor({
                 aria-label={`Item ${index + 1}`}
                 className="grid grid-cols-3 gap-4 mobile:grid-cols-1"
               >
-                <div>
-                  SKU *
-                  <RelatedField field="idProdutoSku" query={products}/><SkuSelect
+                <Field label="SKU *" actions={<RelatedField field="idProdutoSku" query={products}/>}><SkuSelect
                     aria-label="SKU *"
                     value={i.idProdutoSku}
                     onChange={(e) =>
@@ -744,11 +726,8 @@ export function TransferEditor({
                         {p.nome}
                       </option>
                     ))}
-                  </SkuSelect>
-                </div>
-                <label>
-                  Quantidade *
-                  <Input
+                  </SkuSelect><RelatedStatus query={products}/></Field>
+                <Field label="Quantidade *"><Input
                     inputMode="decimal"
                     value={i.quantidade}
                     onChange={(e) =>
@@ -762,7 +741,7 @@ export function TransferEditor({
                       })
                     }
                   />
-                </label>
+                </Field>
                 <Button
                   type="button"
                   variant="outline"
@@ -812,7 +791,7 @@ export function TransferEditor({
           >
             {draft.pending ? "Repetir envio salvo" : "Salvar rascunho"}
           </Button>
-          <Link href="/estoque/transferencias">Voltar</Link>
+          <BackLink href="/estoque/transferencias">Voltar</BackLink>
         </div>
       </form>
     </>

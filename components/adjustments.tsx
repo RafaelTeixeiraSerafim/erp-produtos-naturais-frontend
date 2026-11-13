@@ -1,5 +1,7 @@
 "use client";
-import { RelatedField } from "./related-field";
+import { BackLink } from "@/components/ui/back-link";
+import { Field } from "./ui/field";
+import { RelatedField, RelatedStatus } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import Link from "next/link";
 import { useState } from "react";
@@ -109,9 +111,7 @@ export function AdjustmentList() {
       <Panel>
         <div className="grid grid-cols-3 gap-4 p-5 mobile:grid-cols-1">
           {["origem"].map((key) => (
-            <label key={key}>
-              {key === "origem" ? "Loja" : "Destino"}
-              <Select
+            <Field key={key} label={key === "origem" ? "Loja" : "Destino"}><Select
                 value={val(key)}
                 onChange={(e) => control(key, e.target.value)}
               >
@@ -122,11 +122,9 @@ export function AdjustmentList() {
                   </option>
                 ))}
               </Select>
-            </label>
+            </Field>
           ))}
-          <label>
-            Status
-            <Select
+          <Field label="Status"><Select
               value={val("status")}
               onChange={(e) => control("status", e.target.value)}
             >
@@ -137,20 +135,16 @@ export function AdjustmentList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>Buscar justificativa<Input value={val("busca")} onChange={e=>control("busca",e.target.value)}/></label>
-          <label>De<Input type="date" value={val("inicio")} onChange={e=>control("inicio",e.target.value)}/></label>
-          <label>Até<Input type="date" value={val("fim")} onChange={e=>control("fim",e.target.value)}/></label>
-          <label>
-            Criador
-            <Input
+          </Field>
+          <Field label="Buscar justificativa"><Input value={val("busca")} onChange={e=>control("busca",e.target.value)}/></Field>
+          <Field label="De"><Input type="date" value={val("inicio")} onChange={e=>control("inicio",e.target.value)}/></Field>
+          <Field label="Até"><Input type="date" value={val("fim")} onChange={e=>control("fim",e.target.value)}/></Field>
+          <Field label="Criador"><Input
               value={val("criador")}
               onChange={(e) => control("criador", e.target.value)}
             />
-          </label>
-          <label>
-            Ordenar
-            <Select
+          </Field>
+          <Field label="Ordenar"><Select
               value={val("ordem") || "criadoEm-desc"}
               onChange={(e) => control("ordem", e.target.value)}
             >
@@ -168,7 +162,7 @@ export function AdjustmentList() {
                 )),
               )}
             </Select>
-          </label>
+          </Field>
         </div>
         {query.isPending ? (
           <Loading />
@@ -319,7 +313,7 @@ export function AdjustmentRecord({ id }: { id: string }) {
           await query.refetch();
         }}
       />
-      <Link href="/estoque/ajustes">Voltar aos ajustes</Link>
+      <BackLink href="/estoque/ajustes">Voltar aos ajustes</BackLink>
     </>
   );
 }
@@ -444,13 +438,11 @@ function AdjustmentActions({
           {review === "concluir" ? (
             <AdjustmentItems row={row} />
           ) : (
-            <label>
-              Motivo do cancelamento
-              <Textarea
+            <Field label="Motivo do cancelamento"><Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
-            </label>
+            </Field>
           )}
           <Button
             disabled={
@@ -675,10 +667,7 @@ export function AdjustmentEditor({
         <fieldset disabled={blocked || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
             {(["idLoja"] as const).map((key) => (
-              <div key={key}>
-                {key === "idLoja" ? "Loja *" : "Loja *"}
-                <RelatedField field="idLoja" query={stores}/>
-                <Select
+              <Field key={key} label={key === "idLoja" ? "Loja *" : "Loja *"} actions={<RelatedField field="idLoja" query={stores}/>}><Select
                   aria-label={key === "idLoja" ? "Loja *" : "Loja *"}
                   value={draft[key]}
                   onChange={(e) =>
@@ -692,20 +681,17 @@ export function AdjustmentEditor({
                       {s.nomeFantasia}
                     </option>
                   ))}
-                </Select>
-              </div>
+                </Select><RelatedStatus query={stores}/></Field>
             ))}
             <p>Operador: {user?.nome}</p>
-            <label>
-              Justificativa *
-              <Textarea
+            <Field label="Justificativa *"><Textarea
                 maxLength={255}
                 value={draft.justificativa}
                 onChange={(e) =>
                   setDraft({ ...draft, justificativa: e.target.value })
                 }
               />
-            </label>
+            </Field>
           </Panel>
           {draft.itens.map((i, index) => (
             <Panel key={index} className="space-y-3 p-5">
@@ -713,9 +699,7 @@ export function AdjustmentEditor({
                 aria-label={`Item ${index + 1}`}
                 className="grid grid-cols-3 gap-4 mobile:grid-cols-1"
               >
-                <div>
-                  SKU *
-                  <RelatedField field="idProdutoSku" query={products}/><SkuSelect
+                <Field label="SKU *" actions={<RelatedField field="idProdutoSku" query={products}/>}><SkuSelect
                     aria-label="SKU *"
                     value={i.idProdutoSku}
                     onChange={(e) =>
@@ -737,13 +721,10 @@ export function AdjustmentEditor({
                         {p.nome}
                       </option>
                     ))}
-                  </SkuSelect>
-                </div>
-                <label>Tipo<Select value={i.tipo} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,tipo:e.target.value as "AJUSTE_ENTRADA"|"AJUSTE_SAIDA"}:r)})}><option value="AJUSTE_ENTRADA">Entrada</option><option value="AJUSTE_SAIDA">Saída</option></Select></label>
-                <label>Observação<Input value={i.observacao} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,observacao:e.target.value}:r)})}/></label>
-                <label>
-                  Quantidade *
-                  <Input
+                  </SkuSelect><RelatedStatus query={products}/></Field>
+                <Field label="Tipo"><Select value={i.tipo} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,tipo:e.target.value as "AJUSTE_ENTRADA"|"AJUSTE_SAIDA"}:r)})}><option value="AJUSTE_ENTRADA">Entrada</option><option value="AJUSTE_SAIDA">Saída</option></Select></Field>
+                <Field label="Observação"><Input value={i.observacao} onChange={e=>setDraft({...draft,itens:draft.itens.map((r,n)=>n===index?{...r,observacao:e.target.value}:r)})}/></Field>
+                <Field label="Quantidade *"><Input
                     inputMode="decimal"
                     value={i.quantidade}
                     onChange={(e) =>
@@ -757,7 +738,7 @@ export function AdjustmentEditor({
                       })
                     }
                   />
-                </label>
+                </Field>
                 <Button
                   type="button"
                   variant="outline"
@@ -808,7 +789,7 @@ export function AdjustmentEditor({
           >
             {draft.pending ? "Repetir envio salvo" : "Salvar rascunho"}
           </Button>
-          <Link href="/estoque/ajustes">Voltar</Link>
+          <BackLink href="/estoque/ajustes">Voltar</BackLink>
         </div>
       </form>
     </>

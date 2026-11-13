@@ -1,4 +1,5 @@
 "use client";
+import { formatDocument } from "@/lib/documents";
 import { useCan } from "./auth";
 import { useListarClientes } from "@/generated/sdk/hooks/useListarClientes";
 import { calendarDateLabel } from "@/lib/validation";
@@ -36,6 +37,7 @@ type Row = {
   nomeFantasia?: string;
   razaoSocial?: string;
   cnpj?: string;
+  cpf?: string;
   estado?: string;
   cidade?: string;
   [key: string]: unknown;
@@ -216,7 +218,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                 {resource === "units" && <TableHead>SIGLA</TableHead>}
                 {(resource === "stores" || resource === "suppliers") && (
                   <>
-                    <TableHead>CNPJ</TableHead>
+                    <TableHead>{resource === "suppliers" ? "CPF/CNPJ" : "CNPJ"}</TableHead>
                     <TableHead>CIDADE / UF</TableHead>
                   </>
                 )}
@@ -231,7 +233,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                   </TableCell>
                   {resource === "customers" && (
                     <>
-                      <TableCell>{String(row.cpf || "—")}</TableCell>
+                      <TableCell>{formatDocument(row.cpf)}</TableCell>
                       <TableCell>
                         {calendarDateLabel(
                           row.dataNascimento as string | undefined,
@@ -242,7 +244,7 @@ export function SupportList({ resource }: { resource: SupportResource }) {
                   {resource === "units" && <TableCell>{row.sigla}</TableCell>}
                   {(resource === "stores" || resource === "suppliers") && (
                     <>
-                      <TableCell>{row.cnpj}</TableCell>
+                      <TableCell>{formatDocument(row.cpf || row.cnpj)}</TableCell>
                       <TableCell>
                         {row.cidade} / {row.estado}
                       </TableCell>

@@ -1,4 +1,5 @@
 "use client";
+import { BackLink } from "@/components/ui/back-link";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -90,7 +91,7 @@ export function ReturnRecordScreen({kind,id,edit=false}:{kind:ReturnKind;id:stri
     {r.status==="RASCUNHO"&&!r.legado&&<div className="my-5 flex flex-wrap gap-3"><Button asChild variant="outline"><Link href={`${returnPath(kind)}/${id}/editar`}>Editar rascunho</Link></Button><Button disabled={busy||unavailable||conflict} onClick={()=>setAction("concluir")}>Revisar devolução</Button><Button variant="outline" disabled={busy||unavailable||conflict} onClick={()=>setAction("cancelar")}>Cancelar rascunho</Button></div>}
     {r.status==="CONCLUIDA"&&<Link href={`/estoque/movimentacoes?${kind==="clientes"?"idDevolucaoCliente":"idDevolucaoFornecedor"}=${id}`}>Consultar movimentos da devolução</Link>}
     <Dialog open={!!action} onOpenChange={open=>{if(!open&&!busy)setAction(null);}}><DialogContent className="max-w-4xl"><DialogTitle>{action==="concluir"?"Revisar devolução":"Cancelar rascunho"}</DialogTitle><DialogDescription>{returnHint}</DialogDescription><p>Origem: {r.idOrigem} · Loja: {r.lojaNome} · Motivo: {r.motivo}</p>{action==="concluir"?<ReturnItems row={r} kind={kind}/>:<label>Motivo do cancelamento<Textarea value={reason} onChange={e=>setReason(e.target.value)}/></label>}<Button disabled={busy||unavailable||conflict||(action==="cancelar"&&!reason.trim())} onClick={()=>void perform()}>{action==="concluir"?"Confirmar devolução":"Confirmar cancelamento"}</Button><Button variant="outline" disabled={busy} onClick={()=>setAction(null)}>Voltar</Button></DialogContent></Dialog>
-    <p className="my-4"><Link href={returnPath(kind)}>Voltar às devoluções</Link></p></>;
+    <p className="my-4"><BackLink href={returnPath(kind)}>Voltar às devoluções</BackLink></p></>;
 }
 function ReturnEditor({kind,source,initial,unavailable,reload}:{kind:ReturnKind;source:ReturnSource;initial?:ReturnRecord;unavailable:boolean;reload:()=>Promise<ReturnSource>}) {
   const [original]=useState(()=>returnValues(source,initial)),[draft,setDraft]=useState<ReturnDraft>(original),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(),[conflict,setConflict]=useState(false),[latest,setLatest]=useState(source),[version,setVersion]=useState(initial?.versao),[saved,setSaved]=useState<ReturnRecord>();
@@ -125,5 +126,5 @@ function ReturnEditor({kind,source,initial,unavailable,reload}:{kind:ReturnKind;
         {kind==="clientes"&&<Button type="button" variant="outline" disabled={draft.itens.some((r,index)=>index!==n&&r.idItemOrigem===i.idItemOrigem&&r.retornaAoEstoque!==i.retornaAoEstoque)} onClick={()=>setDraft({...draft,itens:[...draft.itens,{...i,id:undefined,quantidade:"",retornaAoEstoque:!i.retornaAoEstoque,observacao:""}]})}>Adicionar outra condição</Button>}
         <Button type="button" variant="outline" onClick={()=>setDraft({...draft,itens:draft.itens.filter((_,index)=>index!==n)})}>Remover item {n+1}</Button></fieldset>
         {kind==="fornecedores"&&<p>Disponível na loja (informativo, sem reserva): {stock.isPending?"Carregando…":stock.isError?"Consulta indisponível":quantity(stock.data?.find(s=>s.idLoja===source.idLoja&&s.idProdutoSku===i.idProdutoSku)?.quantidadeAtual??0)}</p>}</Panel>)}
-    </fieldset><div className="my-5 flex gap-3"><Button disabled={blocked} type="submit">{draft.pending?"Repetir envio salvo":"Salvar rascunho"}</Button><Link href={returnPath(kind)}>Voltar</Link></div></form></>;
+    </fieldset><div className="my-5 flex gap-3"><Button disabled={blocked} type="submit">{draft.pending?"Repetir envio salvo":"Salvar rascunho"}</Button><BackLink href={returnPath(kind)}>Voltar</BackLink></div></form></>;
 }

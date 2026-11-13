@@ -1,4 +1,5 @@
 "use client";
+import { BackLink } from "@/components/ui/back-link";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -159,7 +160,7 @@ export function ReceiptEditor({ purchase: c, receipt: r, unavailable = false, re
         <Button type="button" variant="outline" onClick={() => setDraft({ ...draft, itens:draft.itens.map(i => { const item = c.itens?.find(x => x.id === i.idItemCompra); const pending = item ? outstanding(item) : 0; return { ...i, selecionado:pending > 0, quantidade:pending > 0 ? formatQuantityInput(pending) : "" }; }) })}>Preencher pendentes</Button>
         {draft.itens.map((i,index) => { const ordered = c.itens?.find(x => x.id === i.idItemCompra); return <Panel key={i.idItemCompra} className="space-y-3 p-5" aria-label={`Item ${index+1}`}><label className="flex gap-3"><input type="checkbox" checked={i.selecionado} onChange={e => patch(index,"selecionado",e.target.checked)} />{snapshotLabel(ordered || i)}</label><p>Pedida: {quantity(ordered?.quantidade)} · Recebida: {quantity(ordered?.quantidadeRecebida)} · Pendente: {quantity(ordered ? outstanding(ordered) : undefined)}</p><label>Quantidade a receber<Input inputMode="decimal" value={i.quantidade} onChange={e => patch(index,"quantidade",e.target.value)} /><small>Até três casas decimais.</small></label><label>Observação do item<Textarea maxLength={255} value={i.observacao} onChange={e => patch(index,"observacao",e.target.value)} /></label></Panel>; })}
       </fieldset>
-      <div className="my-5 flex flex-wrap gap-4"><Button type="submit" disabled={locked || changed || conflicted || !operatorValid}>{busy ? "Salvando…" : draft.pending && !savedLink ? "Repetir envio salvo" : "Salvar rascunho"}</Button><Button asChild variant="outline"><Link href={r ? `/recebimentos/${r.id}` : `/compras/${c.id}`}>Voltar</Link></Button></div>
+      <div className="my-5 flex flex-wrap gap-4"><Button type="submit" disabled={locked || changed || conflicted || !operatorValid}>{busy ? "Salvando…" : draft.pending && !savedLink ? "Repetir envio salvo" : "Salvar rascunho"}</Button><BackLink href={r ? `/recebimentos/${r.id}` : `/compras/${c.id}`}>Voltar</BackLink></div>
     </form>
   </>;
 }

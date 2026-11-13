@@ -425,3 +425,11 @@ Etapa 13: implementação SKU em `stage13-sku-variants`, sobre os HEADs integrad
 IBGE publicado: saída HTTPS geral no Render foi comprovada; o TCP ao IBGE expira. A consulta direta no Vercel em iad1 também expira, mas o preview em gru1 retornou 27 estados e 295 municípios de SC. A alternativa regional foi publicada e verificada com autenticação e o mesmo prazo/cache: endpoints originais 200 (27 estados, 295 municípios SC e 645 SP), sem sessão 401, formulário Nova loja SC/Criciúma e troca para SP aprovados sem salvar. BG-029 encerrado quanto ao carregamento. Ver docs/IBGE_INCIDENT.md.
 
 Política atual de senhas esquecidas (13/11/2026): recuperação por e-mail removida a pedido do responsável. ADMIN define senha temporária em Usuários/Editar; revoga sessões e exige troca no próximo login. SMTP, páginas/endpoints e SDK de recuperação removidos; V10 remove tabelas de tokens preservando V1–V9 e contas. Ver ADMIN_PASSWORD_RESET.md.
+
+## Etapa 15 — consistência visual dos formulários e da navegação
+
+Rota mais específica compartilhada entre sidebar e breadcrumb, apresentação uniforme de CPF/CNPJ (incluindo fornecedor pessoa física), tipo de documento agrupado ao campo, cabeçalhos de campos com altura mínima e ações separadas, feedback abaixo dos controles e retornos outline com seta. A busca auxiliar de SKU fica abaixo do seletor para alinhar os controles principais. Permissões, novas abas, consultas de atualização, validação/normalização e proteção de alterações pendentes permanecem preservadas.
+
+Detalhes, cobertura e evidências locais: [STAGE15_VISUAL_CONSISTENCY.md](STAGE15_VISUAL_CONSISTENCY.md). Etapa exclusivamente frontend; a recuperação administrativa de senha e a integração de localidades mantêm a política atual.
+
+Validação local da etapa 15: 213 testes unitários/componentes; 132 cenários Playwright (66 desktop e 66 mobile), TypeScript, lint, build de produção e `git diff --check` aprovados. Inspeção visual em Chrome desktop/mobile e capturas dos formulários conferidas. Sem nova evidência de CI remota ou integração com banco/backend nesta validação local.

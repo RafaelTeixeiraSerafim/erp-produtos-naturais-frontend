@@ -1,5 +1,7 @@
 "use client";
-import { RelatedField } from "./related-field";
+import { BackLink } from "@/components/ui/back-link";
+import { Field } from "./ui/field";
+import { RelatedField, RelatedStatus } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
 import Link from "next/link";
@@ -132,9 +134,7 @@ export function SaleList() {
       <LookupErrors lookups={lookups} />
       <Panel>
         <div className="grid grid-cols-3 gap-4 p-5 mobile:grid-cols-1">
-          <label>
-            Cliente
-            <Select
+          <Field label="Cliente"><Select
               aria-label="Cliente"
               value={value("idCliente")}
               onChange={(e) => control("idCliente", e.target.value)}
@@ -146,10 +146,8 @@ export function SaleList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Loja
-            <Select
+          </Field>
+          <Field label="Loja"><Select
               aria-label="Loja"
               value={value("idLoja")}
               onChange={(e) => control("idLoja", e.target.value)}
@@ -161,10 +159,8 @@ export function SaleList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Status
-            <Select
+          </Field>
+          <Field label="Status"><Select
               aria-label="Status"
               value={value("status")}
               onChange={(e) => control("status", e.target.value)}
@@ -184,26 +180,20 @@ export function SaleList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Data inicial
-            <Input
+          </Field>
+          <Field label="Data inicial"><Input
               type="date"
               value={value("inicio")}
               onChange={(e) => control("inicio", e.target.value)}
             />
-          </label>
-          <label>
-            Data final
-            <Input
+          </Field>
+          <Field label="Data final"><Input
               type="date"
               value={value("fim")}
               onChange={(e) => control("fim", e.target.value)}
             />
-          </label>
-          <label>
-            Ordenar vendas
-            <Select
+          </Field>
+          <Field label="Ordenar vendas"><Select
               aria-label="Ordenar vendas"
               value={sort}
               onChange={(e) => control("ordem", e.target.value)}
@@ -222,7 +212,7 @@ export function SaleList() {
                 )),
               )}
             </Select>
-          </label>
+          </Field>
         </div>
         {query.isPending ? (
           <Loading />
@@ -389,7 +379,7 @@ export function SaleRecord({ id }: { id: string }) {
           ))}
         </tbody>
       </Table>
-      <Link href="/vendas">Voltar aos registros</Link>
+      <BackLink href="/vendas">Voltar aos registros</BackLink>
     </>
   );
 }
@@ -502,9 +492,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
       <form onSubmit={submit} noValidate aria-busy={busy}>
         <fieldset disabled={blocked || busy || recovery.blocked || !!savedLink || !!draft.pending} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
-            <div>
-              Cliente * <RelatedField field="idCliente" query={lookups.customers}/>
-              <Select
+            <Field label="Cliente *" actions={<RelatedField field="idCliente" query={lookups.customers}/>}><Select
                 aria-label="Cliente *"
                 required
                 value={draft.idCliente}
@@ -519,11 +507,8 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                     {s.nome}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <div>
-              Loja * <RelatedField field="idLoja" query={lookups.stores}/>
-              <Select
+              </Select><RelatedStatus query={lookups.customers}/></Field>
+            <Field label="Loja *" actions={<RelatedField field="idLoja" query={lookups.stores}/>}><Select
                 aria-label="Loja *"
                 required
                 value={draft.idLoja}
@@ -536,11 +521,8 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                     {s.nomeFantasia}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <label>
-              Data da venda
-              <Input
+              </Select><RelatedStatus query={lookups.stores}/></Field>
+            <Field label="Data da venda"><Input
                 type="datetime-local"
                 step="1"
                 value={draft.dataVenda}
@@ -551,9 +533,9 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
               <small>
                 Horário de São Paulo. Em branco, usa a data do servidor.
               </small>
-            </label>
+            </Field>
             <p>Operador: {user?.nome}</p>
-            <label>Observação<Textarea maxLength={255} value={draft.observacao || ""} onChange={e=>setDraft({...draft,observacao:e.target.value})} /></label>
+            <Field label="Observação"><Textarea maxLength={255} value={draft.observacao || ""} onChange={e=>setDraft({...draft,observacao:e.target.value})} /></Field>
           </Panel>
           {draft.itens.map((item, index) => {
             function change(key: keyof typeof item, value: string) {
@@ -577,9 +559,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                 <h2 className="col-span-full font-semibold">
                   Item {index + 1}
                 </h2>
-                <div>
-                  SKU * <RelatedField field="idProdutoSku" query={lookups.products}/>
-                  <SkuSelect
+                <Field label="SKU *" actions={<RelatedField field="idProdutoSku" query={lookups.products}/>}><SkuSelect
                     aria-label="SKU *"
                     required
                     value={item.idProdutoSku}
@@ -592,19 +572,16 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                         {p.nome}
                       </option>
                     ))}
-                  </SkuSelect>
-                </div>
+                  </SkuSelect><RelatedStatus query={lookups.products}/></Field>
                 {(["quantidade", "precoUnitario", "desconto"] as const).map(
                   (key) => (
-                    <label key={key}>
-                      {
+                    <Field key={key} label={
                         {
                           quantidade: "Quantidade *",
                           precoUnitario: "Preço unitário (R$) *",
                           desconto: "Desconto (R$)",
                         }[key]
-                      }
-                      <Input
+                      }><Input
                         inputMode="decimal"
                         value={item[key]}
                         onChange={(e) => change(key, e.target.value)}
@@ -612,7 +589,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
                       <small>
                         Até {key === "quantidade" ? 3 : 2} casas decimais.
                       </small>
-                    </label>
+                    </Field>
                   ),
                 )}
                 <p>Prévia do item: {currency(rowTotal)}</p>
@@ -654,9 +631,7 @@ export function SaleEditor({ row, unavailable=false, reload=async () => {} }: { 
             <Button type="submit" disabled={blocked || busy || recovery.blocked || !!savedLink || !prerequisites || !selectionsValid}>
               {busy ? "Salvando…" : draft.pending && !savedLink ? "Repetir envio salvo" : "Salvar venda aberta"}
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/vendas">Voltar</Link>
-            </Button>
+            <BackLink href="/vendas">Voltar</BackLink>
           </div>
       </form>
     </>
@@ -690,7 +665,7 @@ function SaleActions({ row, reload, unavailable }: {row:VendaResponseDTO;reload:
     </> : <p>Venda {saleStatus(current.status).toLocaleLowerCase()}: somente leitura.</p>}
     <Dialog open={!!review} onOpenChange={open=>{if(!open && !busy)setReview(null);}}><DialogContent><DialogTitle>{review==="concluir" ? "Revisar e concluir venda" : "Cancelar venda aberta"}</DialogTitle><DialogDescription>{review==="concluir" ? "A confirmação registra a venda e a saída do estoque. Nenhum pagamento está sendo registrado. Após concluir, a venda será somente leitura." : "O cancelamento preserva o histórico e não movimenta o estoque."}</DialogDescription>
       <p>Loja: {row.nomeLoja || row.idLoja}</p>
-      {review==="concluir" ? <><ul>{row.itens?.map(i=><li key={i.id}>{snapshotLabel(i, i.nomeProduto)}: {quantity(i.quantidade)} {i.unidadeSiglaSnapshot || "(unidade histórica indisponível)"} · {currency(i.totalItem)}</li>)}</ul><p>Subtotal salvo: {currency(row.subtotal)} · Descontos: {currency(row.descontoTotal)}</p><p>Total salvo: {currency(row.valorTotal)}</p></> : <label>Motivo do cancelamento<Textarea value={reason} onChange={e=>setReason(e.target.value)} /></label>}
+      {review==="concluir" ? <><ul>{row.itens?.map(i=><li key={i.id}>{snapshotLabel(i, i.nomeProduto)}: {quantity(i.quantidade)} {i.unidadeSiglaSnapshot || "(unidade histórica indisponível)"} · {currency(i.totalItem)}</li>)}</ul><p>Subtotal salvo: {currency(row.subtotal)} · Descontos: {currency(row.descontoTotal)}</p><p>Total salvo: {currency(row.valorTotal)}</p></> : <Field label="Motivo do cancelamento"><Textarea value={reason} onChange={e=>setReason(e.target.value)} /></Field>}
       <div className="flex gap-3"><Button disabled={busy || unavailable || (review==="cancelar" && !reason.trim())} onClick={()=>void perform()}>{review==="concluir" ? "Confirmar saída de estoque" : "Confirmar cancelamento"}</Button><Button variant="outline" disabled={busy} onClick={()=>setReview(null)}>Voltar</Button></div>
     </DialogContent></Dialog>
   </div>;

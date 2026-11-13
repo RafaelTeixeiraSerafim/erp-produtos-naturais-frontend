@@ -14,9 +14,11 @@ export const related = {
 } as const;
 export function RelatedField({field,query}:{field:keyof typeof related;query:LookupState}) {
   const config=related[field],can=useCan(config.permission);
-  return <span className="ml-2 inline-flex items-center gap-1 align-middle">
-    {can && <a href={config.href} target="_blank" rel="noopener noreferrer" aria-label={`Cadastrar ${config.label} em nova aba`} className="rounded border border-border p-1"><Plus size={15}/></a>}
-    <Button type="button" variant="ghost" size="sm" aria-label={`Atualizar ${config.label}`} disabled={query.isFetching} onClick={e=>{e.preventDefault();void query.refetch();}}><RefreshCw size={14} className={query.isFetching?"animate-spin":""}/></Button>
-    {query.isFetching && <small role="status">Carregando…</small>}{query.isError && <small role="alert">Falha ao carregar. Atualize este campo.</small>}
+  return <span className="inline-flex shrink-0 items-center gap-1">
+    {can && <Button asChild variant="ghost" size="icon"><a href={config.href} target="_blank" rel="noopener noreferrer" aria-label={`Cadastrar ${config.label} em nova aba`}><Plus size={15}/></a></Button>}
+    <Button type="button" variant="ghost" size="icon" aria-label={`Atualizar ${config.label}`} disabled={query.isFetching} onClick={e=>{e.preventDefault();void query.refetch();}}><RefreshCw size={14} className={query.isFetching?"animate-spin":""}/></Button>
   </span>;
+}
+export function RelatedStatus({query}:{query:LookupState}) {
+  return <>{query.isFetching && <small role="status" className="block">Carregando…</small>}{query.isError && <small role="alert" className="block">Falha ao carregar. Atualize este campo.</small>}</>;
 }
