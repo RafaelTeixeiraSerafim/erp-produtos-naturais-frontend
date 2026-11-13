@@ -1,4 +1,5 @@
 "use client";
+import { BackLink } from "@/components/ui/back-link";
 import { Notice, NoticeDescription } from "@/components/ui/notice";
 import {
   Panel,
@@ -6,9 +7,7 @@ import {
   PanelTitle,
   PanelDescription,
 } from "@/components/ui/panel";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { useListarCategorias } from "@/generated/sdk/hooks/useListarCategorias";
 import { useBuscarProdutoPorId } from "@/generated/sdk/hooks/useBuscarProdutoPorId";
 import { Heading, Loading, ErrorNotice } from "@/components/feedback";
@@ -25,13 +24,11 @@ export function ProductEditor({ id }: { id?: string }) {
   const hasPrerequisites = !!categories.data?.length;
   return (
     <>
-      <Link
-        className="mb-6 inline-flex items-center gap-[7px] text-[12px] text-[#708373]"
+      <BackLink
+        className="mb-6"
         href={id ? `/produtos/${id}` : "/produtos"}
-      >
-        <ArrowLeft size={15} />
-        Voltar {id ? "ao produto" : "aos produtos"}
-      </Link>
+      >Voltar {id ? "ao produto" : "aos produtos"}
+      </BackLink>
       <Heading
         title={id ? "Editar produto" : "Novo produto"}
         description="Cadastre as informações básicas. SKUs, lojas e preços são salvos depois."

@@ -1,5 +1,7 @@
 "use client";
-import { RelatedField } from "./related-field";
+import { BackLink } from "@/components/ui/back-link";
+import { Field } from "./ui/field";
+import { RelatedField, RelatedStatus } from "./related-field";
 import { SkuSelect } from "./sku-select";
 import { SourceReturns } from "./returns";
 import Link from "next/link";
@@ -117,9 +119,7 @@ export function PurchaseList() {
       <LookupErrors lookups={lookups} />
       <Panel>
         <div className="grid grid-cols-3 gap-4 p-5 mobile:grid-cols-1">
-          <label>
-            Fornecedor
-            <Select
+          <Field label="Fornecedor"><Select
               aria-label="Fornecedor"
               value={value("idFornecedor")}
               onChange={(e) => control("idFornecedor", e.target.value)}
@@ -131,10 +131,8 @@ export function PurchaseList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Loja
-            <Select
+          </Field>
+          <Field label="Loja"><Select
               aria-label="Loja"
               value={value("idLoja")}
               onChange={(e) => control("idLoja", e.target.value)}
@@ -146,10 +144,8 @@ export function PurchaseList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Status
-            <Select
+          </Field>
+          <Field label="Status"><Select
               aria-label="Status"
               value={value("status")}
               onChange={(e) => control("status", e.target.value)}
@@ -169,26 +165,20 @@ export function PurchaseList() {
                 </option>
               ))}
             </Select>
-          </label>
-          <label>
-            Data inicial
-            <Input
+          </Field>
+          <Field label="Data inicial"><Input
               type="date"
               value={value("inicio")}
               onChange={(e) => control("inicio", e.target.value)}
             />
-          </label>
-          <label>
-            Data final
-            <Input
+          </Field>
+          <Field label="Data final"><Input
               type="date"
               value={value("fim")}
               onChange={(e) => control("fim", e.target.value)}
             />
-          </label>
-          <label>
-            Ordenar compras
-            <Select
+          </Field>
+          <Field label="Ordenar compras"><Select
               aria-label="Ordenar compras"
               value={sort}
               onChange={(e) => control("ordem", e.target.value)}
@@ -207,7 +197,7 @@ export function PurchaseList() {
                 )),
               )}
             </Select>
-          </label>
+          </Field>
         </div>
         {query.isPending ? (
           <Loading />
@@ -376,7 +366,7 @@ export function PurchaseRecord({
       {canReceive(row) && <Button asChild><Link href={`/compras/${id}/recebimentos/novo`}>Novo recebimento</Link></Button>}
       {!!receipts.data?.length && <p className="my-3">A compra possui recebimentos. Para editar um rascunho de compra, exclua todos os recebimentos em rascunho. Recebimentos confirmados mantêm a compra bloqueada.</p>}
       <ReceiptList purchaseId={id} />
-      <Link href="/compras">Voltar aos pedidos</Link>
+      <BackLink href="/compras">Voltar aos pedidos</BackLink>
     </>
   );
 }
@@ -515,9 +505,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
       <form onSubmit={submit} noValidate aria-busy={busy}>
         <fieldset disabled={busy || locked || recovery.blocked || !!savedLink} className="space-y-5">
           <Panel className="grid grid-cols-2 gap-5 p-5 mobile:grid-cols-1">
-            <div>
-              Fornecedor * <RelatedField field="idFornecedor" query={lookups.suppliers}/>
-              <Select
+            <Field label="Fornecedor *" actions={<RelatedField field="idFornecedor" query={lookups.suppliers}/>}><Select
                 aria-label="Fornecedor *"
                 required
                 value={draft.idFornecedor}
@@ -532,11 +520,8 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                     {s.nomeFantasia}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <div>
-              Loja * <RelatedField field="idLoja" query={lookups.stores}/>
-              <Select
+              </Select><RelatedStatus query={lookups.suppliers}/></Field>
+            <Field label="Loja *" actions={<RelatedField field="idLoja" query={lookups.stores}/>}><Select
                 aria-label="Loja *"
                 required
                 value={draft.idLoja}
@@ -549,11 +534,8 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                     {s.nomeFantasia}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <label>
-              Data da compra
-              <Input
+              </Select><RelatedStatus query={lookups.stores}/></Field>
+            <Field label="Data da compra"><Input
                 type="datetime-local"
                 step="60"
                 value={draft.dataCompra}
@@ -564,16 +546,14 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
               <small>
                 Horário de São Paulo. Em branco, usa a data do servidor.
               </small>
-            </label>
-            <label>
-              Observação
-              <Textarea
+            </Field>
+            <Field label="Observação"><Textarea
                 value={draft.observacao}
                 onChange={(e) =>
                   setDraft({ ...draft, observacao: e.target.value })
                 }
               />
-            </label>
+            </Field>
           </Panel>
           {draft.itens.map((item, index) => {
             function change(key: keyof typeof item, value: string) {
@@ -597,9 +577,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                 <h2 className="col-span-full font-semibold">
                   Item {index + 1}
                 </h2>
-                <div>
-                  SKU * <RelatedField field="idProdutoSku" query={lookups.products}/>
-                  <SkuSelect
+                <Field label="SKU *" actions={<RelatedField field="idProdutoSku" query={lookups.products}/>}><SkuSelect
                     aria-label="SKU *"
                     required
                     value={item.idProdutoSku}
@@ -612,19 +590,16 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                         {p.nome}
                       </option>
                     ))}
-                  </SkuSelect>
-                </div>
+                  </SkuSelect><RelatedStatus query={lookups.products}/></Field>
                 {(["quantidade", "custoUnitario", "desconto"] as const).map(
                   (key) => (
-                    <label key={key}>
-                      {
+                    <Field key={key} label={
                         {
                           quantidade: "Quantidade *",
                           custoUnitario: "Custo unitário (R$) *",
                           desconto: "Desconto (R$)",
                         }[key]
-                      }
-                      <Input
+                      }><Input
                         inputMode="decimal"
                         value={item[key]}
                         onFocus={e => { if(key === "desconto" && e.target.value === "0")e.target.select(); }}
@@ -639,7 +614,7 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
                             : 2}{" "}
                         casas decimais.
                       </small>
-                    </label>
+                    </Field>
                   ),
                 )}
                 <p>Prévia do item: {currency(rowTotal)}</p>
@@ -674,11 +649,9 @@ export function PurchaseEditor({ initial, verificationError = false }: { initial
             <Button type="submit" disabled={busy || locked || recovery.blocked || !!savedLink || !prerequisites || !selectionsValid}>
               {busy ? "Salvando…" : "Salvar rascunho"}
             </Button>
-            <Button asChild variant="outline">
-              <Link href={initial?.id ? `/compras/${initial.id}` : "/compras"}>
+            <BackLink href={initial?.id ? `/compras/${initial.id}` : "/compras"}>
                 Voltar
-              </Link>
-            </Button>
+              </BackLink>
           </div>
         </fieldset>
       </form>

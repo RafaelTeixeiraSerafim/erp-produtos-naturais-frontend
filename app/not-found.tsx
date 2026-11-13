@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { EmptyState, PageTitle } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 export default function NotFound() {
@@ -9,7 +9,7 @@ export default function NotFound() {
         O endereço solicitado não está disponível.
       </p>
       <Button asChild>
-        <Link href="/produtos">Voltar aos produtos</Link>
+        <BackLink href="/produtos">Voltar aos produtos</BackLink>
       </Button>
     </EmptyState>
   );

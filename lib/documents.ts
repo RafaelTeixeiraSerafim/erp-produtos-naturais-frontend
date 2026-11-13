@@ -18,3 +18,9 @@ export function maskDocument(value: string, cnpj = false) {
   for(let i=0;i<v.length;i++){const separator=positions.find(p=>p[0]===i);if(separator)result+=separator[1];result+=v[i];}
   return result;
 }
+
+/** Presentation only: payload normalization remains in the catalog schemas. */
+export function formatDocument(value?: string | null) {
+  if (!value || !normalizeDocument(value)) return "—";
+  return maskDocument(value, normalizeDocument(value).length === 14);
+}

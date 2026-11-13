@@ -1,11 +1,11 @@
 "use client";
+import { BackLink } from "@/components/ui/back-link";
 import {
   AlertCircle,
   PackageOpen,
   LoaderCircle,
   RefreshCw,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Notice, NoticeDescription } from "@/components/ui/notice";
@@ -34,7 +34,7 @@ export function ErrorNotice({
             Tentar novamente
           </Button>
         )}
-        {isMissing(error) && <Link href="/produtos">Voltar aos produtos</Link>}
+        {isMissing(error) && <BackLink href="/produtos">Voltar aos produtos</BackLink>}
       </div>
     </Notice>
   );
