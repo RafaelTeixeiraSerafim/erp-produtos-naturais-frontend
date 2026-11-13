@@ -191,3 +191,37 @@ rotas; portanto, não comprova uma execução no Brasil. O manifest local do Nex
 continha `regions: ["gru1"]`. Foi acrescentada configuração explícita por função
 em `vercel.json`, seguindo a configuração de regiões da plataforma, para validar
 a região efetiva no próximo preview sem mudar o padrão do projeto.
+
+## Caminho regional comprovado e alternativa de produção
+
+Em preview, a configuração explícita por função em `vercel.json` foi aplicada:
+`/api/localidades/diagnostico-vercel-br` reportou `region: gru1`, 27 estados em
+102 ms e 295 municípios de SC em 116 ms. A mesma consulta em `iad1` expirou. No
+Render, `example.com` e o próprio frontend responderam 200; o TCP ao IP do IBGE
+continuou expirando. Isso comprova um caminho regional funcional, sem identificar
+qual equipamento/provedor impede o caminho original.
+
+A alternativa usa as rotas autenticadas `/api/localidades/ibge/estados` e
+`/api/localidades/ibge/estados/{uf}/municipios`, executadas em `gru1` por configuração
+explícita. Elas validam a sessão ativa com `/api/auth/me`, impedem acesso durante
+alteração obrigatória de senha e consultam exclusivamente o host oficial do IBGE.
+Não recebem uma URL do solicitante, não seguem redirecionamentos e não encaminham
+Cookie/Authorization ao IBGE. Preservam erros HTTP e `Retry-After` do upstream.
+
+O backend continua dono da validação município/UF e dos caches de 24 horas/sete
+dias. Em falha transitória, pode alternar entre acesso direto e essa ponte dentro
+do mesmo orçamento total de seis segundos, reservando metade para a segunda rota.
+Uma ponte bem-sucedida é preferida por uma hora. Sucesso direto restaura preferência
+pela rota direta. Erros permanentes e `Retry-After` continuam sem repetição imediata.
+
+Configuração: `IBGE_RELAY_ORIGIN=https://origem-confiavel-do-frontend` habilita a
+ponte explicitamente; `disabled` a desabilita. Sem configuração, somente o serviço
+Render `erp-produtos-naturais-backend.onrender.com`, identificado pelas variáveis
+da plataforma `RENDER=true` e `RENDER_EXTERNAL_HOSTNAME`, usa o frontend publicado
+atual como origem fixa. Não usa o Host recebido. Outros ambientes permanecem sem
+ponte por padrão, evitando encaminhar sessões locais para produção. A sessão só é
+enviada à origem configurada e não aparece nos logs de localidades.
+
+A implantação final deve validar os endpoints usuais e os selects de loja antes
+de encerrar o incidente. O sucesso do diagnóstico regional, isoladamente, não
+comprova que o backend já utiliza a nova rota.

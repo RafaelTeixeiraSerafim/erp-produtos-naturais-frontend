@@ -2,7 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "app/api/localidades/diagnostico-vercel-br/route.ts": {
-      "regions": ["gru1"]
+      "regions": [
+        "gru1"
+      ]
+    },
+    "app/api/localidades/ibge/**/route.ts": {
+      "regions": [
+        "gru1"
+      ]
     }
   }
 }

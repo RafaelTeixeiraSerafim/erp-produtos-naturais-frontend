@@ -255,3 +255,5 @@ Foram 74 testes backend executados (mais um bootstrap exclusivo da integração)
 179 testes unitários/componentes, 112 cenários de interface e 30 cenários reais
 em desktop/mobile, incluindo persistência após reinício. Integração local também
 aprovada; detalhes e limitações em [STAGE12_RELEASE.md](docs/STAGE12_RELEASE.md).
+
+Consulta IBGE: [diagnóstico e configuração da alternativa regional](docs/IBGE_INCIDENT.md). O backend mantém validação/cache e pode usar a ponte autenticada do próprio frontend em São Paulo quando a rota direta falha. `IBGE_RELAY_ORIGIN=disabled` desabilita essa alternativa; em outros ambientes, configure uma origem HTTPS confiável explicitamente.
