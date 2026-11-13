@@ -165,7 +165,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const user = useIdentity();
   const path = usePathname(),
     [open, setOpen] = useState(false);
-  if (["/login", "/alterar-senha", "/esqueci-senha", "/redefinir-senha"].includes(path)) return <main id="conteudo">{children}</main>;
+  if (["/login", "/alterar-senha"].includes(path)) return <main id="conteudo">{children}</main>;
   const current =
     (path.startsWith("/skus/") ? {label:"SKUs"} : undefined) ||
     (path === "/visao-geral" ? { label: "Visão geral" } : undefined) ||

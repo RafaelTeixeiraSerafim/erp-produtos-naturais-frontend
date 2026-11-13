@@ -20,7 +20,7 @@ const resources = new Set([
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function forwardCatalog(request: Request, path: string[]) {
   const [resource, id] = path;
-  const auth = resource === "auth" && path.length === 2 && ["csrf", "login", "me", "logout", "alterar-senha", "esqueci-senha", "redefinir-senha"].includes(id);
+  const auth = resource === "auth" && path.length === 2 && ["csrf", "login", "me", "logout", "alterar-senha"].includes(id);
   const locality = resource === "localidades" && ((id === "diagnostico" && path.length === 2) || (id === "estados" && (path.length === 2 || (path.length === 4 && /^[A-Z]{2}$/.test(path[2]) && path[3] === "municipios"))));
   const reset = resource === "usuarios" && path.length === 3 && path[2] === "senha-temporaria";
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {

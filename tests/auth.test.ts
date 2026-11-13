@@ -30,3 +30,8 @@ it("preserves upstream 401 and 403 without translating them into 502",async()=>{
   const fetch=vi.fn();vi.stubGlobal("fetch",fetch);
   for(const status of [401,403]){fetch.mockResolvedValue(Response.json({message:"Denied"},{status}));expect((await forwardCatalog(new Request("http://localhost/api/categorias"),["categorias"])).status).toBe(status);}
 });
+it.each(["esqueci-senha", "redefinir-senha"])("does not proxy retired email recovery endpoint %s", async path => {
+  const fetch=vi.fn();vi.stubGlobal("fetch",fetch);
+  const response=await forwardCatalog(new Request(`http://localhost/api/auth/${path}`,{method:"POST",headers:{Origin:"http://localhost"},body:"{}"}),["auth",path]);
+  expect(response.status).toBe(404);expect(fetch).not.toHaveBeenCalled();
+});

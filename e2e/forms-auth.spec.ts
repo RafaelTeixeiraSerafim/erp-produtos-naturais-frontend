@@ -3,9 +3,11 @@ test("account menu keyboard Escape and password visibility on both layouts",asyn
   await page.goto("/visao-geral");const account=page.locator("summary").filter({hasText:"Conta"});await account.focus();await page.keyboard.press("Enter");await expect(page.getByRole("link",{name:"Alterar senha"})).toBeVisible();await page.keyboard.press("Escape");await expect(account).toBeFocused();await expect(page.getByRole("link",{name:"Alterar senha"})).not.toBeVisible();
   await page.goto("/login");const password=page.getByLabel("Senha",{exact:true});await password.fill("Secret8291");await page.getByRole("button",{name:"Mostrar senha"}).click();await expect(password).toHaveAttribute("type","text");await expect(password).toHaveValue("Secret8291");await expect(password).toBeFocused();await page.getByRole("button",{name:"Ocultar senha"}).click();await expect(password).toHaveAttribute("type","password");
 });
-test("public recovery clears token fragments and uses an independent layout",async({page,context})=>{
-  await context.clearCookies();await page.goto("/esqueci-senha");await expect(page.getByRole("banner")).toHaveCount(0);await page.getByLabel("E-mail ou usuário").fill("unknown");await page.getByRole("button",{name:"Enviar link"}).click();await expect(page.getByRole("status")).toContainText("Se a conta existir");
-  await page.goto("/redefinir-senha#random-token");await expect(page).toHaveURL(/\/redefinir-senha$/);await expect(page.getByRole("navigation")).toHaveCount(0);await page.getByLabel("Nova senha",{exact:true}).fill("Password8291");await page.getByLabel("Confirmar nova senha").fill("Different8291");await page.getByRole("button",{name:"Salvar nova senha"}).click();await expect(page.locator("main").getByRole("alert")).toContainText("não coincidem");
+test("forgotten passwords direct users to an administrator and retired recovery pages are unavailable",async({page,context})=>{
+  await context.clearCookies();await page.goto("/login");
+  await expect(page.getByText("Esqueceu sua senha? Solicite uma senha temporária ao administrador.")).toBeVisible();
+  await expect(page.getByRole("link",{name:"Esqueci minha senha"})).toHaveCount(0);
+  for(const path of ["/esqueci-senha","/redefinir-senha#old-token"]){expect((await page.goto(path))?.status()).toBe(404);await expect(page.getByRole("button",{name:"Enviar link"})).toHaveCount(0);}
 });
 test("IBGE ignores late state responses, resets city and supports field retry",async({page})=>{
   await page.route("**/api/lojas",r=>r.fulfill({json:[]}));
@@ -33,12 +35,6 @@ test("employee sees customer shortcut and no catalog or store creation shortcuts
   await expect(page.getByRole("link",{name:"Cadastrar cliente em nova aba"})).toBeVisible();await expect(page.getByRole("link",{name:"Cadastrar SKU em nova aba"})).toHaveCount(0);await expect(page.getByRole("link",{name:"Cadastrar loja em nova aba"})).toHaveCount(0);await expect(page.getByRole("button",{name:"Atualizar SKU"})).toBeVisible();expect((await page.goto("/skus/novo"))?.status()).toBe(403);
 });
 
-test("another reset link in the same tab replaces the consumed fragment",async({page})=>{
-  const sent:string[]=[];await page.route("**/api/auth/redefinir-senha",r=>{sent.push(r.request().postDataJSON().token);return r.fulfill({json:{message:"Senha redefinida"}});});
-  await page.goto("/redefinir-senha#first-local-token");await expect(page).toHaveURL(/\/redefinir-senha$/);
-  async function submit(){await page.getByLabel("Nova senha",{exact:true}).fill("Password8291");await page.getByLabel("Confirmar nova senha").fill("Password8291");await page.getByRole("button",{name:"Salvar nova senha"}).click();await expect(page.getByRole("status")).toContainText("Senha redefinida");}
-  await submit();await page.goto("/redefinir-senha#second-local-token");await expect(page).toHaveURL(/\/redefinir-senha$/);await submit();expect(sent).toEqual(["first-local-token","second-local-token"]);
-});
 test("standalone SKU reuses the variant form and selects a product group",async({page})=>{
   const id="00000000-0000-4000-8000-000000000001";let payload:Record<string,unknown>|undefined;
   await page.route("**/api/**",async r=>{

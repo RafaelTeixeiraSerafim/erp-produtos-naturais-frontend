@@ -1,7 +1,7 @@
 # Etapa 14 — acesso, documentos e formulários
 
 Branches `stage14-forms-auth`, bases frontend `d60fa53` e backend `22ff8a5`.
-V1–V8 preservadas. Nenhum merge, deploy, reset ou migração de banco compartilhado.
+V1–V9 preservadas. A V10 retira os tokens da recuperação por e-mail; a política atual é redefinição por ADMIN.
 
 ## Contrato e configuração
 
@@ -19,36 +19,19 @@ Não fazer `repair`, baseline ou reset para contornar o preflight. A tabela
 e-mail, com sufixo de UUID estável nas colisões; `admin` fica reservado ao bootstrap.
 A V9 revoga sessões antigas pela mudança do contrato da identidade.
 
-Configurar no backend:
+## Senhas esquecidas: redefinição administrativa
 
-```dotenv
-FRONTEND_PUBLIC_ORIGIN=https://frontend.exemplo.com
-SMTP_HOST=smtp.exemplo.com
-SMTP_PORT=587
-SMTP_USERNAME=conta-smtp
-SMTP_PASSWORD=segredo-do-ambiente
-SMTP_AUTH=true
-SMTP_STARTTLS=true
-SMTP_FROM=no-reply@exemplo.com
-BOOTSTRAP_ADMIN_EMAIL=administrador@exemplo.com
-```
+A recuperação por e-mail foi retirada por solicitação do responsável. Não há
+SMTP nem links de recuperação. ADMIN redefine uma senha temporária em **Usuários
+→ Editar → Senha temporária**; as sessões anteriores são revogadas e a troca é
+obrigatória no próximo login. A alteração da própria senha permanece no menu.
+Consulte [o fluxo atual](ADMIN_PASSWORD_RESET.md).
 
-Configurar no frontend `BACKEND_API_URL` e `FRONTEND_ORIGINS` como antes. A origem
-pública usada no e-mail é fixa e validada; cabeçalhos Host/Origin não compõem links.
-Para SMTP local, usar `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`, `SMTP_AUTH=false` e
-`SMTP_STARTTLS=false`, com um capturador local. Não enviar testes a destinatários reais.
-O endereço padrão `admin@vilaverde.local` não recebe mensagens reais: configurar um
-e-mail entregável antes do primeiro bootstrap ou editar a conta na administração.
-Alterar a variável após existir administrador ativo não muda a conta existente.
-
-`POST /api/auth/esqueci-senha` recebe `{login}` e sempre confirma genericamente;
-aceita no máximo três solicitações por conta/identificador em 15 minutos. O token
-aleatório de 256 bits fica no fragmento do link, é removido da navegação pelo
-frontend e enviado no corpo do POST. Apenas SHA-256 é persistido, por 30 minutos.
-`POST /api/auth/redefinir-senha` recebe `{token, senha, confirmacao}`. Consumo e
-revogação são transacionais sob o mesmo lock das escritas de conta: só uma chamada
-vence. Revoga sessões e todos os tokens, não autentica nem muda cargo, lojas,
-status ou revisão. Ambos os endpoints exigem CSRF.
+A V9 permanece imutável; a V10 remove suas tabelas de tokens de recuperação.
+Contas, hashes, vínculos e sessões não são alterados por essa migração.
+`BOOTSTRAP_ADMIN_EMAIL` continua configurando o identificador de e-mail da conta
+inicial; não é necessário um serviço de entrega. Alterá-lo depois do bootstrap
+não modifica uma conta existente. Nenhum reset de banco é necessário.
 
 ## Documentos e localidades
 
@@ -91,7 +74,7 @@ minutos, zera segundos novos e conserva o timestamp original quando não alterad
 Desconto seleciona o zero ao focar, mantendo entrada decimal brasileira.
 
 Verificações executadas e resultado final: ver `STAGE14_RELEASE.md`.
-O runner usa PostgreSQL, SMTP e catálogo IBGE próprios, em loopback. O substituto
+O runner usa PostgreSQL e catálogo IBGE próprios, em loopback. O substituto
 IBGE está somente no classpath de testes (`ControlledIntegrationConfig`) e exige
 `CATALOG_DISPOSABLE=1`; não é empacotado no backend de produção. A CI não depende
-de IBGE/SMTP externos ao vivo. SDK integral regenerado por Kubb, sem editar gerados.
+de IBGE externo ao vivo nem de SMTP. SDK integral regenerado por Kubb, sem editar gerados.

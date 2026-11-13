@@ -1,17 +1,13 @@
-# SDK da etapa 14
+# SDK — redefinição administrativa de senha
 
-Backend base `22ff8a5`, branch `stage14-forms-auth`, commit `7f8477645978dbabaceca961aa09f98b7882abc2`.
-Contrato `openapi-stage14.json` exportado por `ReturnsTests.exportOpenApi` com ADMIN
-em PostgreSQL V9 descartável. SDK integral gerado no backend com
-`OPENAPI_FILE=openapi-stage14.json npm run sdk:generate`, lockfile existente.
-Árvore completa copiada incluindo `.kubb`; nenhum arquivo gerado editado à mão.
+Backend e runner fixados em `8cc139caa55d2398c5a71f6349fa784947b21352`. O contrato `openapi-stage14.json` foi
+exportado por `ReturnsTests.exportOpenApi` com ADMIN em PostgreSQL descartável,
+com V1–V10. SHA-256: `b7885fab97713e21b95a2e15af1c764724120f11e579ce5b8e574b529f1577ea`.
 
-Novos contratos: usuário real separado de nome/e-mail, login por `login`,
-recuperação/redefinição de senha, localidades e código IBGE de município.
-Configuração e evidências em [etapa 14](../docs/STAGE14_FORMS_AUTH.md).
+SDK integral regenerado no backend com `OPENAPI_FILE=openapi-stage14.json npm run sdk:generate`,
+lockfile existente, e copiado incluindo `.kubb`. Nenhum código gerado foi editado
+manualmente. Foram removidos os clientes, hooks e tipos de recuperação/redefinição
+por e-mail; permanece `senhaTemporaria`, exclusivo de ADMIN e protegido por CSRF.
 
-SHA-256 do OpenAPI autenticado: `8ad71842fbcc5b654f78d99a11f88eb5ff4b787167b83d7d4f56b90ae0029519`.
-O teste de exportação verifica schemas distintos para recuperação pública e
-senha temporária administrativa, além das respostas de sucesso e erro.
-
-O runner acompanha a diagnóstico administrativo de transporte IBGE em `f38e9914af30dfd50a7e216166c9196abb731070`; o contrato e o SDK permanecem idênticos à geração acima.
+O contrato de localidades e a alternativa regional IBGE permanecem iguais.
+Regras e operação em [redefinição por ADMIN](../docs/ADMIN_PASSWORD_RESET.md).
