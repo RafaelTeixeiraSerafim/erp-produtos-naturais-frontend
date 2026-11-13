@@ -28,3 +28,17 @@ hospedagem, não são mais usadas pelo aplicativo.
 Verificação: PostgreSQL testa migração com token existente e preservação de hash,
 autorização/CSRF, revogação e troca obrigatória. Integração desktop/mobile exercita
 a redefinição pela tela de usuários em serviços descartáveis, sem e-mails reais.
+
+## Evidências de entrega — 13/11/2026
+
+- Backend: 118 registrados, 117 executados sem falhas, um bootstrap de integração
+  ignorado; [CI aprovada](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/43505499113).
+- Frontend: 209 testes unitários/componentes, TypeScript, lint e build aprovados;
+  [CI com integração e desktop/mobile aprovada](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/43505883325).
+- Integração real descartável: administrador edita senha temporária pela tela,
+  sessão anterior passa a 401, a pessoa troca a senha obrigatória e entra novamente.
+- Publicação: login mostra orientação ao administrador; páginas antigas e seus
+  endpoints pelo proxy retornam 404. O acesso administrativo existente foi
+  confirmado e o campo/hint da senha temporária conferido sem salvar a conta.
+- Nenhuma senha de produção foi redefinida durante a validação e não houve e-mail,
+  reset de banco ou alteração das migrações V1–V9.
