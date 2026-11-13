@@ -299,3 +299,12 @@ it.each([
   const result = await forwardCatalog(browserRequest(`http://localhost/api/${path.join("/")}`), path);
   expect(result.headers.get("X-IBGE-Failure")).toBe(expected);
 });
+
+it("preserves the administrative IBGE cause chain returned by the backend", async () => {
+  const body = { status: 503, message: "Catálogo IBGE indisponível.", detalhes: ["java.net.http.HttpConnectTimeoutException: HTTP connect timed out", "Caused by: java.net.ConnectException: HTTP connect timed out"] };
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(body, { status: 503, headers: { "X-IBGE-Failure": "CONNECT_TIMEOUT" } })));
+  const result = await forwardCatalog(browserRequest("http://localhost/api/localidades/estados"), ["localidades", "estados"]);
+  expect(result.status).toBe(503);
+  expect(await result.json()).toEqual(body);
+  expect(result.headers.get("Cache-Control")).toBe("no-store");
+});
