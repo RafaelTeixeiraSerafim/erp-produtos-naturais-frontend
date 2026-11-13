@@ -32,7 +32,7 @@ export function AuthForm({ change = false }: { change?: boolean }) {
     {change && <label className="block">Nova senha<PasswordInput aria-label="Nova senha" autoComplete="new-password" required minLength={8} maxLength={72} value={next} onChange={e => setNext(e.target.value)} /><small>Use ao menos 8 caracteres.</small></label>}
     {error && <p role="alert">{error}</p>}
     <Button disabled={busy} type="submit">{busy ? "Aguarde…" : change ? "Salvar nova senha" : "Entrar"}</Button>
-    {!change && <p><a href="/esqueci-senha" className="underline">Esqueci minha senha</a></p>}
+    {!change && <p>Esqueceu sua senha? Solicite uma senha temporária ao administrador.</p>}
     <AccountControls showPasswordChange={false} showIdentity={false} />
   </form>;
 }

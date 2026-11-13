@@ -14,7 +14,7 @@ import { purchasesSeed } from "./purchases-seed.mjs";
 import { inventorySeed } from "./inventory-seed.mjs";
 
 const root = process.cwd();
-const commit = "f38e9914af30dfd50a7e216166c9196abb731070";
+const commit = "8cc139caa55d2398c5a71f6349fa784947b21352";
 const logs = path.join(root, "integration-artifacts");
 const temp = await mkdtemp(path.join(os.tmpdir(), "vila-integration-"));
 const backend = path.join(temp, "backend");
@@ -112,7 +112,7 @@ try {
   await run("chmod", ["+x", "mvnw"], backend);
   controlled=await controlledServices();
   const backendEnv = {
-    CATALOG_DISPOSABLE:"1", SPRING_PROFILES_ACTIVE:"integration-controlled", IBGE_FIXTURE_URL:controlled.origin, SMTP_HOST:"127.0.0.1", SMTP_PORT:controlled.smtpPort, SMTP_AUTH:"false", SMTP_STARTTLS:"false", SMTP_USERNAME:"", SMTP_PASSWORD:"", SMTP_FROM:"no-reply@fixture.test", FRONTEND_PUBLIC_ORIGIN:"http://127.0.0.1:3100",
+    CATALOG_DISPOSABLE:"1", SPRING_PROFILES_ACTIVE:"integration-controlled", IBGE_FIXTURE_URL:controlled.origin,
     SERVER_ADDRESS: "127.0.0.1", SERVER_PORT: "8081",
     DB_URL: `jdbc:postgresql://127.0.0.1:${port}/catalog`, DB_USER: "catalog", DB_PASSWORD: password, SESSION_COOKIE_SECURE: "false",
   };
@@ -144,7 +144,7 @@ try {
   await ready("http://127.0.0.1:3100/api/auth/csrf", web, 60000);
   assert.equal((await nativeFetch("http://127.0.0.1:3100/api/categorias")).status,401);
   const proxySession=await authenticatedSession("http://127.0.0.1:3100","stage8-admin@example.test",adminPassword,nativeFetch);
-  const testEnv = { CONTROLLED_SERVICES_URL:controlled.origin, INTEGRATION_ADMIN_EMAIL:"stage8-admin@example.test", INTEGRATION_ADMIN_PASSWORD:adminPassword, LIVE_SESSION:JSON.stringify(proxySession.storageState), LIVE_HEADERS:JSON.stringify(proxySession.headers), SMOKE_BASE_URL: "http://127.0.0.1:3100", CATALOG_DISPOSABLE: "1", INVENTORY_FIXTURE: JSON.stringify(inventory), SALES_FIXTURE: JSON.stringify(sales), PURCHASES_FIXTURE: JSON.stringify(purchases) };
+  const testEnv = { INTEGRATION_ADMIN_EMAIL:"stage8-admin@example.test", INTEGRATION_ADMIN_PASSWORD:adminPassword, LIVE_SESSION:JSON.stringify(proxySession.storageState), LIVE_HEADERS:JSON.stringify(proxySession.headers), SMOKE_BASE_URL: "http://127.0.0.1:3100", CATALOG_DISPOSABLE: "1", INVENTORY_FIXTURE: JSON.stringify(inventory), SALES_FIXTURE: JSON.stringify(sales), PURCHASES_FIXTURE: JSON.stringify(purchases) };
   await run("npm", ["run", "test:live"], root, testEnv);
   await run("npx", ["playwright", "test", "--config=playwright.live.config.ts"], root, testEnv);
   // A real process restart must retain operational receipts, stock, quantities and movements.

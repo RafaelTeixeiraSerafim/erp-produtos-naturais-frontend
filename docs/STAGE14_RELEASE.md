@@ -1,3 +1,5 @@
+> Atualização de 13/11/2026: a recuperação por e-mail foi removida por solicitação do responsável. Senhas esquecidas são redefinidas por ADMIN, com senha temporária e troca obrigatória. As evidências SMTP abaixo são históricas. Consulte [o fluxo atual](ADMIN_PASSWORD_RESET.md).
+
 # Etapa 14 — aceite local
 
 Data: 11/11/2026. Código frontend: `05ae92eae2f1b11614a10fef8af17fa8b8ebf32f`. Branches de origem `stage14-forms-auth`, sobre frontend `d60fa53`

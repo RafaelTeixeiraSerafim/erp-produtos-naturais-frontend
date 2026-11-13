@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { internalDestination, pagePermission, sessionHeader, type Identity } from "./lib/auth";
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  if (["/login", "/esqueci-senha", "/redefinir-senha"].includes(path)) return NextResponse.next();
+  if (["/esqueci-senha", "/redefinir-senha"].includes(path)) return new NextResponse("Página não encontrada.", { status: 404 });
+  if (path === "/login") return NextResponse.next();
   const login = new URL("/login", request.url);
   login.searchParams.set("returnTo", internalDestination(path + request.nextUrl.search));
   const cookie = sessionHeader(request.headers.get("cookie"));

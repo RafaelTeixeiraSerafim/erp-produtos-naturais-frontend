@@ -19,7 +19,6 @@ http.createServer(async (req,res) => {
     const key = defaultLogin ? "fixture-temporary" : body.login === "func@example.test" ? "fixture-func" : body.login === "ger@example.test" ? "fixture-manager" : body.login === "temporary@example.test" ? "fixture-temporary" : body.login === "other@example.test" ? "fixture-other" : "fixture-admin";
     const next = crypto.randomUUID(); sessions.set(next,seeds.get(key));res.setHeader("Set-Cookie",`SESSION=${next}; Path=/; HttpOnly`);return send(200,sessions.get(next));
   }
-  if (path === "/api/auth/esqueci-senha" || path === "/api/auth/redefinir-senha") return send(200,{message:"Se a conta existir, enviaremos um link para o e-mail cadastrado."});
   if (!user) return send(401,{message:"Autenticação necessária"});
   if (path === "/api/localidades/estados")return send(200,{dados:[{id:42,sigla:"SC",nome:"Santa Catarina"}],desatualizado:false});
   if (path === "/api/localidades/estados/SC/municipios")return send(200,{dados:[{id:4204608,nome:"Criciúma"}],desatualizado:false});
