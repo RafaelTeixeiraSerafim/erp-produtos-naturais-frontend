@@ -134,3 +134,26 @@ cliente de produção. HTTP 403/429 é diferente de timeout de conexão.
 CI usa servidor HTTP local e fixture de diagnóstico sem internet; cobre execução
 assíncrona, reuso, expiração, deadline e autorização 401/403/200. O diagnóstico não
 altera o cliente de localidades, seus dados ou seu cache.
+
+## Resultado real: camada TCP, 13/11/2026
+
+Diagnóstico autenticado executado no Render em `2026-11-13T11:23:42Z`:
+
+| Teste | Máquina local | Render |
+| --- | --- | --- |
+| DNS | `170.84.40.178`, 24 ms | Mesmo IPv4, 398 ms |
+| TCP 443 | Sucesso, 35 ms | `SocketTimeoutException: Connect timed out`, 2105 ms |
+| TLS padrão/ALPN/TLS 1.2 | Sucesso nos três modos | Não executado: nenhum IP aceitou TCP |
+| Cliente com preferência HTTP/2 | 200, negociou HTTP/1.1 | `HttpConnectTimeoutException`, 3207 ms |
+| HTTP/1.1 | 200 | `HttpConnectTimeoutException`, 3093 ms |
+| HTTP/1.1 + TLS 1.2 | 200 | `HttpConnectTimeoutException`, 3004 ms |
+
+A consulta chega à resolução DNS e falha ao estabelecer conexão com a porta 443
+nesse caminho de rede. A comparação não identifica quem impede a conexão:
+restrição de saída do provedor, entrada do destino e rota intermediária continuam
+sendo hipóteses. Não há evidência para declarar bloqueio de IP pelo IBGE.
+
+O incidente de localidades permanece aberto: o diagnóstico foi implementado e
+verificado em produção, mas não constitui correção da conectividade. Uma mudança
+de caminho (por exemplo, ponte no Vercel) precisa ser testada separadamente; não
+foi adicionada nessa investigação.
