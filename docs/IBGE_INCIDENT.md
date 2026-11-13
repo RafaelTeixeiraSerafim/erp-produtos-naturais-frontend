@@ -111,8 +111,8 @@ de strings; não há mudança de OpenAPI ou necessidade de regenerar o SDK.
 
 `GET /api/localidades/diagnostico`, somente ADMIN, inicia um teste assíncrono ou
 retorna seu resultado. Repetir a mesma chamada até `state` deixar de ser `RUNNING`.
-O destino é fixo na API oficial de estados do IBGE; não aceita URL, host ou IP do
-solicitante. A resposta tem `no-store`. Há somente uma execução por instância,
+Os destinos são fixos no código: API oficial de estados do IBGE e controles
+HTTPS públicos. Não aceita URL, host ou IP do solicitante. A resposta tem `no-store`. Há somente uma execução por instância,
 reaproveitada por cinco minutos; duração máxima observada pelo polling: 60 segundos.
 A rota operacional é ocultada do OpenAPI/SDK de domínio.
 
@@ -157,3 +157,22 @@ O incidente de localidades permanece aberto: o diagnóstico foi implementado e
 verificado em produção, mas não constitui correção da conectividade. Uma mudança
 de caminho (por exemplo, ponte no Vercel) precisa ser testada separadamente; não
 foi adicionada nessa investigação.
+
+## Comparação de saída HTTPS e diagnóstico no Vercel
+
+O diagnóstico do Render inclui controles HTTPS fixos em `example.com` e na página
+`/login` do próprio frontend publicado. Qualquer resposta HTTP nesses controles
+comprova que DNS/TCP/TLS terminaram, mesmo com status de negação ou redirecionamento.
+Nenhuma credencial acompanha essas consultas. `finishedAt` agora registra o fim
+real do worker, independentemente do instante em que o navegador consulta o resultado.
+
+`GET /api/localidades/diagnostico-vercel` executa a comparação no runtime Node.js
+do frontend. Exige ADMIN, validado pelo backend a cada chamada, inclusive cache
+hits. Consulta somente os endpoints oficiais de estados e municípios de SC, em
+paralelo, com limite de seis segundos e sem encaminhar a sessão ao IBGE. Retorna
+status, quantidade de localidades, duração e cadeia de erro. Há reuso por cinco
+minutos, resposta `no-store` e bloqueio de redirecionamentos do upstream.
+
+Esse endpoint é diagnóstico operacional, sem alteração dos endpoints utilizados
+pelos formulários e sem introduzir uma ponte de produção entre os serviços.
+CI usa respostas HTTP locais ou simuladas; não consulta serviços externos ao vivo.
