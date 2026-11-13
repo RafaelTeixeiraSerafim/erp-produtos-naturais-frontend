@@ -106,3 +106,31 @@ Não se trata de logs globais: são detalhes da exceção da consulta ao endpoin
 fixo oficial de localidades. Nenhuma chamada a SMTP, autenticação ou recuperação
 de senha passa por esse diagnóstico. O contrato `ApiError.detalhes` já é uma lista
 de strings; não há mudança de OpenAPI ou necessidade de regenerar o SDK.
+
+## Diagnóstico de rede executado no Render
+
+`GET /api/localidades/diagnostico`, somente ADMIN, inicia um teste assíncrono ou
+retorna seu resultado. Repetir a mesma chamada até `state` deixar de ser `RUNNING`.
+O destino é fixo na API oficial de estados do IBGE; não aceita URL, host ou IP do
+solicitante. A resposta tem `no-store`. Há somente uma execução por instância,
+reaproveitada por cinco minutos; duração máxima observada pelo polling: 60 segundos.
+A rota operacional é ocultada do OpenAPI/SDK de domínio.
+
+Os testes retornam sucesso/falha, duração e detalhes para:
+
+- DNS: endereços IPv4/IPv6 resolvidos (até quatro), limite de três segundos.
+- TCP: conexão à porta 443 de cada IP resolvido, limite de dois segundos por IP.
+- TLS: no primeiro IP que aceitou TCP, handshake com validação do certificado e
+  hostname, comparando TLS padrão sem ALPN, com ALPN e TLS 1.2 com ALPN.
+- HTTP: GET no endpoint oficial, comparando preferência HTTP/2, HTTP/1.1 e HTTP/1.1
+  com TLS 1.2; conexão de até três segundos e requisição de até seis segundos.
+
+Interpretação: falha DNS aponta para resolução; TCP que expira em todos os IPs
+aponta para estabelecimento da conexão nesse runtime (não prova quem bloqueou);
+TCP funciona mas TLS falha restringe o diagnóstico ao handshake; somente uma
+configuração HTTP funcionando indica uma opção de compatibilidade a validar no
+cliente de produção. HTTP 403/429 é diferente de timeout de conexão.
+
+CI usa servidor HTTP local e fixture de diagnóstico sem internet; cobre execução
+assíncrona, reuso, expiração, deadline e autorização 401/403/200. O diagnóstico não
+altera o cliente de localidades, seus dados ou seu cache.
