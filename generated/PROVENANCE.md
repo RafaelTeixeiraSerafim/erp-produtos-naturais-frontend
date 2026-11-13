@@ -14,4 +14,4 @@ SHA-256 do OpenAPI autenticado: `8ad71842fbcc5b654f78d99a11f88eb5ff4b787167b83d7
 O teste de exportação verifica schemas distintos para recuperação pública e
 senha temporária administrativa, além das respostas de sucesso e erro.
 
-O runner acompanha a diagnóstico administrativo de transporte IBGE em `12c7184e759d9c307cb1fb97ff91733dfb9a2478`; o contrato e o SDK permanecem idênticos à geração acima.
+O runner acompanha a diagnóstico administrativo de transporte IBGE em `96c3ed9ddd77c81277134f7899df135b658f21ac`; o contrato e o SDK permanecem idênticos à geração acima.
