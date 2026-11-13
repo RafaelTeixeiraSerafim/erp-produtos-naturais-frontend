@@ -222,6 +222,32 @@ atual como origem fixa. Não usa o Host recebido. Outros ambientes permanecem se
 ponte por padrão, evitando encaminhar sessões locais para produção. A sessão só é
 enviada à origem configurada e não aparece nos logs de localidades.
 
-A implantação final deve validar os endpoints usuais e os selects de loja antes
-de encerrar o incidente. O sucesso do diagnóstico regional, isoladamente, não
-comprova que o backend já utiliza a nova rota.
+A implantação final foi verificada pelos endpoints usuais e pelo formulário de
+lojas, conforme evidências abaixo. O diagnóstico regional foi seguido de validação
+real do caminho integrado; não foi usado sozinho como prova de correção.
+
+## Encerramento do erro de carregamento em produção — 13/11/2026
+
+Código validado: backend `f38e991` (merge `4e82c81`) e frontend `12a38ed` (merge
+`7283b1d`, incluindo a configuração regional). Ambos os pipelines de código passaram:
+[backend](https://github.com/Zayma1/erp-produtos-naturais-backend/actions/runs/43478109404)
+e [frontend com integração e desktop/mobile](https://github.com/RafaelTeixeiraSerafim/erp-produtos-naturais-frontend/actions/runs/43478170885).
+Regressão local backend: 121 registrados, 120 executados, zero falhas, um bootstrap
+exclusivo de integração ignorado. Os testes direcionados frontend também passaram.
+
+No domínio publicado, usando sessão administrativa:
+
+- `/api/localidades/ibge/estados`: 200, 27 estados.
+- `/api/localidades/estados`: 200, 27 estados, `desatualizado=false`.
+- `/api/localidades/estados/SC/municipios`: 200, 295 municípios, cache atualizado.
+- `/api/localidades/estados/SP/municipios`: 200, 645 municípios.
+- Sem sessão, tanto a rota original quanto a ponte de estados retornaram 401.
+- No modal **Nova loja**, estados carregaram; SC permitiu selecionar Criciúma.
+  Trocar para SP limpou a cidade e carregou a nova lista. O formulário foi cancelado,
+  sem salvar registros de negócio.
+
+BG-029 encerrado quanto ao 503 de carregamento: o acesso regional restabelece o
+catálogo preservando a fonte oficial e a validação no servidor. A limitação do
+caminho direto do Render ao IBGE continua documentada; não foi atribuído um bloqueio
+a qualquer provedor sem evidência. Não houve alteração de banco, deploy manual,
+envio de e-mail, upgrades gerais ou edição de código gerado do SDK.

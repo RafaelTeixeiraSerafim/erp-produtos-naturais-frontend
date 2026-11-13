@@ -471,7 +471,10 @@ mantidos. Sete testes com HTTP local real e regressão backend aprovados.
 
 **Diagnóstico confirmado em produção:** HTTPS geral funciona no Render, mas TCP
 443 até `170.84.40.178` expira. No Vercel, iad1 também expira; gru1 retornou 27
-estados e 295 municípios de SC. Alternativa regional autenticada implementada,
-com seis segundos totais e caches originais. Validação final do backend/formulário
-publicados ainda pendente; não encerrar somente pelo teste regional.
+estados e 295 municípios de SC. **Corrigido e verificado em produção em 13/11/2026:** alternativa regional
+autenticada, com seis segundos totais e caches originais. Endpoints originais
+retornaram 200 (27 estados, 295 municípios SC e 645 SP); acesso sem sessão retornou
+401. Modal Nova loja carregou SC/Criciúma e limpou a cidade ao mudar para SP. Sem
+salvar registros de negócio. CI de backend e frontend/integracão/desktop/mobile
+aprovados. O bloqueio/rota original permanece sem atribuição a um provedor.
 Ver [evidências e roteiro de diagnóstico](IBGE_INCIDENT.md).
