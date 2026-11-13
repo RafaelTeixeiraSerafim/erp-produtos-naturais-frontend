@@ -91,3 +91,18 @@ seis segundos por catálogo (incluindo no máximo duas tentativas). Uma consulta
 fria de estados seguida de municípios permanece limitada a doze segundos de
 transporte, abaixo dos quinze segundos do proxy. O resultado em produção deve
 ser conferido: ampliar o timeout não resolve uma rota de rede bloqueada.
+
+## Exceção original na resposta administrativa
+
+Por solicitação do responsável, erros 503 de localidades agora incluem em
+`detalhes`, para ADMIN, as classes e mensagens da cadeia original de exceções e
+seus frames, além da versão Java e preferências IPv4/IPv6. Isso permite inspecionar
+`Caused by` pelo Network do navegador sem acesso ao painel do Render. A cadeia é
+limitada a 12 causas e 20 frames por causa; mensagens têm limite de 2048 caracteres.
+O código resumido `X-IBGE-Failure` permanece disponível. Outros perfis continuam
+recebendo `detalhes: null`; a resposta usa `Cache-Control: no-store`.
+
+Não se trata de logs globais: são detalhes da exceção da consulta ao endpoint
+fixo oficial de localidades. Nenhuma chamada a SMTP, autenticação ou recuperação
+de senha passa por esse diagnóstico. O contrato `ApiError.detalhes` já é uma lista
+de strings; não há mudança de OpenAPI ou necessidade de regenerar o SDK.
