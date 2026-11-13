@@ -1,7 +1,7 @@
 import { forwardCatalog } from "./proxy";
 
 type Probe = { path: string; success: boolean; status: number | null; elapsedMs: number; count?: number; errors?: string[] };
-let cached: { at: number; report: Promise<{ runtime: string; executedAt: string; checks: Probe[] }> } | undefined;
+let cached: { at: number; report: Promise<{ runtime: string; region: string; executedAt: string; checks: Probe[] }> } | undefined;
 async function probe(path: string): Promise<Probe> {
   const started = Date.now();
   let status: number | null = null;
@@ -33,7 +33,7 @@ export async function inspectIbgeFromVercel(request: Request) {
   if (identity.cargo !== "ADMIN") return Response.json({ message: "Acesso negado" }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!cached || Date.now() - cached.at >= 300000) {
     cached = { at: Date.now(), report: Promise.all([probe("estados"), probe("estados/SC/municipios")])
-      .then(checks => ({ runtime: "frontend", executedAt: new Date().toISOString(), checks })) };
+      .then(checks => ({ runtime: "frontend", region: process.env.VERCEL_REGION || "local", executedAt: new Date().toISOString(), checks })) };
   }
   return Response.json(await cached.report, { headers: { "Cache-Control": "no-store" } });
 }

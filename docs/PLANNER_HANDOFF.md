@@ -421,3 +421,5 @@ As branches de origem permanecem; a `main` do backend não foi alterada.
 
 
 Etapa 13: implementação SKU em `stage13-sku-variants`, sobre os HEADs integrados. O handoff atual é [STAGE13_SKU_VARIANTS.md](STAGE13_SKU_VARIANTS.md), com aceite em [STAGE13_RELEASE.md](STAGE13_RELEASE.md). Contratos por produto nas etapas anteriores são históricos.
+
+IBGE publicado: saída HTTPS geral no Render foi comprovada; o TCP ao IBGE expira. A consulta direta no Vercel em iad1 também expira, mas o preview em gru1 retornou 27 estados e 295 municípios de SC. A alternativa regional está sendo implementada com autenticação e o mesmo prazo/cache; validar endpoints e formulário publicados antes de fechar BG-029. Ver docs/IBGE_INCIDENT.md.

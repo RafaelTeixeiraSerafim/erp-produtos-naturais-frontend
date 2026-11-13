@@ -465,11 +465,13 @@ na chamada local completa, seguida de sucesso com 27 estados. A exceção origin
 era descartada, impedindo determinar a causa de rede/status a partir dos logs.
 
 Correção de transporte: até duas tentativas para falhas transitórias dentro do
-mesmo orçamento total de cinco segundos, respeito a `Retry-After`, status HTTP e
+mesmo orçamento total (atualmente seis segundos), respeito a `Retry-After`, status HTTP e
 causa original preservados no log; cache de 24h/sete dias e 503 real sem cache
 mantidos. Sete testes com HTTP local real e regressão backend aprovados.
 
-**Investigação no Render ainda pendente:** os testes locais não comprovam a causa
-específica nem o resultado após implantação. Conferir `Falha na consulta IBGE` no
-runtime publicado se o erro persistir. Não encerrar o incidente por inferência.
+**Diagnóstico confirmado em produção:** HTTPS geral funciona no Render, mas TCP
+443 até `170.84.40.178` expira. No Vercel, iad1 também expira; gru1 retornou 27
+estados e 295 municípios de SC. Alternativa regional autenticada implementada,
+com seis segundos totais e caches originais. Validação final do backend/formulário
+publicados ainda pendente; não encerrar somente pelo teste regional.
 Ver [evidências e roteiro de diagnóstico](IBGE_INCIDENT.md).
