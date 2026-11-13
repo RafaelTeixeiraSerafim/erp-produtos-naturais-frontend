@@ -185,3 +185,9 @@ restrito a ADMIN e reutilizando o mesmo diagnóstico. A resposta informa a regi�
 real via `VERCEL_REGION`. Somente essa função diagnóstica pede execução em São
 Paulo; os formulários e demais funções não mudam de região. Esse teste ainda
 precisa confirmar se o caminho regional consegue alcançar o IBGE.
+
+O primeiro preview com `preferredRegion` ainda reportou `region: iad1` nas duas
+rotas; portanto, não comprova uma execução no Brasil. O manifest local do Next
+continha `regions: ["gru1"]`. Foi acrescentada configuração explícita por função
+em `vercel.json`, seguindo a configuração de regiões da plataforma, para validar
+a região efetiva no próximo preview sem mudar o padrão do projeto.
