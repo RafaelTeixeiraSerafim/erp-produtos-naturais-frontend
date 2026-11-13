@@ -176,3 +176,12 @@ minutos, resposta `no-store` e bloqueio de redirecionamentos do upstream.
 Esse endpoint é diagnóstico operacional, sem alteração dos endpoints utilizados
 pelos formulários e sem introduzir uma ponte de produção entre os serviços.
 CI usa respostas HTTP locais ou simuladas; não consulta serviços externos ao vivo.
+
+## Comparação regional do diagnóstico Vercel
+
+A primeira execução no Vercel expirou em seis segundos para estados e municípios.
+Foi criado `/api/localidades/diagnostico-vercel-br`, com `preferredRegion = "gru1"`,
+restrito a ADMIN e reutilizando o mesmo diagnóstico. A resposta informa a região
+real via `VERCEL_REGION`. Somente essa função diagnóstica pede execução em São
+Paulo; os formulários e demais funções não mudam de região. Esse teste ainda
+precisa confirmar se o caminho regional consegue alcançar o IBGE.
